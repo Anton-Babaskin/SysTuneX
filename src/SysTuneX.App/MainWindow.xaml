@@ -1,0 +1,69 @@
+<ui:FluentWindow x:Class="SysTuneX.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        Title="SysTuneX"
+        Width="1100" Height="720"
+        MinWidth="900" MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        ExtendsContentIntoTitleBar="True"
+        WindowBackdropType="Mica">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Sidebar Navigation -->
+        <ui:NavigationView x:Name="RootNavigation"
+                           Grid.Column="0"
+                           PaneDisplayMode="Left"
+                           IsBackButtonVisible="Collapsed"
+                           IsPaneToggleVisible="True"
+                           OpenPaneLength="220">
+
+            <ui:NavigationView.Header>
+                <StackPanel Orientation="Horizontal" Margin="12,8">
+                    <ui:SymbolIcon Symbol="TopSpeed24" FontSize="28" Foreground="{StaticResource AccentBrush}" />
+                    <TextBlock Text="SysTuneX" FontSize="20" FontWeight="Bold" Margin="10,0,0,0"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+            </ui:NavigationView.Header>
+
+            <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItem Content="Dashboard" Icon="{ui:SymbolIcon Home24}"
+                                       TargetPageType="{x:Type local:DashboardPage}"
+                                       xmlns:local="clr-namespace:SysTuneX.App.Views" />
+                <ui:NavigationViewItem Content="Game Profiles" Icon="{ui:SymbolIcon XboxController24}"
+                                       TargetPageType="{x:Type local:ProfilesPage}"
+                                       xmlns:local="clr-namespace:SysTuneX.App.Views" />
+                <ui:NavigationViewItemSeparator />
+                <ui:NavigationViewItemHeader Content="Optimizations" />
+                <ui:NavigationViewItem Content="Gaming" Icon="{ui:SymbolIcon Games24}"
+                                       TargetPageType="{x:Type local:GamingPage}"
+                                       xmlns:local="clr-namespace:SysTuneX.App.Views" />
+                <ui:NavigationViewItem Content="Services" Icon="{ui:SymbolIcon AppsList24}"
+                                       TargetPageType="{x:Type local:ServicesPage}"
+                                       xmlns:local="clr-namespace:SysTuneX.App.Views" />
+                <ui:NavigationViewItem Content="Privacy" Icon="{ui:SymbolIcon Shield24}"
+                                       TargetPageType="{x:Type local:PrivacyPage}"
+                                       xmlns:local="clr-namespace:SysTuneX.App.Views" />
+                <ui:NavigationViewItem Content="Network" Icon="{ui:SymbolIcon Wifi124}"
+                                       TargetPageType="{x:Type local:NetworkPage}"
+                                       xmlns:local="clr-namespace:SysTuneX.App.Views" />
+                <ui:NavigationViewItem Content="Cleanup" Icon="{ui:SymbolIcon Delete24}"
+                                       TargetPageType="{x:Type local:CleanupPage}"
+                                       xmlns:local="clr-namespace:SysTuneX.App.Views" />
+            </ui:NavigationView.MenuItems>
+
+            <ui:NavigationView.ContentOverlay>
+                <Grid>
+                    <ui:TitleBar Title="SysTuneX" ShowMaximize="True" ShowMinimize="True" />
+                </Grid>
+            </ui:NavigationView.ContentOverlay>
+
+        </ui:NavigationView>
+
+    </Grid>
+</ui:FluentWindow>
