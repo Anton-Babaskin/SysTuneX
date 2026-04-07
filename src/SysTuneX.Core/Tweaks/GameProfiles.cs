@@ -19,9 +19,17 @@ public static class GameProfiles
                 "fullscreen_optimizations", "fullscreen_optimizations2",
                 "disable_mouse_accel", "disable_power_throttling",
                 "background_apps", "visual_fx", "transparency", "animations",
-                "nagle_disable", "tcp_ack_frequency", "network_throttling"
+                "sfio_priority", "service_kill_timeout",
+                "nagle_disable", "tcp_ack_frequency", "network_throttling",
+                // Win11-specific AI & search kills
+                "recall_block_hklm", "recall_disable_user", "recall_disable_system",
+                "click_to_do", "ai_settings_agent", "copilot_machine",
+                "bing_search_disable", "web_search_disable", "connected_search_web", "cortana_disable",
+                "widgets_taskbar_hide", "widgets_policy_disable", "phone_link_disable",
+                "startup_delay", "smart_clipboard",
             ],
-            ServiceNames = ["DiagTrack", "SysMain", "WSearch", "XblAuthManager", "XblGameSave", "XboxNetApiSvc"]
+            ServiceNames = ["DiagTrack", "SysMain", "WSearch", "XblAuthManager", "XblGameSave", "XboxNetApiSvc",
+                "Widgets", "CDPSvc", "CDPUserSvc", "PushToInstall"]
         },
         new GameProfile
         {
@@ -75,13 +83,19 @@ public static class GameProfiles
             Id = "maximum",
             Name = "Maximum Performance",
             IconGlyph = "\uE945",
-            Description = "Apply ALL optimizations — for maximum FPS at any cost",
+            Description = "Apply ALL optimizations including Win11 AI kills — for maximum FPS at any cost",
             TweakIds = GamingTweaks.All.Select(t => t.Id)
                 .Concat(NetworkTweaks.All.Select(t => t.Id))
+                .Concat(Windows11Tweaks.AiTweaks.Select(t => t.Id))
+                .Concat(Windows11Tweaks.SearchTweaks.Select(t => t.Id))
+                .Concat(Windows11Tweaks.WidgetsTweaks.Select(t => t.Id))
+                .Concat(Windows11Tweaks.ResponsivenessTweaks.Select(t => t.Id))
                 .ToList(),
             ServiceNames = ["DiagTrack", "SysMain", "WSearch", "Fax", "lfsvc", "MapsBroker",
                 "XblAuthManager", "XblGameSave", "XboxGipSvc", "XboxNetApiSvc",
-                "RetailDemo", "WMPNetworkSvc", "PhoneSvc", "dmwappushservice", "WerSvc"]
+                "RetailDemo", "WMPNetworkSvc", "PhoneSvc", "dmwappushservice", "WerSvc",
+                "Widgets", "WpnService", "CDPSvc", "CDPUserSvc", "PushToInstall",
+                "edgeupdate", "MicrosoftEdgeElevationService"]
         },
     ];
 }
