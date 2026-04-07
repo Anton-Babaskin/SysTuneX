@@ -59,8 +59,7 @@
                 <ui:NavigationViewItemHeader Content="Windows 11" />
                 <ui:NavigationViewItem Content="Win 11 Tweaks" Icon="{ui:SymbolIcon WindowsLogo16}"
                                        TargetPageType="{x:Type local:Windows11Page}"
-                                       xmlns:local="clr-namespace:SysTuneX.App.Views"
-                                       InfoBadge="{ui:InfoBadge Value='New', Severity=Caution}" />
+                                       xmlns:local="clr-namespace:SysTuneX.App.Views" />
             </ui:NavigationView.MenuItems>
 
             <ui:NavigationView.ContentOverlay>
