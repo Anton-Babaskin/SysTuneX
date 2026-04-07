@@ -1,0 +1,47 @@
+name: Build SysTuneX.exe
+
+on:
+  push:
+    branches: [ main, master, claude/game-optimizer-windows-tUXOU ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:   # allow manual trigger from GitHub UI
+
+jobs:
+  build:
+    name: Build Windows x64 Release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore SysTuneX.sln
+
+      - name: Publish single-file EXE
+        run: |
+          dotnet publish src\SysTuneX.App\SysTuneX.App.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained `
+            -p:PublishSingleFile=true `
+            -p:PublishReadyToRun=true `
+            -o publish
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SysTuneX-win-x64
+          path: publish\SysTuneX.exe
+          retention-days: 30
+
+      - name: Show file size
+        run: |
+          $size = (Get-Item publish\SysTuneX.exe).Length / 1MB
+          Write-Host "SysTuneX.exe size: $([math]::Round($size, 1)) MB"
