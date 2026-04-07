@@ -99,6 +99,16 @@ public static class GamingTweaks
         new("menu_show_delay", "Reduce Menu Show Delay", "Makes menus appear instantly",
             RiskLevel.Safe,
             @"HKCU\Control Panel\Desktop", "MenuShowDelay", "0", "400", RegistryValueKind.String),
+
+        new("sfio_priority", "SFIO High Priority for Games", "Prioritizes Storage I/O for game processes — faster texture/asset streaming",
+            RiskLevel.Moderate,
+            @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games",
+            "SFIO Priority", "High", "Normal", RegistryValueKind.String),
+
+        new("service_kill_timeout", "Faster Service Kill Timeout",
+            "Reduces time Windows waits for hanging services from 5s to 2s — faster game launch after boot",
+            RiskLevel.Safe,
+            @"HKLM\SYSTEM\CurrentControlSet\Control", "WaitToKillServiceTimeout", "2000", "5000", RegistryValueKind.String),
     ];
 
     public static TweakItem ToTweakItem(TweakDefinition def) => new()

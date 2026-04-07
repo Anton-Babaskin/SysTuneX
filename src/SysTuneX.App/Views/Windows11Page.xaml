@@ -1,0 +1,194 @@
+<Page x:Class="SysTuneX.App.Views.Windows11Page"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:helpers="clr-namespace:SysTuneX.App.Helpers"
+      Title="Windows 11">
+
+    <Page.Resources>
+        <helpers:RiskToBrushConverter x:Key="RiskToBrush" />
+        <helpers:StatusToBrushConverter x:Key="StatusToBrush" />
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Margin="24,16,24,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock Text="Windows 11 Tweaks" FontSize="28" FontWeight="Bold" />
+                <TextBlock Opacity="0.6" Margin="0,4,0,0">
+                    <Run Text="{Binding ViewModel.AppliedCount, Mode=OneWay}" />
+                    <Run Text="of" />
+                    <Run Text="{Binding ViewModel.TotalCount, Mode=OneWay}" />
+                    <Run Text="applied — targeting Win11-specific FPS killers" />
+                </TextBlock>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <ui:Button Content="Disable AI Only" Icon="{ui:SymbolIcon Bot24}"
+                           Margin="0,0,8,0"
+                           Command="{Binding ViewModel.ApplyAiOnlyCommand}" />
+                <ui:Button Content="Apply All" Icon="{ui:SymbolIcon CheckmarkCircle24}"
+                           Appearance="Primary" Margin="0,0,8,0"
+                           Command="{Binding ViewModel.ApplyAllCommand}" />
+                <ui:Button Content="Revert" Icon="{ui:SymbolIcon ArrowReset24}"
+                           Command="{Binding ViewModel.RevertAllCommand}" />
+            </StackPanel>
+        </Grid>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,12">
+            <StackPanel>
+
+                <!-- Restart warning -->
+                <ui:InfoBar Title="Restart required to apply VBS/HVCI changes"
+                            Message="VBS and Memory Integrity changes take effect after a system restart."
+                            IsOpen="{Binding ViewModel.RequiresRestartVisible}"
+                            Severity="Warning" Margin="0,0,0,12" IsClosable="True" />
+
+                <!-- VBS / HVCI Highlight Card -->
+                <ui:Card Margin="0,0,0,16" Padding="20">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Text="⚠️" FontSize="20" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <TextBlock Text="Biggest Win11 FPS Killer: VBS &amp; HVCI" FontSize="17"
+                                           FontWeight="Bold" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock TextWrapping="Wrap" Opacity="0.7" Margin="0,0,0,12">
+                                Virtualization-Based Security (VBS) and Memory Integrity (HVCI) are enabled by default
+                                on Windows 11. Independent benchmarks show 5–15% FPS loss across all games,
+                                up to 28% in CPU-heavy titles (Metro Exodus, Shadow of Tomb Raider).
+                                Even RTX 4090 systems are affected. Disabling requires a restart.
+                            </TextBlock>
+                            <StackPanel Orientation="Horizontal">
+                                <Border CornerRadius="4" Padding="8,4" Margin="0,0,8,0">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="#22FF4444" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ViewModel.VbsStatus}"
+                                                             Value="Applied">
+                                                    <Setter Property="Background" Value="#2220C020" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock FontSize="12">
+                                        <Run Text="VBS: " FontWeight="SemiBold" />
+                                        <Run Text="{Binding ViewModel.VbsStatus, Mode=OneWay}" />
+                                    </TextBlock>
+                                </Border>
+                                <Border CornerRadius="4" Padding="8,4">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="#22FF4444" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ViewModel.HvciStatus}"
+                                                             Value="Applied">
+                                                    <Setter Property="Background" Value="#2220C020" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock FontSize="12">
+                                        <Run Text="HVCI: " FontWeight="SemiBold" />
+                                        <Run Text="{Binding ViewModel.HvciStatus, Mode=OneWay}" />
+                                    </TextBlock>
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
+                        <ui:Button Grid.Column="1" Content="Disable VBS + HVCI"
+                                   Appearance="Danger" VerticalAlignment="Center"
+                                   Icon="{ui:SymbolIcon Shield24}"
+                                   Command="{Binding ViewModel.ApplyVbsCommand}" />
+                    </Grid>
+                </ui:Card>
+
+                <!-- Grouped Tweak Sections -->
+                <ItemsControl ItemsSource="{Binding ViewModel.Groups}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="0,0,0,16">
+                                <!-- Group Header -->
+                                <TextBlock Text="{Binding GroupName}"
+                                           FontSize="15" FontWeight="SemiBold"
+                                           Margin="0,0,0,8" Opacity="0.85" />
+
+                                <!-- Group Tweaks -->
+                                <ItemsControl ItemsSource="{Binding Tweaks}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <ui:Card Margin="0,0,0,5" Padding="14,10">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <StackPanel VerticalAlignment="Center">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding Name}"
+                                                                       FontWeight="SemiBold" FontSize="13" />
+                                                            <Border Margin="8,0,0,0" CornerRadius="4" Padding="5,2"
+                                                                    VerticalAlignment="Center">
+                                                                <Border.Background>
+                                                                    <SolidColorBrush
+                                                                        Color="{Binding Risk, Converter={StaticResource RiskToBrush}}"
+                                                                        Opacity="0.2" />
+                                                                </Border.Background>
+                                                                <TextBlock Text="{Binding Risk}" FontSize="10"
+                                                                           Foreground="{Binding Risk, Converter={StaticResource RiskToBrush}}" />
+                                                            </Border>
+                                                        </StackPanel>
+                                                        <TextBlock Text="{Binding Description}"
+                                                                   Opacity="0.5" FontSize="11"
+                                                                   Margin="0,2,0,0"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   TextWrapping="Wrap"
+                                                                   MaxWidth="620" />
+                                                    </StackPanel>
+
+                                                    <Ellipse Grid.Column="1" Width="8" Height="8" Margin="12,0"
+                                                             Fill="{Binding Status, Converter={StaticResource StatusToBrush}}"
+                                                             VerticalAlignment="Center" />
+
+                                                    <ui:ToggleSwitch Grid.Column="2"
+                                                                     IsChecked="{Binding IsEnabled}"
+                                                                     VerticalAlignment="Center"
+                                                                     Command="{Binding DataContext.ViewModel.ToggleTweakCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                                     CommandParameter="{Binding}" />
+                                                </Grid>
+                                            </ui:Card>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Loading Overlay -->
+        <Grid Grid.RowSpan="2" Background="#88000000"
+              Visibility="{Binding ViewModel.IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ui:ProgressRing IsIndeterminate="True" Width="48" Height="48" />
+                <TextBlock Text="Applying changes..." Margin="0,12,0,0" FontSize="14" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

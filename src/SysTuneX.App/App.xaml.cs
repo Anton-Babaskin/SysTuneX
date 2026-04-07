@@ -35,6 +35,7 @@ public partial class App : Application
                 services.AddTransient<NetworkViewModel>();
                 services.AddTransient<CleanupViewModel>();
                 services.AddTransient<ProfilesViewModel>();
+                services.AddTransient<Windows11ViewModel>();
 
                 // Views
                 services.AddSingleton<MainWindow>();
@@ -45,6 +46,7 @@ public partial class App : Application
                 services.AddTransient<NetworkPage>();
                 services.AddTransient<CleanupPage>();
                 services.AddTransient<ProfilesPage>();
+                services.AddTransient<Windows11Page>();
             })
             .Build();
     }

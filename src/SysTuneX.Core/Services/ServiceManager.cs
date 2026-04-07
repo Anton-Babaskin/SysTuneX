@@ -28,6 +28,18 @@ public class ServiceManager : IServiceManager
         ("dmwappushservice", "WAP Push Message Routing", "Telemetry routing service", RiskLevel.Safe),
         ("TabletInputService", "Touch Keyboard and Handwriting Panel", "Tablet input — not needed on desktop", RiskLevel.Moderate),
         ("WerSvc", "Windows Error Reporting", "Crash reporting to Microsoft", RiskLevel.Safe),
+
+        // Windows 11 specific
+        ("Widgets", "Windows Widgets Service", "Win11 Widgets — fetches live news/weather in background, wastes CPU and network", RiskLevel.Safe),
+        ("WpnService", "Windows Push Notification", "Push notification system — not needed when gaming", RiskLevel.Moderate),
+        ("cbdhsvc", "Clipboard User Service", "Cloud clipboard sync with Microsoft servers", RiskLevel.Moderate),
+        ("WbioSrvc", "Windows Biometric Service", "Fingerprint/face recognition — not needed on desktops without biometrics", RiskLevel.Moderate),
+        ("OneSyncSvc", "Sync Host Service", "Syncs mail, contacts, calendar in background — OneDrive sync overhead", RiskLevel.Moderate),
+        ("CDPSvc", "Connected Devices Platform", "Connects Windows devices and phone — background scanning", RiskLevel.Safe),
+        ("CDPUserSvc", "Connected Devices Platform (User)", "User-level connected devices background service", RiskLevel.Safe),
+        ("PushToInstall", "Windows PushToInstall", "Installs apps pushed from Microsoft Store remotely", RiskLevel.Safe),
+        ("MicrosoftEdgeElevationService", "Microsoft Edge Elevation Service", "Edge auto-update service running in background", RiskLevel.Safe),
+        ("edgeupdate", "Microsoft Edge Update", "Checks for Edge updates — runs periodically", RiskLevel.Safe),
     ];
 
     public ServiceManager(ILogger<ServiceManager> logger)
