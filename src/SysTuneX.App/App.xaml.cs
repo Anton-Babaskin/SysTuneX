@@ -31,7 +31,7 @@ public partial class App : Application
             .ConfigureServices((_, services) =>
             {
                 // Navigation
-                services.AddSingleton<IPageService, PageService>();
+                services.AddSingleton<IPageService>(sp => new PageService(sp));
                 services.AddSingleton<INavigationService, NavigationService>();
 
                 // Core services
