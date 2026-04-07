@@ -15,7 +15,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel>
                     <TextBlock Text="Dashboard" FontSize="28" FontWeight="Bold" />
-                    <TextBlock Text="System overview and quick optimization" Opacity="0.6" Margin="0,4,0,0" />
+                    <TextBlock Text="System overview and quick optimization" Foreground="#99FFFFFF" Margin="0,4,0,0" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:Button Content="Quick Optimize" Icon="{ui:SymbolIcon Flash24}"
@@ -36,7 +36,7 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Grid Width="80" Height="80" Margin="0,0,20,0">
-                        <ui:ProgressRing Value="{Binding ViewModel.OptimizationScore}"
+                        <ui:ProgressRing Progress="{Binding ViewModel.OptimizationScore}"
                                          IsIndeterminate="False" Width="80" Height="80" />
                         <TextBlock Text="{Binding ViewModel.OptimizationScore, StringFormat='{}{0:F0}%'}"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -44,7 +44,7 @@
                     </Grid>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock Text="Optimization Score" FontSize="18" FontWeight="SemiBold" />
-                        <TextBlock Opacity="0.6" Margin="0,4,0,0"
+                        <TextBlock Foreground="#99FFFFFF" Margin="0,4,0,0"
                                    Text="Based on applied tweaks, disabled services, and power plan" />
                     </StackPanel>
                     <ui:Button Grid.Column="2" Content="Clean RAM" Icon="{ui:SymbolIcon Ram20}"
@@ -58,12 +58,12 @@
                 <!-- CPU -->
                 <ui:Card Margin="0,0,8,0">
                     <StackPanel>
-                        <TextBlock Text="CPU Usage" Opacity="0.6" FontSize="12" />
+                        <TextBlock Text="CPU Usage" Foreground="#99FFFFFF" FontSize="12" />
                         <TextBlock FontSize="24" FontWeight="Bold" Margin="0,4,0,0">
                             <Run Text="{Binding ViewModel.CpuUsage, StringFormat='{}{0:F0}'}" />
-                            <Run Text="%" FontSize="14" Opacity="0.6" />
+                            <Run Text="%" FontSize="14" Foreground="#99FFFFFF" />
                         </TextBlock>
-                        <TextBlock Text="{Binding ViewModel.CpuName}" Opacity="0.5" FontSize="11"
+                        <TextBlock Text="{Binding ViewModel.CpuName}" Foreground="#80FFFFFF" FontSize="11"
                                    TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                 </ui:Card>
@@ -71,12 +71,12 @@
                 <!-- RAM -->
                 <ui:Card Margin="4,0,4,0">
                     <StackPanel>
-                        <TextBlock Text="RAM Usage" Opacity="0.6" FontSize="12" />
+                        <TextBlock Text="RAM Usage" Foreground="#99FFFFFF" FontSize="12" />
                         <TextBlock FontSize="24" FontWeight="Bold" Margin="0,4,0,0">
                             <Run Text="{Binding ViewModel.RamUsedMb, StringFormat='{}{0:N0}'}" />
-                            <Run Text="MB" FontSize="14" Opacity="0.6" />
+                            <Run Text="MB" FontSize="14" Foreground="#99FFFFFF" />
                         </TextBlock>
-                        <TextBlock Opacity="0.5" FontSize="11">
+                        <TextBlock Foreground="#80FFFFFF" FontSize="11">
                             <Run Text="of" />
                             <Run Text="{Binding ViewModel.RamTotalMb, StringFormat='{}{0:N0}'}" />
                             <Run Text="MB" />
@@ -87,26 +87,26 @@
                 <!-- Tweaks -->
                 <ui:Card Margin="4,0,4,0">
                     <StackPanel>
-                        <TextBlock Text="Tweaks Applied" Opacity="0.6" FontSize="12" />
+                        <TextBlock Text="Tweaks Applied" Foreground="#99FFFFFF" FontSize="12" />
                         <TextBlock FontSize="24" FontWeight="Bold" Margin="0,4,0,0">
                             <Run Text="{Binding ViewModel.AppliedTweaksCount}" />
-                            <Run Text="/" FontSize="14" Opacity="0.6" />
-                            <Run Text="{Binding ViewModel.TotalTweaksCount}" FontSize="14" Opacity="0.6" />
+                            <Run Text="/" FontSize="14" Foreground="#99FFFFFF" />
+                            <Run Text="{Binding ViewModel.TotalTweaksCount}" FontSize="14" Foreground="#99FFFFFF" />
                         </TextBlock>
-                        <TextBlock Text="Gaming optimizations" Opacity="0.5" FontSize="11" />
+                        <TextBlock Text="Gaming optimizations" Foreground="#80FFFFFF" FontSize="11" />
                     </StackPanel>
                 </ui:Card>
 
                 <!-- Services -->
                 <ui:Card Margin="8,0,0,0">
                     <StackPanel>
-                        <TextBlock Text="Services Stopped" Opacity="0.6" FontSize="12" />
+                        <TextBlock Text="Services Stopped" Foreground="#99FFFFFF" FontSize="12" />
                         <TextBlock FontSize="24" FontWeight="Bold" Margin="0,4,0,0">
                             <Run Text="{Binding ViewModel.StoppedServicesCount}" />
-                            <Run Text="/" FontSize="14" Opacity="0.6" />
-                            <Run Text="{Binding ViewModel.TotalServicesCount}" FontSize="14" Opacity="0.6" />
+                            <Run Text="/" FontSize="14" Foreground="#99FFFFFF" />
+                            <Run Text="{Binding ViewModel.TotalServicesCount}" FontSize="14" Foreground="#99FFFFFF" />
                         </TextBlock>
-                        <TextBlock Text="Unnecessary services" Opacity="0.5" FontSize="11" />
+                        <TextBlock Text="Unnecessary services" Foreground="#80FFFFFF" FontSize="11" />
                     </StackPanel>
                 </ui:Card>
             </UniformGrid>
@@ -117,19 +117,19 @@
                     <TextBlock Text="System Information" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12" />
                     <UniformGrid Columns="2">
                         <StackPanel Margin="0,0,0,8">
-                            <TextBlock Text="GPU" Opacity="0.6" FontSize="12" />
+                            <TextBlock Text="GPU" Foreground="#99FFFFFF" FontSize="12" />
                             <TextBlock Text="{Binding ViewModel.GpuName}" FontWeight="SemiBold" />
                         </StackPanel>
                         <StackPanel Margin="0,0,0,8">
-                            <TextBlock Text="Power Plan" Opacity="0.6" FontSize="12" />
+                            <TextBlock Text="Power Plan" Foreground="#99FFFFFF" FontSize="12" />
                             <TextBlock Text="{Binding ViewModel.PowerPlan}" FontWeight="SemiBold" />
                         </StackPanel>
                         <StackPanel Margin="0,0,0,8">
-                            <TextBlock Text="RAM" Opacity="0.6" FontSize="12" />
+                            <TextBlock Text="RAM" Foreground="#99FFFFFF" FontSize="12" />
                             <TextBlock Text="{Binding ViewModel.RamInfo}" FontWeight="SemiBold" />
                         </StackPanel>
                         <StackPanel Margin="0,0,0,8">
-                            <TextBlock Text="Processes Running" Opacity="0.6" FontSize="12" />
+                            <TextBlock Text="Processes Running" Foreground="#99FFFFFF" FontSize="12" />
                             <TextBlock Text="{Binding ViewModel.RunningProcesses}" FontWeight="SemiBold" />
                         </StackPanel>
                     </UniformGrid>
