@@ -39,7 +39,7 @@
                                        TargetPageType="{x:Type local:ProfilesPage}"
                                        xmlns:local="clr-namespace:SysTuneX.App.Views" />
                 <ui:NavigationViewItemSeparator />
-                <ui:NavigationViewItemHeader Content="Optimizations" />
+                <ui:NavigationViewItemHeader>Optimizations</ui:NavigationViewItemHeader>
                 <ui:NavigationViewItem Content="Gaming" Icon="{ui:SymbolIcon Games24}"
                                        TargetPageType="{x:Type local:GamingPage}"
                                        xmlns:local="clr-namespace:SysTuneX.App.Views" />
@@ -56,7 +56,7 @@
                                        TargetPageType="{x:Type local:CleanupPage}"
                                        xmlns:local="clr-namespace:SysTuneX.App.Views" />
                 <ui:NavigationViewItemSeparator />
-                <ui:NavigationViewItemHeader Content="Windows 11" />
+                <ui:NavigationViewItemHeader>Windows 11</ui:NavigationViewItemHeader>
                 <ui:NavigationViewItem Content="Win 11 Tweaks" Icon="{ui:SymbolIcon WindowsLogo16}"
                                        TargetPageType="{x:Type local:Windows11Page}"
                                        xmlns:local="clr-namespace:SysTuneX.App.Views" />
