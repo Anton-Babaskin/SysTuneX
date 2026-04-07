@@ -41,6 +41,7 @@
 
             <!-- Converters -->
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <helpers:InverseBooleanConverter x:Key="InverseBooleanConverter" />
             <helpers:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
             <helpers:ZeroToVisibilityConverter x:Key="IntToVisibilityConverter" />
             <helpers:NonEmptyStringToBoolConverter x:Key="IntToBoolConverter" />
