@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using SysTuneX.App.ViewModels;
 using SysTuneX.App.Views;
 using SysTuneX.Core.Services;
+using Wpf.Ui;
 
 namespace SysTuneX.App;
 
@@ -13,9 +14,26 @@ public partial class App : Application
 
     public App()
     {
+        DispatcherUnhandledException += (_, args) =>
+        {
+            MessageBox.Show($"Unhandled error:\n\n{args.Exception}", "SysTuneX Error",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+            args.Handled = true;
+        };
+
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+        {
+            MessageBox.Show($"Fatal error:\n\n{args.ExceptionObject}", "SysTuneX Fatal Error",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        };
+
         _host = Host.CreateDefaultBuilder()
             .ConfigureServices((_, services) =>
             {
+                // Navigation
+                services.AddSingleton<IPageService, PageService>();
+                services.AddSingleton<INavigationService, NavigationService>();
+
                 // Core services
                 services.AddSingleton<IRegistryService, RegistryService>();
                 services.AddSingleton<IServiceManager, ServiceManager>();

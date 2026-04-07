@@ -10,14 +10,9 @@
         WindowBackdropType="Mica">
 
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
 
-        <!-- Sidebar Navigation -->
+        <!-- Navigation fills entire window; NavigationView manages sidebar + content internally -->
         <ui:NavigationView x:Name="RootNavigation"
-                           Grid.Column="0"
                            PaneDisplayMode="Left"
                            IsBackButtonVisible="Collapsed"
                            IsPaneToggleVisible="True"

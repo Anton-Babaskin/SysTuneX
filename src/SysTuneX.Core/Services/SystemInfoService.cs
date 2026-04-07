@@ -14,8 +14,16 @@ public class SystemInfoService : ISystemInfoService
     public SystemInfoService(ILogger<SystemInfoService> logger)
     {
         _logger = logger;
-        _cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
-        _cpuCounter.NextValue(); // first call always returns 0
+        try
+        {
+            _cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+            _cpuCounter.NextValue(); // first call always returns 0
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "CPU performance counter unavailable");
+            _cpuCounter = null!;
+        }
     }
 
     public HardwareInfo GetHardwareInfo()
@@ -78,7 +86,7 @@ public class SystemInfoService : ISystemInfoService
     {
         try
         {
-            var cpuUsage = _cpuCounter.NextValue();
+            var cpuUsage = _cpuCounter?.NextValue() ?? 0f;
             var gcInfo = GC.GetGCMemoryInfo();
             var totalRam = gcInfo.TotalAvailableMemoryBytes / (1024 * 1024);
 
