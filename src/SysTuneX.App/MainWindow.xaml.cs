@@ -9,21 +9,18 @@ public partial class MainWindow : FluentWindow
 {
     public MainViewModel ViewModel { get; }
 
-    private readonly INavigationService _navigationService;
-
-    public MainWindow(MainViewModel viewModel, INavigationService navigationService, IPageService pageService)
+    public MainWindow(MainViewModel viewModel, IPageService pageService)
     {
         ViewModel = viewModel;
-        _navigationService = navigationService;
         DataContext = this;
         InitializeComponent();
 
         RootNavigation.SetPageService(pageService);
-        _navigationService.SetNavigationControl(RootNavigation);
 
         Loaded += (_, _) =>
         {
-            _navigationService.Navigate(typeof(DashboardPage));
+            RootNavigation.Navigate(typeof(DashboardPage));
         };
     }
 }
+

@@ -5,7 +5,6 @@ using SysTuneX.App.Services;
 using SysTuneX.App.ViewModels;
 using SysTuneX.App.Views;
 using SysTuneX.Core.Services;
-using Wpf.Ui;
 
 namespace SysTuneX.App;
 
@@ -33,7 +32,6 @@ public partial class App : Application
             {
                 // Navigation
                 services.AddSingleton<IPageService>(sp => new PageService(sp));
-                services.AddSingleton<INavigationService, NavigationService>();
 
                 // Core services
                 services.AddSingleton<IRegistryService, RegistryService>();
