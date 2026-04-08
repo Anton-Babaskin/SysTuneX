@@ -5,6 +5,7 @@ using SysTuneX.App.Services;
 using SysTuneX.App.ViewModels;
 using SysTuneX.App.Views;
 using SysTuneX.Core.Services;
+using Wpf.Ui;
 
 namespace SysTuneX.App;
 
