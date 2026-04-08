@@ -1,11 +1,9 @@
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SysTuneX.App.Services;
 using SysTuneX.App.ViewModels;
 using SysTuneX.App.Views;
 using SysTuneX.Core.Services;
-using Wpf.Ui;
 
 namespace SysTuneX.App;
 
@@ -31,9 +29,6 @@ public partial class App : Application
         _host = Host.CreateDefaultBuilder()
             .ConfigureServices((_, services) =>
             {
-                // Navigation
-                services.AddSingleton<IPageService>(sp => new PageService(sp));
-
                 // Core services
                 services.AddSingleton<IRegistryService, RegistryService>();
                 services.AddSingleton<IServiceManager, ServiceManager>();
@@ -71,12 +66,19 @@ public partial class App : Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
-        await _host.StartAsync();
-
-        var mainWindow = _host.Services.GetRequiredService<MainWindow>();
-        mainWindow.Show();
-
-        base.OnStartup(e);
+        try
+        {
+            await _host.StartAsync();
+            var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+            mainWindow.Show();
+            base.OnStartup(e);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Startup error:\n\n{ex}", "SysTuneX",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+            Shutdown(1);
+        }
     }
 
     protected override async void OnExit(ExitEventArgs e)
