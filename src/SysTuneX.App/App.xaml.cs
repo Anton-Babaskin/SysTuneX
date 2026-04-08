@@ -1,6 +1,7 @@
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SysTuneX.App.Services;
 using SysTuneX.App.ViewModels;
 using SysTuneX.App.Views;
 using SysTuneX.Core.Services;
