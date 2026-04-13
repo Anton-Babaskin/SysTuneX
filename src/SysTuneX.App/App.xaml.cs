@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -11,10 +12,34 @@ public partial class App : Application
 {
     private readonly IHost _host;
 
+    private static readonly string _log = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "SysTuneX_debug.log");
+
+    public static void Log(string msg)
+    {
+        try { File.AppendAllText(_log, $"[{DateTime.Now:HH:mm:ss.fff}] {msg}\n"); } catch { }
+    }
+
+    // Static constructor — runs before App() constructor
+    static App()
+    {
+        try
+        {
+            File.WriteAllText(
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                    "SysTuneX_debug.log"),
+                $"[{DateTime.Now:HH:mm:ss.fff}] App class loaded\n");
+        }
+        catch { }
+    }
+
     public App()
     {
+        Log("App() constructor start");
+
         DispatcherUnhandledException += (_, args) =>
         {
+            Log($"DispatcherUnhandledException: {args.Exception}");
             MessageBox.Show($"Unhandled error:\n\n{args.Exception}", "SysTuneX Error",
                 MessageBoxButton.OK, MessageBoxImage.Error);
             args.Handled = true;
@@ -22,59 +47,87 @@ public partial class App : Application
 
         AppDomain.CurrentDomain.UnhandledException += (_, args) =>
         {
-            MessageBox.Show($"Fatal error:\n\n{args.ExceptionObject}", "SysTuneX Fatal Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            Log($"AppDomain.UnhandledException: {args.ExceptionObject}");
+            try
+            {
+                MessageBox.Show($"Fatal error:\n\n{args.ExceptionObject}", "SysTuneX Fatal Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch { }
         };
 
-        _host = Host.CreateDefaultBuilder()
-            .ConfigureServices((_, services) =>
-            {
-                // Core services
-                services.AddSingleton<IRegistryService, RegistryService>();
-                services.AddSingleton<IServiceManager, ServiceManager>();
-                services.AddSingleton<ISystemInfoService, SystemInfoService>();
-                services.AddSingleton<IProcessService, ProcessService>();
-                services.AddSingleton<IPowerService, PowerService>();
-                services.AddSingleton<IPrivacyService, PrivacyService>();
-                services.AddSingleton<INetworkService, NetworkService>();
-                services.AddSingleton<ICleanupService, CleanupService>();
+        Log("Exception handlers registered");
 
-                // ViewModels
-                services.AddSingleton<MainViewModel>();
-                services.AddTransient<DashboardViewModel>();
-                services.AddTransient<GamingViewModel>();
-                services.AddTransient<ServicesViewModel>();
-                services.AddTransient<PrivacyViewModel>();
-                services.AddTransient<NetworkViewModel>();
-                services.AddTransient<CleanupViewModel>();
-                services.AddTransient<ProfilesViewModel>();
-                services.AddTransient<Windows11ViewModel>();
+        try
+        {
+            _host = Host.CreateDefaultBuilder()
+                .ConfigureServices((_, services) =>
+                {
+                    // Core services
+                    services.AddSingleton<IRegistryService, RegistryService>();
+                    services.AddSingleton<IServiceManager, ServiceManager>();
+                    services.AddSingleton<ISystemInfoService, SystemInfoService>();
+                    services.AddSingleton<IProcessService, ProcessService>();
+                    services.AddSingleton<IPowerService, PowerService>();
+                    services.AddSingleton<IPrivacyService, PrivacyService>();
+                    services.AddSingleton<INetworkService, NetworkService>();
+                    services.AddSingleton<ICleanupService, CleanupService>();
 
-                // Views
-                services.AddSingleton<MainWindow>();
-                services.AddTransient<DashboardPage>();
-                services.AddTransient<GamingPage>();
-                services.AddTransient<ServicesPage>();
-                services.AddTransient<PrivacyPage>();
-                services.AddTransient<NetworkPage>();
-                services.AddTransient<CleanupPage>();
-                services.AddTransient<ProfilesPage>();
-                services.AddTransient<Windows11Page>();
-            })
-            .Build();
+                    // ViewModels
+                    services.AddSingleton<MainViewModel>();
+                    services.AddTransient<DashboardViewModel>();
+                    services.AddTransient<GamingViewModel>();
+                    services.AddTransient<ServicesViewModel>();
+                    services.AddTransient<PrivacyViewModel>();
+                    services.AddTransient<NetworkViewModel>();
+                    services.AddTransient<CleanupViewModel>();
+                    services.AddTransient<ProfilesViewModel>();
+                    services.AddTransient<Windows11ViewModel>();
+
+                    // Views
+                    services.AddSingleton<MainWindow>();
+                    services.AddTransient<DashboardPage>();
+                    services.AddTransient<GamingPage>();
+                    services.AddTransient<ServicesPage>();
+                    services.AddTransient<PrivacyPage>();
+                    services.AddTransient<NetworkPage>();
+                    services.AddTransient<CleanupPage>();
+                    services.AddTransient<ProfilesPage>();
+                    services.AddTransient<Windows11Page>();
+                })
+                .Build();
+
+            Log("Host built successfully");
+        }
+        catch (Exception ex)
+        {
+            Log($"CRASH in host.Build(): {ex}");
+            MessageBox.Show($"Failed to initialize app:\n\n{ex}", "SysTuneX",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+            throw;
+        }
     }
 
     protected override async void OnStartup(StartupEventArgs e)
     {
+        Log("OnStartup called");
         try
         {
             await _host.StartAsync();
+            Log("Host started");
+
             var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+            Log("MainWindow resolved from DI");
+
             mainWindow.Show();
+            Log("mainWindow.Show() called");
+
             base.OnStartup(e);
+            Log("base.OnStartup done");
         }
         catch (Exception ex)
         {
+            Log($"OnStartup CRASH: {ex}");
             MessageBox.Show($"Startup error:\n\n{ex}", "SysTuneX",
                 MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
@@ -83,6 +136,7 @@ public partial class App : Application
 
     protected override async void OnExit(ExitEventArgs e)
     {
+        Log("OnExit called");
         await _host.StopAsync();
         _host.Dispose();
         base.OnExit(e);
