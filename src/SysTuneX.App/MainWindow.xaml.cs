@@ -1,7 +1,7 @@
 using SysTuneX.App.ViewModels;
 using SysTuneX.App.Views;
-using System.Windows;
 using Wpf.Ui.Controls;
+using MW = System.Windows;
 
 namespace SysTuneX.App;
 
@@ -23,8 +23,8 @@ public partial class MainWindow : FluentWindow
         catch (Exception ex)
         {
             App.Log($"MainWindow.InitializeComponent() CRASH: {ex}");
-            MessageBox.Show($"MainWindow XAML error:\n\n{ex}", "SysTuneX",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            MW.MessageBox.Show($"MainWindow XAML error:\n\n{ex}", "SysTuneX",
+                MW.MessageBoxButton.OK, MW.MessageBoxImage.Error);
             throw;
         }
 
@@ -49,8 +49,8 @@ public partial class MainWindow : FluentWindow
             catch (Exception ex)
             {
                 App.Log($"Navigate CRASH: {ex}");
-                MessageBox.Show($"Navigation error:\n\n{ex}", "SysTuneX",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                MW.MessageBox.Show($"Navigation error:\n\n{ex}", "SysTuneX",
+                    MW.MessageBoxButton.OK, MW.MessageBoxImage.Error);
             }
         };
 
