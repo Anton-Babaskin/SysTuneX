@@ -50,7 +50,7 @@
                                        TargetPageType="{x:Type local:CleanupPage}"
                                        xmlns:local="clr-namespace:SysTuneX.App.Views" />
                 <ui:NavigationViewItemSeparator />
-                <ui:NavigationViewItem Content="Win 11 Tweaks" Icon="{ui:SymbolIcon WindowsLogo16}"
+                <ui:NavigationViewItem Content="Win 11 Tweaks" Icon="{ui:SymbolIcon Desktop24}"
                                        TargetPageType="{x:Type local:Windows11Page}"
                                        xmlns:local="clr-namespace:SysTuneX.App.Views" />
             </ui:NavigationView.MenuItems>
