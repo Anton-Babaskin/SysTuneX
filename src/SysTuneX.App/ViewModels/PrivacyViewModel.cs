@@ -48,9 +48,9 @@ public partial class PrivacyViewModel : ObservableObject
         await Task.Run(() =>
         {
             if (item.IsEnabled)
-                PrivacyTweaks.Revert(def, _registry);
-            else
                 PrivacyTweaks.Apply(def, _registry);
+            else
+                PrivacyTweaks.Revert(def, _registry);
         });
         item.Status = PrivacyTweaks.CheckStatus(def, _registry);
         item.IsEnabled = item.Status == TweakStatus.Applied;

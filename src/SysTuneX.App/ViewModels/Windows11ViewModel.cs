@@ -68,9 +68,9 @@ public partial class Windows11ViewModel : ObservableObject
         await Task.Run(() =>
         {
             if (item.IsEnabled)
-                Windows11Tweaks.Revert(def, _registry);
-            else
                 Windows11Tweaks.Apply(def, _registry);
+            else
+                Windows11Tweaks.Revert(def, _registry);
         });
 
         item.Status = Windows11Tweaks.CheckStatus(def, _registry);

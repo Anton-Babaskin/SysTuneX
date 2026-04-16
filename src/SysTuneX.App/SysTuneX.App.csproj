@@ -11,6 +11,7 @@
     <Version>1.0.0</Version>
     <Authors>Anton Babaskin</Authors>
     <Description>Windows 11 Game Optimizer</Description>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>

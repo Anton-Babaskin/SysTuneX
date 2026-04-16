@@ -54,9 +54,9 @@ public partial class NetworkViewModel : ObservableObject
         await Task.Run(() =>
         {
             if (item.IsEnabled)
-                NetworkTweaks.Revert(def, _registry);
-            else
                 NetworkTweaks.Apply(def, _registry);
+            else
+                NetworkTweaks.Revert(def, _registry);
         });
         item.Status = NetworkTweaks.CheckStatus(def, _registry);
         item.IsEnabled = item.Status == TweakStatus.Applied;

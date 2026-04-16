@@ -46,9 +46,9 @@ public partial class GamingViewModel : ObservableObject
         await Task.Run(() =>
         {
             if (item.IsEnabled)
-                GamingTweaks.Revert(def, _registry);
-            else
                 GamingTweaks.Apply(def, _registry);
+            else
+                GamingTweaks.Revert(def, _registry);
         });
 
         item.Status = GamingTweaks.CheckStatus(def, _registry);
