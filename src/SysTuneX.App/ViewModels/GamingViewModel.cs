@@ -10,6 +10,7 @@ namespace SysTuneX.App.ViewModels;
 public partial class GamingViewModel : ObservableObject
 {
     private readonly IRegistryService _registry;
+    private readonly IRestorePointService _restorePoint;
 
     public ObservableCollection<TweakItem> Tweaks { get; } = [];
 
@@ -17,9 +18,10 @@ public partial class GamingViewModel : ObservableObject
     [ObservableProperty] private int _appliedCount;
     [ObservableProperty] private int _totalCount;
 
-    public GamingViewModel(IRegistryService registry)
+    public GamingViewModel(IRegistryService registry, IRestorePointService restorePoint)
     {
         _registry = registry;
+        _restorePoint = restorePoint;
     }
 
     public void Initialize()
@@ -61,6 +63,7 @@ public partial class GamingViewModel : ObservableObject
     private async Task ApplyAll()
     {
         IsBusy = true;
+        await _restorePoint.CreateAsync("SysTuneX — before Gaming Apply All");
         await Task.Run(() =>
         {
             foreach (var def in GamingTweaks.All)

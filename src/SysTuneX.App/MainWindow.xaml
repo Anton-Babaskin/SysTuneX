@@ -11,7 +11,6 @@
 
     <Grid>
 
-        <!-- Navigation fills entire window; NavigationView manages sidebar + content internally -->
         <ui:NavigationView x:Name="RootNavigation"
                            PaneDisplayMode="Left"
                            IsBackButtonVisible="Collapsed"
@@ -19,11 +18,36 @@
                            OpenPaneLength="220">
 
             <ui:NavigationView.Header>
-                <StackPanel Orientation="Horizontal" Margin="12,8">
-                    <ui:SymbolIcon Symbol="TopSpeed24" FontSize="28" Foreground="{StaticResource AccentBrush}" />
-                    <TextBlock Text="SysTuneX" FontSize="20" FontWeight="Bold" Margin="10,0,0,0"
-                               VerticalAlignment="Center" />
-                </StackPanel>
+                <Grid Margin="12,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Logo -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Viewbox Width="28" Height="28">
+                            <Canvas Width="24" Height="24">
+                                <!-- Lightning bolt icon -->
+                                <Path Fill="{StaticResource AccentBrush}"
+                                      Data="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z" />
+                            </Canvas>
+                        </Viewbox>
+                        <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="SysTuneX" FontSize="18" FontWeight="Bold" LineHeight="20" />
+                            <TextBlock Text="Game Optimizer" FontSize="10" Opacity="0.5" LineHeight="12" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Theme toggle -->
+                    <ui:Button x:Name="ThemeToggleButton" Grid.Column="1"
+                               VerticalAlignment="Center"
+                               Appearance="Transparent"
+                               Click="ThemeToggle_Click"
+                               ToolTip="Toggle dark/light theme">
+                        <ui:SymbolIcon x:Name="ThemeIcon" Symbol="WeatherMoon24" FontSize="18" />
+                    </ui:Button>
+                </Grid>
             </ui:NavigationView.Header>
 
             <ui:NavigationView.MenuItems>
@@ -32,6 +56,9 @@
                                        xmlns:local="clr-namespace:SysTuneX.App.Views" />
                 <ui:NavigationViewItem Content="Game Profiles" Icon="{ui:SymbolIcon XboxController24}"
                                        TargetPageType="{x:Type local:ProfilesPage}"
+                                       xmlns:local="clr-namespace:SysTuneX.App.Views" />
+                <ui:NavigationViewItem Content="Startup" Icon="{ui:SymbolIcon Rocket24}"
+                                       TargetPageType="{x:Type local:StartupPage}"
                                        xmlns:local="clr-namespace:SysTuneX.App.Views" />
                 <ui:NavigationViewItemSeparator />
                 <ui:NavigationViewItem Content="Gaming" Icon="{ui:SymbolIcon Games24}"

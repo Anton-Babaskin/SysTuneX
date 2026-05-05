@@ -10,8 +10,8 @@ namespace SysTuneX.App.ViewModels;
 public partial class Windows11ViewModel : ObservableObject
 {
     private readonly IRegistryService _registry;
+    private readonly IRestorePointService _restorePoint;
 
-    // Grouped collections for the UI
     public ObservableCollection<TweakGroupViewModel> Groups { get; } = [];
 
     [ObservableProperty] private bool _isBusy;
@@ -23,9 +23,10 @@ public partial class Windows11ViewModel : ObservableObject
     [ObservableProperty] private TweakStatus _vbsStatus = TweakStatus.Unknown;
     [ObservableProperty] private TweakStatus _hvciStatus = TweakStatus.Unknown;
 
-    public Windows11ViewModel(IRegistryService registry)
+    public Windows11ViewModel(IRegistryService registry, IRestorePointService restorePoint)
     {
         _registry = registry;
+        _restorePoint = restorePoint;
     }
 
     public void Initialize()
@@ -85,6 +86,7 @@ public partial class Windows11ViewModel : ObservableObject
     private async Task ApplyAll()
     {
         IsBusy = true;
+        await _restorePoint.CreateAsync("SysTuneX — before Win11 Apply All");
         await Task.Run(() =>
         {
             foreach (var def in Windows11Tweaks.All)
@@ -117,6 +119,7 @@ public partial class Windows11ViewModel : ObservableObject
     private async Task ApplyVbs()
     {
         IsBusy = true;
+        await _restorePoint.CreateAsync("SysTuneX — before VBS/HVCI disable");
         await Task.Run(() =>
         {
             foreach (var def in Windows11Tweaks.SecurityTweaks)

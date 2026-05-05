@@ -1,5 +1,8 @@
+using System.ComponentModel;
+using System.Windows;
 using SysTuneX.App.ViewModels;
 using SysTuneX.App.Views;
+using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 using MW = System.Windows;
 
@@ -8,6 +11,8 @@ namespace SysTuneX.App;
 public partial class MainWindow : FluentWindow
 {
     public MainViewModel ViewModel { get; }
+
+    private bool _allowClose = false;
 
     public MainWindow(MainViewModel viewModel, IServiceProvider serviceProvider)
     {
@@ -38,6 +43,8 @@ public partial class MainWindow : FluentWindow
             App.Log($"SetServiceProvider CRASH: {ex}");
         }
 
+        UpdateThemeIcon(ApplicationThemeManager.GetAppTheme());
+
         Loaded += (_, _) =>
         {
             App.Log("MainWindow Loaded — calling Navigate(DashboardPage)");
@@ -55,5 +62,37 @@ public partial class MainWindow : FluentWindow
         };
 
         App.Log("MainWindow constructor done");
+    }
+
+    private void ThemeToggle_Click(object sender, RoutedEventArgs e)
+    {
+        var current = ApplicationThemeManager.GetAppTheme();
+        var next = current == ApplicationTheme.Dark ? ApplicationTheme.Light : ApplicationTheme.Dark;
+        ApplicationThemeManager.Apply(next);
+        App.SaveThemePreference(next);
+        UpdateThemeIcon(next);
+    }
+
+    private void UpdateThemeIcon(ApplicationTheme theme)
+    {
+        ThemeIcon.Symbol = theme == ApplicationTheme.Dark
+            ? SymbolRegular.WeatherSunny24
+            : SymbolRegular.WeatherMoon24;
+    }
+
+    protected override void OnClosing(CancelEventArgs e)
+    {
+        if (!_allowClose)
+        {
+            e.Cancel = true;
+            Hide();
+        }
+        base.OnClosing(e);
+    }
+
+    public void ForceClose()
+    {
+        _allowClose = true;
+        Close();
     }
 }

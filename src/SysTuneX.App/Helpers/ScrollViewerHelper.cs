@@ -5,9 +5,10 @@ using System.Windows.Input;
 namespace SysTuneX.App.Helpers;
 
 /// <summary>
-/// Attached property that fixes mouse wheel scrolling when inner controls
-/// (ToggleSwitch, Card) consume the MouseWheel event before it reaches the ScrollViewer.
-/// Uses PreviewMouseWheel (tunneling) to intercept and handle scroll before children.
+/// Attached property that fixes mouse wheel scrolling on pages where WPF-UI's
+/// NavigationView internal ScrollViewer marks PreviewMouseWheel as handled before
+/// it reaches the page's own ScrollViewer. Uses AddHandler(handledEventsToo:true)
+/// so the handler fires even when an ancestor already consumed the event.
 /// </summary>
 public static class ScrollViewerHelper
 {
@@ -24,14 +25,16 @@ public static class ScrollViewerHelper
     public static void SetFixMouseWheel(ScrollViewer sv, bool value) =>
         sv.SetValue(FixMouseWheelProperty, value);
 
+    private static readonly MouseWheelEventHandler _handler = OnPreviewMouseWheel;
+
     private static void OnFixMouseWheelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is ScrollViewer sv)
         {
             if ((bool)e.NewValue)
-                sv.PreviewMouseWheel += OnPreviewMouseWheel;
+                sv.AddHandler(UIElement.PreviewMouseWheelEvent, _handler, handledEventsToo: true);
             else
-                sv.PreviewMouseWheel -= OnPreviewMouseWheel;
+                sv.RemoveHandler(UIElement.PreviewMouseWheelEvent, _handler);
         }
     }
 
