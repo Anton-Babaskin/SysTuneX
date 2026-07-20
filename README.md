@@ -1,32 +1,35 @@
 # SysTuneX
-Windows 11 game optimizer focused on latency, performance tuning, and automated system profiles.
-## Overview
-FrameOps is a Windows 11 game optimization tool designed to reduce latency, stabilize frametime, and maximize system performance through automated, profile-based tuning.
 
-Unlike typical "one-click boosters", FrameOps applies targeted optimizations based on running processes, system state, and game-specific profiles.
+SysTuneX is a Windows 11 performance and latency optimization project built around measurable, reversible system profiles.
 
-## Key Features
-- 🎯 Game-based profiles (auto-detect and apply tweaks per game)
-- ⚡ Real-time optimization engine (process priority, CPU affinity, background control)
-- 📉 Latency-focused tuning (timer resolution, network stack, MMCSS)
-- 🔄 Safe tweak system with full rollback support
-- 🧠 Smart service management (disable/restore non-critical services during gameplay)
-- 📊 Built-in performance monitoring (CPU, frametime, system load)
-- 🔌 CLI & scripting support for automation
-- 🖥 Modern UI (WinUI / WPF)
+## Project goals
 
-## How It Works
-FrameOps runs a lightweight background agent that monitors system activity and applies optimizations dynamically when a game is detected. All changes are reversible and scoped to active sessions.
+- Apply game-specific optimization profiles
+- Manage process priority and CPU affinity
+- Reduce avoidable background load during selected workloads
+- Provide transparent network, multimedia and service tuning
+- Measure changes instead of relying on placebo tweaks
+- Restore the previous system state through a defined rollback path
 
-## Tech Stack
-- C# (.NET)
-- WinAPI / PInvoke
-- PowerShell integration
-- Windows Services
-- Optional GPU APIs (NVAPI / ADL)
+## Planned architecture
 
-## Philosophy
-No placebo tweaks. Only measurable, reversible, and transparent optimizations.
+- C# and .NET application core
+- Windows APIs through P/Invoke
+- PowerShell integration for auditable system operations
+- Optional Windows service for profile activation
+- WPF or WinUI interface
+- Optional vendor GPU APIs where a stable integration is available
+
+## Safety principles
+
+1. Every system change must be documented.
+2. Every supported change must have a rollback operation.
+3. Destructive or permanent tweaks are out of scope.
+4. Defaults must remain conservative.
+5. Performance claims require reproducible measurements.
 
 ## Status
-🚧 In development
+
+**Design and development.** The repository currently describes the product direction; features listed above should be treated as goals until their implementation and validation are available in the codebase.
+
+Build and installation instructions will be added when the first runnable version is published.
