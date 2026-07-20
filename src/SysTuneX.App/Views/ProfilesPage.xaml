@@ -1,0 +1,106 @@
+<Page x:Class="SysTuneX.App.Views.ProfilesPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      Title="Game Profiles">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Margin="24,16,24,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock Text="Game Profiles" FontSize="28" FontWeight="Bold" />
+                <TextBlock Text="One-click optimization presets for different game genres"
+                           Opacity="0.6" Margin="0,4,0,0" />
+            </StackPanel>
+            <ui:Button Grid.Column="1" Content="Reset All" Icon="{ui:SymbolIcon ArrowReset24}"
+                       VerticalAlignment="Center"
+                       Command="{Binding ViewModel.ResetProfileCommand}" />
+        </Grid>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,12">
+            <StackPanel>
+                <!-- Status Message -->
+                <ui:InfoBar Title="{Binding ViewModel.StatusMessage}"
+                            IsOpen="{Binding ViewModel.StatusMessage.Length, Converter={StaticResource IntToBoolConverter}}"
+                            Severity="Success" Margin="0,0,0,12" IsClosable="True" />
+
+                <!-- Profile Cards Grid -->
+                <ItemsControl ItemsSource="{Binding ViewModel.Profiles}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="2" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <ui:Card Margin="0,0,8,8" Padding="20" Cursor="Hand">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Profile Icon and Name -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                        <TextBlock Text="{Binding IconGlyph}" FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="28" VerticalAlignment="Center"
+                                                   Foreground="{StaticResource AccentBrushLight}" />
+                                        <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold"
+                                                   Margin="12,0,0,0" VerticalAlignment="Center" />
+                                    </StackPanel>
+
+                                    <!-- Description -->
+                                    <TextBlock Grid.Row="1" Text="{Binding Description}"
+                                               Opacity="0.6" FontSize="12" TextWrapping="Wrap"
+                                               Margin="0,0,0,12" />
+
+                                    <!-- Stats -->
+                                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,12">
+                                        <Border CornerRadius="4" Padding="6,3" Background="#227C3AED" Margin="0,0,6,0">
+                                            <TextBlock FontSize="11">
+                                                <Run Text="{Binding TweakIds.Count, Mode=OneWay}" />
+                                                <Run Text="tweaks" />
+                                            </TextBlock>
+                                        </Border>
+                                        <Border CornerRadius="4" Padding="6,3" Background="#22FFA500">
+                                            <TextBlock FontSize="11">
+                                                <Run Text="{Binding ServiceNames.Count, Mode=OneWay}" />
+                                                <Run Text="services" />
+                                            </TextBlock>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <!-- Apply Button -->
+                                    <ui:Button Grid.Row="3" Content="Apply Profile"
+                                               Appearance="Primary" HorizontalAlignment="Stretch"
+                                               Command="{Binding DataContext.ViewModel.ApplyProfileCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                               CommandParameter="{Binding}" />
+                                </Grid>
+                            </ui:Card>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Loading Overlay -->
+        <Grid Grid.RowSpan="2" Background="#88000000"
+              Visibility="{Binding ViewModel.IsApplying, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ui:ProgressRing IsIndeterminate="True" Width="48" Height="48" />
+                <TextBlock Text="{Binding ViewModel.StatusMessage}" Margin="0,12,0,0" FontSize="14" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>
