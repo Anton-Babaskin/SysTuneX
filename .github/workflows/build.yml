@@ -1,47 +1,76 @@
-name: Build SysTuneX.exe
+name: Build
 
 on:
   push:
-    branches: [ main, master, claude/game-optimizer-windows-tUXOU ]
+    branches: [main, master, 'claude/**']
   pull_request:
-    branches: [ main, master ]
-  workflow_dispatch:   # allow manual trigger from GitHub UI
+    branches: [main, master]
+  workflow_dispatch:
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 jobs:
-  build:
-    name: Build Windows x64 Release
+  test:
+    name: Build and test
     runs-on: windows-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET 8
+      - name: Setup .NET 9
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '9.0.x'
 
-      - name: Restore dependencies
+      - name: Restore
         run: dotnet restore SysTuneX.sln
 
-      - name: Publish single-file EXE
+      - name: Build
+        run: dotnet build SysTuneX.sln --configuration Release --no-restore
+
+      # The catalog, journal and localization tests are the guard against the data mistakes
+      # that are invisible in review: duplicate tweak ids, untranslated entries, a revert that
+      # would write a value Windows never shipped.
+      - name: Test
+        run: dotnet test tests/SysTuneX.Core.Tests/SysTuneX.Core.Tests.csproj --configuration Release --no-build --verbosity normal
+
+  publish:
+    name: Publish SysTuneX.exe
+    runs-on: windows-latest
+    needs: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Publish single-file executable
+        run: >
+          dotnet publish src/SysTuneX.App/SysTuneX.App.csproj
+          --configuration Release
+          --runtime win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:PublishReadyToRun=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          --output publish
+
+      - name: Report size
+        shell: pwsh
         run: |
-          dotnet publish src\SysTuneX.App\SysTuneX.App.csproj `
-            -c Release `
-            -r win-x64 `
-            --self-contained `
-            -p:PublishSingleFile=true `
-            -p:PublishReadyToRun=true `
-            -o publish
+          $exe = Get-Item publish/SysTuneX.exe
+          "SysTuneX.exe: {0:N1} MB" -f ($exe.Length / 1MB) | Write-Host
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: SysTuneX-win-x64
-          path: publish\SysTuneX.exe
+          path: publish/SysTuneX.exe
           retention-days: 30
-
-      - name: Show file size
-        run: |
-          $size = (Get-Item publish\SysTuneX.exe).Length / 1MB
-          Write-Host "SysTuneX.exe size: $([math]::Round($size, 1)) MB"

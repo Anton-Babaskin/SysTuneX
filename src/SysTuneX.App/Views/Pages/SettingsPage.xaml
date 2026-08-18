@@ -1,0 +1,145 @@
+<pages:SysTuneXPage x:Class="SysTuneX.App.Views.Pages.SettingsPage"
+                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                    xmlns:loc="clr-namespace:SysTuneX.App.Localization"
+                    xmlns:pages="clr-namespace:SysTuneX.App.Views.Pages"
+                    xmlns:vm="clr-namespace:SysTuneX.App.ViewModels"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    mc:Ignorable="d"
+                    d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
+                    Title="Settings">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="{StaticResource PagePadding}">
+        <Grid MaxWidth="760" HorizontalAlignment="Left">
+            <StackPanel>
+
+                <StackPanel Margin="{StaticResource SectionGap}">
+                    <TextBlock Text="{loc:Loc Settings_Title}" Style="{StaticResource PageTitle}" />
+                    <TextBlock Text="{loc:Loc Settings_Subtitle}" Style="{StaticResource PageSubtitle}" />
+                </StackPanel>
+
+                <!-- Appearance -->
+                <Border Style="{StaticResource Card}" Margin="{StaticResource StackGap}">
+                    <StackPanel>
+                        <TextBlock Text="{loc:Loc Settings_Appearance}"
+                                   Style="{StaticResource SectionTitle}"
+                                   Margin="0,0,0,14" />
+
+                        <TextBlock Text="{loc:Loc Settings_Theme}" Style="{StaticResource CaptionText}" />
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,16">
+                            <RadioButton GroupName="Theme"
+                                         Content="{loc:Loc Settings_Theme_System}"
+                                         Margin="0,0,16,0"
+                                         IsChecked="{Binding SelectedTheme, Converter={StaticResource StringEquals}, ConverterParameter=system}" />
+                            <RadioButton GroupName="Theme"
+                                         Content="{loc:Loc Settings_Theme_Light}"
+                                         Margin="0,0,16,0"
+                                         IsChecked="{Binding SelectedTheme, Converter={StaticResource StringEquals}, ConverterParameter=light}" />
+                            <RadioButton GroupName="Theme"
+                                         Content="{loc:Loc Settings_Theme_Dark}"
+                                         IsChecked="{Binding SelectedTheme, Converter={StaticResource StringEquals}, ConverterParameter=dark}" />
+                        </StackPanel>
+
+                        <TextBlock Text="{loc:Loc Settings_Backdrop}" Style="{StaticResource CaptionText}" />
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,16">
+                            <RadioButton GroupName="Backdrop"
+                                         Content="{loc:Loc Settings_Backdrop_Mica}"
+                                         Margin="0,0,16,0"
+                                         IsChecked="{Binding SelectedBackdrop, Converter={StaticResource StringEquals}, ConverterParameter=Mica}" />
+                            <RadioButton GroupName="Backdrop"
+                                         Content="{loc:Loc Settings_Backdrop_Acrylic}"
+                                         Margin="0,0,16,0"
+                                         IsChecked="{Binding SelectedBackdrop, Converter={StaticResource StringEquals}, ConverterParameter=Acrylic}" />
+                            <RadioButton GroupName="Backdrop"
+                                         Content="{loc:Loc Settings_Backdrop_None}"
+                                         IsChecked="{Binding SelectedBackdrop, Converter={StaticResource StringEquals}, ConverterParameter=None}" />
+                        </StackPanel>
+
+                        <TextBlock Text="{loc:Loc Settings_Language}" Style="{StaticResource CaptionText}" />
+                        <ComboBox ItemsSource="{Binding Languages}"
+                                  SelectedItem="{Binding SelectedLanguage}"
+                                  DisplayMemberPath="DisplayName"
+                                  Width="240"
+                                  HorizontalAlignment="Left"
+                                  Margin="0,6,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Behaviour -->
+                <Border Style="{StaticResource Card}" Margin="{StaticResource StackGap}">
+                    <StackPanel>
+                        <TextBlock Text="{loc:Loc Settings_Behaviour}"
+                                   Style="{StaticResource SectionTitle}"
+                                   Margin="0,0,0,14" />
+
+                        <ui:ToggleSwitch IsChecked="{Binding CreateRestorePoint}"
+                                         Content="{loc:Loc Settings_RestorePoint}" />
+                        <TextBlock Text="{loc:Loc Settings_RestorePoint_Hint}"
+                                   Style="{StaticResource CaptionText}"
+                                   Margin="0,4,0,16" />
+
+                        <ui:ToggleSwitch IsChecked="{Binding ConfirmAdvanced}"
+                                         Content="{loc:Loc Settings_ConfirmAdvanced}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- About -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="{loc:Loc Settings_About}"
+                                   Style="{StaticResource SectionTitle}"
+                                   Margin="0,0,0,14" />
+
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="140" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{loc:Loc Settings_Version}" Style="{StaticResource CaptionText}" />
+                            <TextBlock Grid.Column="1" Text="{Binding Version}" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                        </Grid>
+
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="140" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{loc:Loc Dashboard_Label_Os}" Style="{StaticResource CaptionText}" />
+                            <TextBlock Grid.Column="1" Text="{Binding WindowsDescription}" TextWrapping="Wrap"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                        </Grid>
+
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="140" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{loc:Loc Settings_DataFolder}" Style="{StaticResource CaptionText}" />
+                            <TextBlock Grid.Column="1" Text="{Binding DataDirectory}"
+                                       Style="{StaticResource MonoText}" TextWrapping="Wrap" />
+                        </Grid>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,16">
+                            <ui:Button Content="{loc:Loc Settings_OpenFolder}"
+                                       Icon="{ui:SymbolIcon Folder24}"
+                                       Margin="0,0,8,0"
+                                       Command="{Binding OpenDataFolderCommand}" />
+                            <ui:Button Content="{loc:Loc Settings_Repository}"
+                                       Icon="{ui:SymbolIcon Globe24}"
+                                       Command="{Binding OpenRepositoryCommand}" />
+                        </StackPanel>
+
+                        <ui:InfoBar Severity="Informational"
+                                    IsOpen="True"
+                                    IsClosable="False"
+                                    Message="{loc:Loc Settings_Disclaimer}" />
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</pages:SysTuneXPage>

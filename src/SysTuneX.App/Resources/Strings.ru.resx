@@ -1,0 +1,1345 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="App_Tagline" xml:space="preserve">
+    <value>Тюнер производительности Windows 11</value>
+  </data>
+  <data name="Nav_Dashboard" xml:space="preserve">
+    <value>Обзор</value>
+  </data>
+  <data name="Nav_Profiles" xml:space="preserve">
+    <value>Профили</value>
+  </data>
+  <data name="Nav_Gaming" xml:space="preserve">
+    <value>Игры</value>
+  </data>
+  <data name="Nav_Windows11" xml:space="preserve">
+    <value>Windows 11</value>
+  </data>
+  <data name="Nav_Services" xml:space="preserve">
+    <value>Службы</value>
+  </data>
+  <data name="Nav_Privacy" xml:space="preserve">
+    <value>Приватность</value>
+  </data>
+  <data name="Nav_Network" xml:space="preserve">
+    <value>Сеть</value>
+  </data>
+  <data name="Nav_Cleanup" xml:space="preserve">
+    <value>Очистка</value>
+  </data>
+  <data name="Nav_History" xml:space="preserve">
+    <value>Журнал изменений</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
+  <data name="Common_Apply" xml:space="preserve">
+    <value>Применить</value>
+  </data>
+  <data name="Common_Revert" xml:space="preserve">
+    <value>Откатить</value>
+  </data>
+  <data name="Common_ApplyAll" xml:space="preserve">
+    <value>Применить всё</value>
+  </data>
+  <data name="Common_RevertAll" xml:space="preserve">
+    <value>Откатить всё</value>
+  </data>
+  <data name="Common_ApplySafe" xml:space="preserve">
+    <value>Только безопасные</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="Common_Close" xml:space="preserve">
+    <value>Закрыть</value>
+  </data>
+  <data name="Common_Continue" xml:space="preserve">
+    <value>Продолжить</value>
+  </data>
+  <data name="Common_Refresh" xml:space="preserve">
+    <value>Обновить</value>
+  </data>
+  <data name="Common_Search" xml:space="preserve">
+    <value>Поиск</value>
+  </data>
+  <data name="Common_All" xml:space="preserve">
+    <value>Все</value>
+  </data>
+  <data name="Common_Loading" xml:space="preserve">
+    <value>Загрузка…</value>
+  </data>
+  <data name="Common_Working" xml:space="preserve">
+    <value>Выполняется…</value>
+  </data>
+  <data name="Common_Applied" xml:space="preserve">
+    <value>Применено</value>
+  </data>
+  <data name="Common_NotApplied" xml:space="preserve">
+    <value>Не применено</value>
+  </data>
+  <data name="Common_Partial" xml:space="preserve">
+    <value>Частично</value>
+  </data>
+  <data name="Common_Unsupported" xml:space="preserve">
+    <value>Не поддерживается</value>
+  </data>
+  <data name="Common_Unknown" xml:space="preserve">
+    <value>Неизвестно</value>
+  </data>
+  <data name="Common_Running" xml:space="preserve">
+    <value>Работает</value>
+  </data>
+  <data name="Common_Stopped" xml:space="preserve">
+    <value>Остановлена</value>
+  </data>
+  <data name="Common_NothingFound" xml:space="preserve">
+    <value>Ничего не найдено</value>
+  </data>
+  <data name="Common_RequiresRestart" xml:space="preserve">
+    <value>Нужна перезагрузка</value>
+  </data>
+  <data name="Common_RequiresSignOut" xml:space="preserve">
+    <value>Нужен повторный вход</value>
+  </data>
+  <data name="Common_RequiresExplorerRestart" xml:space="preserve">
+    <value>Перезапуск проводника</value>
+  </data>
+  <data name="Common_RestartNow" xml:space="preserve">
+    <value>Перезагрузить</value>
+  </data>
+  <data name="Common_Later" xml:space="preserve">
+    <value>Позже</value>
+  </data>
+  <data name="Common_Of" xml:space="preserve">
+    <value>из</value>
+  </data>
+  <data name="Common_Enabled" xml:space="preserve">
+    <value>Вкл</value>
+  </data>
+  <data name="Common_Disabled" xml:space="preserve">
+    <value>Выкл</value>
+  </data>
+  <data name="Common_Never" xml:space="preserve">
+    <value>никогда</value>
+  </data>
+  <data name="Common_Copy" xml:space="preserve">
+    <value>Копировать</value>
+  </data>
+  <data name="Risk_Safe" xml:space="preserve">
+    <value>Безопасно</value>
+  </data>
+  <data name="Risk_Moderate" xml:space="preserve">
+    <value>Умеренно</value>
+  </data>
+  <data name="Risk_Advanced" xml:space="preserve">
+    <value>Рискованно</value>
+  </data>
+  <data name="Filter_Risk" xml:space="preserve">
+    <value>Риск</value>
+  </data>
+  <data name="Filter_Status" xml:space="preserve">
+    <value>Состояние</value>
+  </data>
+  <data name="Filter_OnlyApplied" xml:space="preserve">
+    <value>Применённые</value>
+  </data>
+  <data name="Filter_OnlyNotApplied" xml:space="preserve">
+    <value>Неприменённые</value>
+  </data>
+  <data name="Banner_NotElevated_Title" xml:space="preserve">
+    <value>Нет прав администратора</value>
+  </data>
+  <data name="Banner_NotElevated_Message" xml:space="preserve">
+    <value>Изменения реестра, служб, электропитания и сети применяться не будут. Перезапустите SysTuneX от имени администратора.</value>
+  </data>
+  <data name="Banner_NotElevated_Action" xml:space="preserve">
+    <value>Перезапустить с правами</value>
+  </data>
+  <data name="Banner_UnsupportedOs_Title" xml:space="preserve">
+    <value>Неподдерживаемая версия Windows</value>
+  </data>
+  <data name="Banner_UnsupportedOs_Message" xml:space="preserve">
+    <value>SysTuneX рассчитан на Windows 10 1809 и новее. Часть твиков будет скрыта или не сработает.</value>
+  </data>
+  <data name="Banner_RestartRequired_Title" xml:space="preserve">
+    <value>Требуется перезагрузка</value>
+  </data>
+  <data name="Banner_RestartRequired_Message" xml:space="preserve">
+    <value>Часть применённых изменений вступит в силу только после перезагрузки.</value>
+  </data>
+  <data name="Banner_ExplorerRestart_Message" xml:space="preserve">
+    <value>Изменения оболочки станут видны после перезапуска проводника.</value>
+  </data>
+  <data name="Dashboard_Title" xml:space="preserve">
+    <value>Обзор</value>
+  </data>
+  <data name="Dashboard_Subtitle" xml:space="preserve">
+    <value>Состояние системы и быстрая оптимизация</value>
+  </data>
+  <data name="Dashboard_Score" xml:space="preserve">
+    <value>Уровень оптимизации</value>
+  </data>
+  <data name="Dashboard_ScoreHint" xml:space="preserve">
+    <value>Доля применённых твиков, отключённых служб и активная схема электропитания.</value>
+  </data>
+  <data name="Dashboard_Score_Stock" xml:space="preserve">
+    <value>Всё по умолчанию</value>
+  </data>
+  <data name="Dashboard_Score_Partial" xml:space="preserve">
+    <value>Частично настроено</value>
+  </data>
+  <data name="Dashboard_Score_Tuned" xml:space="preserve">
+    <value>Хорошо настроено</value>
+  </data>
+  <data name="Dashboard_QuickOptimize" xml:space="preserve">
+    <value>Быстрая оптимизация</value>
+  </data>
+  <data name="Dashboard_QuickOptimize_Hint" xml:space="preserve">
+    <value>Применяет все безопасные твики, включает высокопроизводительную схему питания и очищает память. Умеренные и рискованные изменения не трогаются.</value>
+  </data>
+  <data name="Dashboard_RestoreAll" xml:space="preserve">
+    <value>Откатить всё</value>
+  </data>
+  <data name="Dashboard_RestoreAll_Hint" xml:space="preserve">
+    <value>Возвращает все значения, записанные до изменений.</value>
+  </data>
+  <data name="Dashboard_TrimMemory" xml:space="preserve">
+    <value>Очистить память</value>
+  </data>
+  <data name="Dashboard_Cpu" xml:space="preserve">
+    <value>Загрузка ЦП</value>
+  </data>
+  <data name="Dashboard_Ram" xml:space="preserve">
+    <value>Занято памяти</value>
+  </data>
+  <data name="Dashboard_Standby" xml:space="preserve">
+    <value>В кэше</value>
+  </data>
+  <data name="Dashboard_TweaksApplied" xml:space="preserve">
+    <value>Твиков применено</value>
+  </data>
+  <data name="Dashboard_ServicesDisabled" xml:space="preserve">
+    <value>Служб отключено</value>
+  </data>
+  <data name="Dashboard_Storage" xml:space="preserve">
+    <value>Системный диск</value>
+  </data>
+  <data name="Dashboard_Free" xml:space="preserve">
+    <value>свободно</value>
+  </data>
+  <data name="Dashboard_SystemInfo" xml:space="preserve">
+    <value>Этот компьютер</value>
+  </data>
+  <data name="Dashboard_Label_Cpu" xml:space="preserve">
+    <value>Процессор</value>
+  </data>
+  <data name="Dashboard_Label_Gpu" xml:space="preserve">
+    <value>Видеокарта</value>
+  </data>
+  <data name="Dashboard_Label_Memory" xml:space="preserve">
+    <value>Оперативная память</value>
+  </data>
+  <data name="Dashboard_Label_Os" xml:space="preserve">
+    <value>Windows</value>
+  </data>
+  <data name="Dashboard_Label_Motherboard" xml:space="preserve">
+    <value>Материнская плата</value>
+  </data>
+  <data name="Dashboard_Label_Drive" xml:space="preserve">
+    <value>Системный диск</value>
+  </data>
+  <data name="Dashboard_Label_PowerPlan" xml:space="preserve">
+    <value>Схема питания</value>
+  </data>
+  <data name="Dashboard_Label_Uptime" xml:space="preserve">
+    <value>Время работы</value>
+  </data>
+  <data name="Dashboard_Label_Processes" xml:space="preserve">
+    <value>Процессов</value>
+  </data>
+  <data name="Dashboard_Label_Driver" xml:space="preserve">
+    <value>Драйвер</value>
+  </data>
+  <data name="Dashboard_Elevated" xml:space="preserve">
+    <value>Администратор</value>
+  </data>
+  <data name="Profiles_Title" xml:space="preserve">
+    <value>Профили</value>
+  </data>
+  <data name="Profiles_Subtitle" xml:space="preserve">
+    <value>Готовые наборы под разные жанры</value>
+  </data>
+  <data name="Profiles_Apply" xml:space="preserve">
+    <value>Применить профиль</value>
+  </data>
+  <data name="Profiles_ExampleGames" xml:space="preserve">
+    <value>Проверено на</value>
+  </data>
+  <data name="Profiles_Tweaks" xml:space="preserve">
+    <value>твиков</value>
+  </data>
+  <data name="Profiles_Services" xml:space="preserve">
+    <value>служб</value>
+  </data>
+  <data name="Profiles_Applied" xml:space="preserve">
+    <value>применено</value>
+  </data>
+  <data name="Profiles_IncludeAdvanced" xml:space="preserve">
+    <value>Включая рискованные изменения</value>
+  </data>
+  <data name="Profiles_IncludeAdvanced_Hint" xml:space="preserve">
+    <value>Защита виртуализации, конфигурация загрузки и службы, отключение которых ломает функции Windows.</value>
+  </data>
+  <data name="Profiles_CreateRestorePoint" xml:space="preserve">
+    <value>Сначала создать точку восстановления</value>
+  </data>
+  <data name="Profiles_NoAdvanced" xml:space="preserve">
+    <value>В этом профиле нет рискованных изменений.</value>
+  </data>
+  <data name="Gaming_Title" xml:space="preserve">
+    <value>Игры</value>
+  </data>
+  <data name="Gaming_Subtitle" xml:space="preserve">
+    <value>Задержки, плавность кадров и планировщик</value>
+  </data>
+  <data name="Windows11_Title" xml:space="preserve">
+    <value>Windows 11</value>
+  </data>
+  <data name="Windows11_Subtitle" xml:space="preserve">
+    <value>Особенности Windows 11, которые стоят кадров</value>
+  </data>
+  <data name="Privacy_Title" xml:space="preserve">
+    <value>Приватность</value>
+  </data>
+  <data name="Privacy_Subtitle" xml:space="preserve">
+    <value>Телеметрия и сбор данных</value>
+  </data>
+  <data name="Network_Title" xml:space="preserve">
+    <value>Сеть</value>
+  </data>
+  <data name="Network_Subtitle" xml:space="preserve">
+    <value>Задержки, пропускная способность и DNS</value>
+  </data>
+  <data name="Tweaks_AppliedCount" xml:space="preserve">
+    <value>Применено {0} из {1}</value>
+  </data>
+  <data name="Group_GameCapture" xml:space="preserve">
+    <value>Захват игры и оверлей</value>
+  </data>
+  <data name="Group_Gpu" xml:space="preserve">
+    <value>Видеокарта</value>
+  </data>
+  <data name="Group_Scheduling" xml:space="preserve">
+    <value>Планировщик процессора</value>
+  </data>
+  <data name="Group_Input" xml:space="preserve">
+    <value>Ввод</value>
+  </data>
+  <data name="Group_Responsiveness" xml:space="preserve">
+    <value>Отзывчивость</value>
+  </data>
+  <data name="Group_Virtualization" xml:space="preserve">
+    <value>Защита на базе виртуализации</value>
+  </data>
+  <data name="Group_Ai" xml:space="preserve">
+    <value>Локальный ИИ</value>
+  </data>
+  <data name="Group_Search" xml:space="preserve">
+    <value>Поиск</value>
+  </data>
+  <data name="Group_Shell" xml:space="preserve">
+    <value>Оболочка и панель задач</value>
+  </data>
+  <data name="Group_Telemetry" xml:space="preserve">
+    <value>Телеметрия</value>
+  </data>
+  <data name="Group_Suggestions" xml:space="preserve">
+    <value>Рекомендации и реклама</value>
+  </data>
+  <data name="Group_Sensors" xml:space="preserve">
+    <value>Датчики и отчёты</value>
+  </data>
+  <data name="Group_Latency" xml:space="preserve">
+    <value>Задержки</value>
+  </data>
+  <data name="Group_Throughput" xml:space="preserve">
+    <value>Пропускная способность</value>
+  </data>
+  <data name="Warning_Vbs" xml:space="preserve">
+    <value>Античиты — Vanguard (Valorant), FACEIT, часть игр с EAC — отказываются запускаться или помечают систему, если защита виртуализации выключена. Если диск зашифрован BitLocker, держите ключ восстановления под рукой перед перезагрузкой.</value>
+  </data>
+  <data name="Warning_Hypervisor" xml:space="preserve">
+    <value>Hyper-V, WSL2, Docker Desktop, «Песочница Windows», подсистема Android и любые виртуальные машины на гипервизоре Windows перестанут работать, пока не вернуть настройку обратно.</value>
+  </data>
+  <data name="Warning_GpuPreemption" xml:space="preserve">
+    <value>На части драйверов приводит к сбросу видеодрайвера: чёрный экран, зависание под нагрузкой. Если после перезагрузки появятся проблемы — откатывайте этот твик первым.</value>
+  </data>
+  <data name="Services_Title" xml:space="preserve">
+    <value>Службы</value>
+  </data>
+  <data name="Services_Subtitle" xml:space="preserve">
+    <value>Службы Windows, которые стоит отключить</value>
+  </data>
+  <data name="Services_Disable" xml:space="preserve">
+    <value>Отключить</value>
+  </data>
+  <data name="Services_Restore" xml:space="preserve">
+    <value>Восстановить</value>
+  </data>
+  <data name="Services_StartMode" xml:space="preserve">
+    <value>Тип запуска</value>
+  </data>
+  <data name="Services_StartMode_Automatic" xml:space="preserve">
+    <value>Автоматически</value>
+  </data>
+  <data name="Services_StartMode_Manual" xml:space="preserve">
+    <value>Вручную</value>
+  </data>
+  <data name="Services_StartMode_Disabled" xml:space="preserve">
+    <value>Отключена</value>
+  </data>
+  <data name="Services_StartMode_Boot" xml:space="preserve">
+    <value>При загрузке</value>
+  </data>
+  <data name="Services_StartMode_System" xml:space="preserve">
+    <value>Системная</value>
+  </data>
+  <data name="Services_DisabledCount" xml:space="preserve">
+    <value>Отключено {0} из {1}</value>
+  </data>
+  <data name="Services_DisableAllSafe" xml:space="preserve">
+    <value>Отключить все безопасные</value>
+  </data>
+  <data name="Privacy_Hosts_Title" xml:space="preserve">
+    <value>Блокировка телеметрии в hosts</value>
+  </data>
+  <data name="Privacy_Hosts_Description" xml:space="preserve">
+    <value>Добавляет в файл hosts помеченный блок, который направляет известные адреса телеметрии на 0.0.0.0. Адреса обновлений, активации, Store и Defender намеренно не трогаются. Microsoft Defender может блокировать изменение этого файла.</value>
+  </data>
+  <data name="Privacy_Hosts_Show" xml:space="preserve">
+    <value>Показать {0} адресов</value>
+  </data>
+  <data name="Privacy_Hosts_Blocked" xml:space="preserve">
+    <value>Заблокировано</value>
+  </data>
+  <data name="Network_Adapter" xml:space="preserve">
+    <value>Адаптер</value>
+  </data>
+  <data name="Network_Dns_Title" xml:space="preserve">
+    <value>DNS-сервер</value>
+  </data>
+  <data name="Network_Dns_Current" xml:space="preserve">
+    <value>Сейчас используется</value>
+  </data>
+  <data name="Network_Dns_Automatic" xml:space="preserve">
+    <value>Получен по DHCP</value>
+  </data>
+  <data name="Network_Dns_Apply" xml:space="preserve">
+    <value>Использовать</value>
+  </data>
+  <data name="Network_Dns_Reset" xml:space="preserve">
+    <value>Вернуть автоматический</value>
+  </data>
+  <data name="Network_Dns_Flush" xml:space="preserve">
+    <value>Очистить кэш DNS</value>
+  </data>
+  <data name="Network_Latency" xml:space="preserve">
+    <value>Отклик</value>
+  </data>
+  <data name="Network_Measure" xml:space="preserve">
+    <value>Замерить</value>
+  </data>
+  <data name="Network_Measuring" xml:space="preserve">
+    <value>Замеряю…</value>
+  </data>
+  <data name="Network_NoAdapter" xml:space="preserve">
+    <value>Активный сетевой адаптер не найден.</value>
+  </data>
+  <data name="Cleanup_Title" xml:space="preserve">
+    <value>Очистка</value>
+  </data>
+  <data name="Cleanup_Subtitle" xml:space="preserve">
+    <value>Освобождение места без сюрпризов</value>
+  </data>
+  <data name="Cleanup_Scan" xml:space="preserve">
+    <value>Пересканировать</value>
+  </data>
+  <data name="Cleanup_Scanning" xml:space="preserve">
+    <value>Измеряю…</value>
+  </data>
+  <data name="Cleanup_Clean" xml:space="preserve">
+    <value>Очистить выбранное</value>
+  </data>
+  <data name="Cleanup_Selected" xml:space="preserve">
+    <value>Выбрано: {0}</value>
+  </data>
+  <data name="Cleanup_Files" xml:space="preserve">
+    <value>файлов</value>
+  </data>
+  <data name="Cleanup_Paths" xml:space="preserve">
+    <value>Папки</value>
+  </data>
+  <data name="Cleanup_Apps_Title" xml:space="preserve">
+    <value>Предустановленные приложения</value>
+  </data>
+  <data name="Cleanup_Apps_Subtitle" xml:space="preserve">
+    <value>Пакеты Store, найденные на этом компьютере. Удаление затрагивает текущую учётную запись.</value>
+  </data>
+  <data name="Cleanup_Apps_Empty" xml:space="preserve">
+    <value>Удаляемых пакетов не найдено.</value>
+  </data>
+  <data name="Cleanup_Remove" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="Cleanup_SystemRelevant" xml:space="preserve">
+    <value>Часть оболочки</value>
+  </data>
+  <data name="Cleanup_Total" xml:space="preserve">
+    <value>Всего</value>
+  </data>
+  <data name="History_Title" xml:space="preserve">
+    <value>Журнал изменений</value>
+  </data>
+  <data name="History_Subtitle" xml:space="preserve">
+    <value>Всё, что SysTuneX записал перед изменением</value>
+  </data>
+  <data name="History_Empty" xml:space="preserve">
+    <value>SysTuneX ещё ничего не менял на этом компьютере.</value>
+  </data>
+  <data name="History_Active" xml:space="preserve">
+    <value>Действует</value>
+  </data>
+  <data name="History_Reverted" xml:space="preserve">
+    <value>Откатано</value>
+  </data>
+  <data name="History_RevertAll" xml:space="preserve">
+    <value>Откатить всё</value>
+  </data>
+  <data name="History_Export" xml:space="preserve">
+    <value>Экспорт…</value>
+  </data>
+  <data name="History_ShowReverted" xml:space="preserve">
+    <value>Показывать откатанные</value>
+  </data>
+  <data name="History_OriginalValue" xml:space="preserve">
+    <value>Исходное значение</value>
+  </data>
+  <data name="History_ValueAbsent" xml:space="preserve">
+    <value>значения не было</value>
+  </data>
+  <data name="History_Kind_RegistryValue" xml:space="preserve">
+    <value>Реестр</value>
+  </data>
+  <data name="History_Kind_ServiceConfiguration" xml:space="preserve">
+    <value>Служба</value>
+  </data>
+  <data name="History_Kind_PowerScheme" xml:space="preserve">
+    <value>Схема питания</value>
+  </data>
+  <data name="History_Kind_HostsFile" xml:space="preserve">
+    <value>Файл hosts</value>
+  </data>
+  <data name="History_Kind_DnsConfiguration" xml:space="preserve">
+    <value>DNS</value>
+  </data>
+  <data name="History_Kind_BootConfiguration" xml:space="preserve">
+    <value>Конфигурация загрузки</value>
+  </data>
+  <data name="Settings_Title" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
+  <data name="Settings_Subtitle" xml:space="preserve">
+    <value>Внешний вид и поведение</value>
+  </data>
+  <data name="Settings_Appearance" xml:space="preserve">
+    <value>Внешний вид</value>
+  </data>
+  <data name="Settings_Theme" xml:space="preserve">
+    <value>Тема</value>
+  </data>
+  <data name="Settings_Theme_System" xml:space="preserve">
+    <value>Как в Windows</value>
+  </data>
+  <data name="Settings_Theme_Light" xml:space="preserve">
+    <value>Светлая</value>
+  </data>
+  <data name="Settings_Theme_Dark" xml:space="preserve">
+    <value>Тёмная</value>
+  </data>
+  <data name="Settings_Backdrop" xml:space="preserve">
+    <value>Материал окна</value>
+  </data>
+  <data name="Settings_Backdrop_Mica" xml:space="preserve">
+    <value>Mica</value>
+  </data>
+  <data name="Settings_Backdrop_Acrylic" xml:space="preserve">
+    <value>Acrylic</value>
+  </data>
+  <data name="Settings_Backdrop_None" xml:space="preserve">
+    <value>Сплошной</value>
+  </data>
+  <data name="Settings_Language" xml:space="preserve">
+    <value>Язык</value>
+  </data>
+  <data name="Settings_Language_System" xml:space="preserve">
+    <value>Как в Windows</value>
+  </data>
+  <data name="Settings_Behaviour" xml:space="preserve">
+    <value>Поведение</value>
+  </data>
+  <data name="Settings_RestorePoint" xml:space="preserve">
+    <value>Создавать точку восстановления перед профилем</value>
+  </data>
+  <data name="Settings_RestorePoint_Hint" xml:space="preserve">
+    <value>Требует включённой защиты системы для системного диска.</value>
+  </data>
+  <data name="Settings_ConfirmAdvanced" xml:space="preserve">
+    <value>Подтверждать каждое рискованное изменение</value>
+  </data>
+  <data name="Settings_About" xml:space="preserve">
+    <value>О программе</value>
+  </data>
+  <data name="Settings_Version" xml:space="preserve">
+    <value>Версия</value>
+  </data>
+  <data name="Settings_DataFolder" xml:space="preserve">
+    <value>Журнал резервных копий</value>
+  </data>
+  <data name="Settings_OpenFolder" xml:space="preserve">
+    <value>Открыть папку</value>
+  </data>
+  <data name="Settings_Repository" xml:space="preserve">
+    <value>Исходный код</value>
+  </data>
+  <data name="Settings_Disclaimer" xml:space="preserve">
+    <value>SysTuneX меняет настройки операционной системы. Каждое изменение записывается до применения и может быть откачено в журнале, но ни один инструмент не гарантирует одинаковый результат на любом железе.</value>
+  </data>
+  <data name="Dialog_Advanced_Title" xml:space="preserve">
+    <value>Это рискованное изменение</value>
+  </data>
+  <data name="Dialog_Advanced_Apply" xml:space="preserve">
+    <value>Всё равно применить</value>
+  </data>
+  <data name="Dialog_Cleanup_Title" xml:space="preserve">
+    <value>Удалить эти файлы?</value>
+  </data>
+  <data name="Dialog_Cleanup_Message" xml:space="preserve">
+    <value>Будет освобождено {0} в {1} файлах. Отменить нельзя.</value>
+  </data>
+  <data name="Dialog_RemoveApp_Title" xml:space="preserve">
+    <value>Удалить {0}?</value>
+  </data>
+  <data name="Dialog_RemoveApp_Message" xml:space="preserve">
+    <value>Пакет будет удалён для текущей учётной записи. Переустановить можно из Microsoft Store.</value>
+  </data>
+  <data name="Dialog_RemoveApp_SystemRelevant" xml:space="preserve">
+    <value>Этот пакет — часть оболочки Windows. Его удаление отключит видимую функцию.</value>
+  </data>
+  <data name="Dialog_RestoreAll_Title" xml:space="preserve">
+    <value>Откатить все изменения?</value>
+  </data>
+  <data name="Dialog_RestoreAll_Message" xml:space="preserve">
+    <value>Все записанные значения будут возвращены, а службы — восстановлены с исходным типом запуска. Настройки, изменённые вами вручную, не трогаются.</value>
+  </data>
+  <data name="Msg_Applied" xml:space="preserve">
+    <value>{0}: применено</value>
+  </data>
+  <data name="Msg_Reverted" xml:space="preserve">
+    <value>{0}: откатано</value>
+  </data>
+  <data name="Msg_Failed" xml:space="preserve">
+    <value>{0}: ошибка</value>
+  </data>
+  <data name="Msg_BatchDone" xml:space="preserve">
+    <value>Применено: {0}, ошибок: {1}, пропущено: {2}</value>
+  </data>
+  <data name="Msg_RestoreDone" xml:space="preserve">
+    <value>Откатано изменений: {0}</value>
+  </data>
+  <data name="Msg_MemoryFreed" xml:space="preserve">
+    <value>Освобождено {0} памяти</value>
+  </data>
+  <data name="Msg_MemoryTrimmed" xml:space="preserve">
+    <value>Обработано процессов: {0}</value>
+  </data>
+  <data name="Msg_RestorePointCreated" xml:space="preserve">
+    <value>Точка восстановления создана</value>
+  </data>
+  <data name="Msg_CleanupDone" xml:space="preserve">
+    <value>Освобождено {0}</value>
+  </data>
+  <data name="Msg_DnsApplied" xml:space="preserve">
+    <value>Используется {0}</value>
+  </data>
+  <data name="Msg_DnsReset" xml:space="preserve">
+    <value>Возвращён автоматический DNS</value>
+  </data>
+  <data name="Msg_DnsFlushed" xml:space="preserve">
+    <value>Кэш DNS очищен</value>
+  </data>
+  <data name="Msg_AppRemoved" xml:space="preserve">
+    <value>{0} удалено</value>
+  </data>
+  <data name="Msg_ExplorerRestarted" xml:space="preserve">
+    <value>Проводник перезапущен</value>
+  </data>
+  <data name="Msg_Exported" xml:space="preserve">
+    <value>Сохранено в {0}</value>
+  </data>
+  <data name="Msg_ProfileApplied" xml:space="preserve">
+    <value>Профиль «{0}» применён</value>
+  </data>
+  <data name="Msg_NoChanges" xml:space="preserve">
+    <value>Менять было нечего</value>
+  </data>
+  <data name="Msg_Error" xml:space="preserve">
+    <value>Что-то пошло не так</value>
+  </data>
+  <data name="Tweak_game_bar_disable_Name" xml:space="preserve">
+    <value>Отключить Game Bar и Game DVR</value>
+  </data>
+  <data name="Tweak_game_bar_disable_Desc" xml:space="preserve">
+    <value>Убирает оверлей Xbox и фоновую запись последних 30 секунд игры. Освобождает поток процессора и снимает перехват в цепочке вывода кадра.</value>
+  </data>
+  <data name="Tweak_game_dvr_policy_disable_Name" xml:space="preserve">
+    <value>Заблокировать Game DVR политикой</value>
+  </data>
+  <data name="Tweak_game_dvr_policy_disable_Desc" xml:space="preserve">
+    <value>Блокировка на уровне всей системы, чтобы Windows не включила запись обратно после обновления. Действует для всех учётных записей.</value>
+  </data>
+  <data name="Tweak_fullscreen_optimizations_disable_Name" xml:space="preserve">
+    <value>Отключить оптимизации полноэкранного режима</value>
+  </data>
+  <data name="Tweak_fullscreen_optimizations_disable_Desc" xml:space="preserve">
+    <value>Возвращает настоящий эксклюзивный полный экран вместо композитного окна без рамки. В большинстве движков убирает один кадр задержки вывода.</value>
+  </data>
+  <data name="Tweak_hags_enable_Name" xml:space="preserve">
+    <value>Включить аппаратное ускорение планирования GPU</value>
+  </data>
+  <data name="Tweak_hags_enable_Desc" xml:space="preserve">
+    <value>Передаёт управление очередью кадров видеокарте вместо планировщика Windows. Нужна поддержка со стороны GPU и драйвера (GTX 10-й серии / RX 5000 и новее); на более старом железе Windows просто игнорирует значение.</value>
+  </data>
+  <data name="Tweak_gpu_preemption_disable_Name" xml:space="preserve">
+    <value>Отключить вытеснение на GPU</value>
+  </data>
+  <data name="Tweak_gpu_preemption_disable_Desc" xml:space="preserve">
+    <value>Запрещает драйверу прерывать длинные вызовы отрисовки. На части систем сглаживает время кадра, на других вызывает сброс видеодрайвера.</value>
+  </data>
+  <data name="Tweak_games_cpu_priority_Name" xml:space="preserve">
+    <value>Поднять мультимедийный приоритет игр</value>
+  </data>
+  <data name="Tweak_games_cpu_priority_Desc" xml:space="preserve">
+    <value>Повышает приоритет задачи MMCSS Games с 2 до 6, чтобы потоки игры выигрывали у фоновой работы под нагрузкой. Приоритет GPU и категория планирования и так стоят в лучших значениях, их SysTuneX не трогает.</value>
+  </data>
+  <data name="Tweak_system_responsiveness_Name" xml:space="preserve">
+    <value>Уменьшить резерв ЦП под фоновые задачи</value>
+  </data>
+  <data name="Tweak_system_responsiveness_Desc" xml:space="preserve">
+    <value>Windows резервирует 20% времени процессора под фоновые задачи. SysTuneX ставит 10 — документированное значение Microsoft для мультимедийных машин. Значение 0, популярное в гайдах, оставляет звуковой движок без запаса под нагрузкой.</value>
+  </data>
+  <data name="Tweak_power_throttling_disable_Name" xml:space="preserve">
+    <value>Отключить энергетическое троттлинг-ограничение</value>
+  </data>
+  <data name="Tweak_power_throttling_disable_Desc" xml:space="preserve">
+    <value>Запрещает Windows переносить фоновые потоки на энергоэффективные ядра ради экономии. На настольном ПК полезно, на ноутбуке заметно сокращает время работы от батареи.</value>
+  </data>
+  <data name="Tweak_core_parking_disable_Name" xml:space="preserve">
+    <value>Отключить парковку ядер</value>
+  </data>
+  <data name="Tweak_core_parking_disable_Desc" xml:space="preserve">
+    <value>Держит все ядра активными, чтобы просыпающийся поток не ждал распарковки ядра. Применяется через схему электропитания — только так диспетчер питания это учитывает.</value>
+  </data>
+  <data name="Tweak_timer_resolution_global_Name" xml:space="preserve">
+    <value>Вернуть глобальное разрешение таймера</value>
+  </data>
+  <data name="Tweak_timer_resolution_global_Desc" xml:space="preserve">
+    <value>В Windows 11 22H2 запрос разрешения таймера стал действовать только на процесс, который его сделал. Твик возвращает системное поведение, на которое рассчитывают старые игры и инструменты замера плавности.</value>
+  </data>
+  <data name="Tweak_mouse_acceleration_disable_Name" xml:space="preserve">
+    <value>Отключить ускорение мыши</value>
+  </data>
+  <data name="Tweak_mouse_acceleration_disable_Desc" xml:space="preserve">
+    <value>Выключает «повышенную точность установки указателя», движение курсора становится 1:1 к движению мыши. SysTuneX также обнуляет оба порога ускорения и применяет настройку к текущему сеансу — одной записи в реестр для этого недостаточно.</value>
+  </data>
+  <data name="Tweak_menu_show_delay_Name" xml:space="preserve">
+    <value>Убрать задержку открытия меню</value>
+  </data>
+  <data name="Tweak_menu_show_delay_Desc" xml:space="preserve">
+    <value>Снимает паузу в 400 мс перед появлением подменю — вся оболочка начинает откликаться мгновенно.</value>
+  </data>
+  <data name="Tweak_visual_effects_performance_Name" xml:space="preserve">
+    <value>Визуальные эффекты на максимум производительности</value>
+  </data>
+  <data name="Tweak_visual_effects_performance_Desc" xml:space="preserve">
+    <value>Отключает анимацию окон и эффекты плавного появления, которые рисует композитор рабочего стола. Освобождает немного времени GPU и убирает анимацию из alt-tab.</value>
+  </data>
+  <data name="Tweak_transparency_disable_Name" xml:space="preserve">
+    <value>Отключить эффекты прозрачности</value>
+  </data>
+  <data name="Tweak_transparency_disable_Desc" xml:space="preserve">
+    <value>Убирает акриловое размытие за панелью задач и меню «Пуск», которое видеокарта перерисовывает постоянно.</value>
+  </data>
+  <data name="Tweak_background_apps_disable_Name" xml:space="preserve">
+    <value>Запретить фоновую работу приложений Store</value>
+  </data>
+  <data name="Tweak_background_apps_disable_Desc" xml:space="preserve">
+    <value>Не даёт упакованным приложениям просыпаться для синхронизации и уведомлений, пока игра в фокусе. Обычных программ и значков в трее не касается.</value>
+  </data>
+  <data name="Tweak_wait_to_kill_service_timeout_Name" xml:space="preserve">
+    <value>Сократить таймаут завершения служб</value>
+  </data>
+  <data name="Tweak_wait_to_kill_service_timeout_Desc" xml:space="preserve">
+    <value>Уменьшает ожидание зависшей службы при выключении с 5 секунд до 2 — перезагрузка проходит быстрее.</value>
+  </data>
+  <data name="Tweak_fast_startup_disable_Name" xml:space="preserve">
+    <value>Отключить быстрый запуск</value>
+  </data>
+  <data name="Tweak_fast_startup_disable_Desc" xml:space="preserve">
+    <value>Быстрый запуск гибернует ядро вместо полного выключения, поэтому состояние драйверов и разрешение таймера переносятся между сеансами. Отключение делает выключение настоящим ценой нескольких секунд загрузки.</value>
+  </data>
+  <data name="Tweak_vbs_disable_Name" xml:space="preserve">
+    <value>Отключить защиту на базе виртуализации (VBS)</value>
+  </data>
+  <data name="Tweak_vbs_disable_Desc" xml:space="preserve">
+    <value>VBS запускает Windows поверх гипервизора, что стоит примерно 5–15% кадров в играх, упирающихся в процессор. Отключение убирает настоящий рубеж безопасности.</value>
+  </data>
+  <data name="Tweak_hvci_disable_Name" xml:space="preserve">
+    <value>Отключить целостность памяти (HVCI)</value>
+  </data>
+  <data name="Tweak_hvci_disable_Desc" xml:space="preserve">
+    <value>Целостность памяти проверяет каждую страницу кода драйверов ядра. Отключение убирает эту проверку и её накладные расходы на каждый вызов.</value>
+  </data>
+  <data name="Tweak_hypervisor_launch_off_Name" xml:space="preserve">
+    <value>Не запускать гипервизор при загрузке</value>
+  </data>
+  <data name="Tweak_hypervisor_launch_off_Desc" xml:space="preserve">
+    <value>Ключи реестра выше запрещают Windows запрашивать VBS, но гипервизор всё равно стартует, если так написано в конфигурации загрузки. Твик выставляет hypervisorlaunchtype=off — именно это реально убирает слой виртуализации. Hyper-V, WSL2, Docker Desktop, «Песочница Windows» и подсистема Android перестанут работать.</value>
+  </data>
+  <data name="Tweak_recall_disable_Name" xml:space="preserve">
+    <value>Отключить Windows Recall</value>
+  </data>
+  <data name="Tweak_recall_disable_Desc" xml:space="preserve">
+    <value>Блокирует службу, которая снимает скриншоты рабочего стола каждые несколько секунд и прогоняет их через локальную модель. Записываются обе политики — общесистемная и пользовательская.</value>
+  </data>
+  <data name="Tweak_click_to_do_disable_Name" xml:space="preserve">
+    <value>Отключить Click To Do</value>
+  </data>
+  <data name="Tweak_click_to_do_disable_Desc" xml:space="preserve">
+    <value>Выключает оверлей, который анализирует содержимое экрана, чтобы предложить действия на базе ИИ.</value>
+  </data>
+  <data name="Tweak_copilot_disable_Name" xml:space="preserve">
+    <value>Отключить Copilot</value>
+  </data>
+  <data name="Tweak_copilot_disable_Desc" xml:space="preserve">
+    <value>Убирает кнопку Copilot с панели задач и блокирует политику, из-за которой его веб-представление загружается в фоне.</value>
+  </data>
+  <data name="Tweak_bing_search_disable_Name" xml:space="preserve">
+    <value>Убрать веб-результаты из поиска «Пуск»</value>
+  </data>
+  <data name="Tweak_bing_search_disable_Desc" xml:space="preserve">
+    <value>Прекращает отправку набранного текста в Bing и отрисовку ответа в веб-представлении. Поиск по файлам и приложениям работает как прежде.</value>
+  </data>
+  <data name="Tweak_web_search_policy_disable_Name" xml:space="preserve">
+    <value>Заблокировать сетевой поиск политикой</value>
+  </data>
+  <data name="Tweak_web_search_policy_disable_Desc" xml:space="preserve">
+    <value>Общесистемная политика, которая вообще не даёт поиску Windows выходить в интернет.</value>
+  </data>
+  <data name="Tweak_search_highlights_disable_Name" xml:space="preserve">
+    <value>Отключить «Заметное в поиске»</value>
+  </data>
+  <data name="Tweak_search_highlights_disable_Desc" xml:space="preserve">
+    <value>Прекращает загрузку ежедневных иллюстраций и подборок контента в строке поиска.</value>
+  </data>
+  <data name="Tweak_widgets_disable_Name" xml:space="preserve">
+    <value>Отключить виджеты</value>
+  </data>
+  <data name="Tweak_widgets_disable_Desc" xml:space="preserve">
+    <value>Виджеты держат веб-среду выполнения запущенной, чтобы опрашивать новости и погоду. Политика отключает ленту целиком, а не просто прячет кнопку с панели задач.</value>
+  </data>
+  <data name="Tweak_taskbar_chat_disable_Name" xml:space="preserve">
+    <value>Убрать кнопку «Чат» с панели задач</value>
+  </data>
+  <data name="Tweak_taskbar_chat_disable_Desc" xml:space="preserve">
+    <value>Скрывает кнопку личного Teams, которая предзагружает свой процесс при входе в систему.</value>
+  </data>
+  <data name="Tweak_startup_delay_disable_Name" xml:space="preserve">
+    <value>Убрать задержку автозапуска</value>
+  </data>
+  <data name="Tweak_startup_delay_disable_Desc" xml:space="preserve">
+    <value>Windows придерживает программы автозагрузки примерно на десять секунд после входа, чтобы сначала запустилась оболочка. На SSD это ожидание уже не нужно.</value>
+  </data>
+  <data name="Tweak_lock_screen_spotlight_disable_Name" xml:space="preserve">
+    <value>Отключить «Интересное» Windows</value>
+  </data>
+  <data name="Tweak_lock_screen_spotlight_disable_Desc" xml:space="preserve">
+    <value>Прекращает загрузку сменяющихся обоев и сопровождающих их рекламных подписей на экран блокировки и рабочий стол.</value>
+  </data>
+  <data name="Tweak_telemetry_minimize_Name" xml:space="preserve">
+    <value>Свести диагностические данные к минимуму</value>
+  </data>
+  <data name="Tweak_telemetry_minimize_Desc" xml:space="preserve">
+    <value>Ставит политику диагностических данных на минимальный уровень. В редакциях Home и Pro Windows трактует 0 как «обязательные данные», а не «выключено» — полный ноль учитывают только Enterprise и Education. SysTuneX пишет политику в любом случае и не делает вид, что телеметрия отключена полностью.</value>
+  </data>
+  <data name="Tweak_advertising_id_disable_Name" xml:space="preserve">
+    <value>Отключить рекламный идентификатор</value>
+  </data>
+  <data name="Tweak_advertising_id_disable_Desc" xml:space="preserve">
+    <value>Запрещает приложениям читать персональный идентификатор, который Windows выдаёт для таргетинга рекламы.</value>
+  </data>
+  <data name="Tweak_activity_history_disable_Name" xml:space="preserve">
+    <value>Отключить журнал действий</value>
+  </data>
+  <data name="Tweak_activity_history_disable_Desc" xml:space="preserve">
+    <value>Прекращает запись того, какие приложения и файлы вы открываете, и выгрузку этой ленты в облако.</value>
+  </data>
+  <data name="Tweak_feedback_requests_disable_Name" xml:space="preserve">
+    <value>Убрать запросы отзывов</value>
+  </data>
+  <data name="Tweak_feedback_requests_disable_Desc" xml:space="preserve">
+    <value>Отключает периодические диалоги «насколько вероятно, что вы порекомендуете Windows».</value>
+  </data>
+  <data name="Tweak_tailored_experiences_disable_Name" xml:space="preserve">
+    <value>Отключить персонализированные предложения</value>
+  </data>
+  <data name="Tweak_tailored_experiences_disable_Desc" xml:space="preserve">
+    <value>Запрещает Windows использовать диагностические данные для персонализации советов, рекламы и рекомендаций в «Пуске».</value>
+  </data>
+  <data name="Tweak_start_suggestions_disable_Name" xml:space="preserve">
+    <value>Убрать рекомендации и автоустановку приложений</value>
+  </data>
+  <data name="Tweak_start_suggestions_disable_Desc" xml:space="preserve">
+    <value>Прекращает тихую установку продвигаемых приложений из Store и показ рекламных плиток в меню «Пуск».</value>
+  </data>
+  <data name="Tweak_location_disable_Name" xml:space="preserve">
+    <value>Запретить доступ к местоположению</value>
+  </data>
+  <data name="Tweak_location_disable_Desc" xml:space="preserve">
+    <value>Ставит общесистемное согласие на местоположение в «Запретить». Верните обратно перед использованием «Карт», «Поиска устройства» и виджетов погоды, которым нужна реальная геопозиция.</value>
+  </data>
+  <data name="Tweak_error_reporting_disable_Name" xml:space="preserve">
+    <value>Отключить отчёты об ошибках Windows</value>
+  </data>
+  <data name="Tweak_error_reporting_disable_Desc" xml:space="preserve">
+    <value>Прекращает отправку дампов сбоев в Microsoft. Локальные дампы по-прежнему пишутся, так что вылет игры всё ещё можно разобрать.</value>
+  </data>
+  <data name="Tweak_cloud_clipboard_disable_Name" xml:space="preserve">
+    <value>Отключить журнал и синхронизацию буфера обмена</value>
+  </data>
+  <data name="Tweak_cloud_clipboard_disable_Desc" xml:space="preserve">
+    <value>Буфер обмена перестаёт храниться в памяти между копированиями и синхронизироваться с учётной записью Microsoft. Win+V перестанет работать.</value>
+  </data>
+  <data name="Tweak_nagle_disable_Name" xml:space="preserve">
+    <value>Отключить алгоритм Нейгла</value>
+  </data>
+  <data name="Tweak_nagle_disable_Desc" xml:space="preserve">
+    <value>Нейгл накапливает мелкие исходящие пакеты ради экономии трафика, добавляя до 200 мс к тем самым частым мелким обновлениям, которые шлёт игровой клиент. Применяется ко всем подключённым адаптерам, потому что настройка живёт на уровне интерфейса, а не системы.</value>
+  </data>
+  <data name="Tweak_network_throttling_disable_Name" xml:space="preserve">
+    <value>Снять ограничение сетевого троттлинга</value>
+  </data>
+  <data name="Tweak_network_throttling_disable_Desc" xml:space="preserve">
+    <value>Windows ограничивает не-мультимедийный сетевой трафик 10 пакетами в миллисекунду, чтобы воспроизведение звука получало свою долю. На современной машине это ограничение только мешает.</value>
+  </data>
+  <data name="Tweak_network_memory_reserve_Name" xml:space="preserve">
+    <value>Увеличить сетевой пул памяти</value>
+  </data>
+  <data name="Tweak_network_memory_reserve_Desc" xml:space="preserve">
+    <value>Позволяет стеку TCP/IP выделять больше невыгружаемой памяти под буферы — помогает на быстрых соединениях, где иначе теряются пакеты под нагрузкой.</value>
+  </data>
+  <data name="Profile_esports_Name" xml:space="preserve">
+    <value>Соревновательные шутеры</value>
+  </data>
+  <data name="Profile_esports_Desc" xml:space="preserve">
+    <value>Минимальная задержка ввода. Сырой ввод мыши, никакого оверлея записи, анимаций композитора и пробуждений фоновых приложений.</value>
+  </data>
+  <data name="Profile_battle_royale_Name" xml:space="preserve">
+    <value>Королевская битва</value>
+  </data>
+  <data name="Profile_battle_royale_Desc" xml:space="preserve">
+    <value>Настроен под большие лобби: сначала сетевая задержка, затем производительность стриминга ассетов, которым такие карты грузятся постоянно.</value>
+  </data>
+  <data name="Profile_open_world_Name" xml:space="preserve">
+    <value>Открытый мир и RPG</value>
+  </data>
+  <data name="Profile_open_world_Desc" xml:space="preserve">
+    <value>Долгие сессии с тяжёлой подгрузкой. Держит все ядра активными и убирает фоновую индексацию, конкурирующую с игрой за диск.</value>
+  </data>
+  <data name="Profile_simulation_Name" xml:space="preserve">
+    <value>Гонки и симуляторы</value>
+  </data>
+  <data name="Profile_simulation_Desc" xml:space="preserve">
+    <value>Стабильность времени кадра важнее пикового FPS — именно это чувствуется через руль.</value>
+  </data>
+  <data name="Profile_maximum_Name" xml:space="preserve">
+    <value>Максимальная производительность</value>
+  </data>
+  <data name="Profile_maximum_Desc" xml:space="preserve">
+    <value>Всё, что делают остальные профили, плюс рискованные изменения: защита виртуализации выключена, гипервизор убран из загрузки. Прочитайте предупреждения — это затрагивает античиты и Hyper-V.</value>
+  </data>
+  <data name="Profile_streaming_Name" xml:space="preserve">
+    <value>Стриминг и запись</value>
+  </data>
+  <data name="Profile_streaming_Desc" xml:space="preserve">
+    <value>Для игры во время кодирования в OBS. Намеренно не трогает стек захвата и резерв ЦП под фоновые задачи, чтобы не задушить кодировщик.</value>
+  </data>
+  <data name="Service_DiagTrack_Name" xml:space="preserve">
+    <value>Функциональные возможности для подключённых пользователей и телеметрия</value>
+  </data>
+  <data name="Service_DiagTrack_Desc" xml:space="preserve">
+    <value>Собирает и выгружает диагностические данные. Ничто в Windows от неё не зависит.</value>
+  </data>
+  <data name="Service_dmwappushservice_Name" xml:space="preserve">
+    <value>Служба маршрутизации push-сообщений WAP</value>
+  </data>
+  <data name="Service_dmwappushservice_Desc" xml:space="preserve">
+    <value>Маршрутизирует телеметрию для управления мобильными устройствами. Вне корпоративных парков не используется.</value>
+  </data>
+  <data name="Service_WerSvc_Name" xml:space="preserve">
+    <value>Служба регистрации ошибок Windows</value>
+  </data>
+  <data name="Service_WerSvc_Desc" xml:space="preserve">
+    <value>Выгружает отчёты о сбоях в Microsoft. Локальные дампы пишутся и без неё.</value>
+  </data>
+  <data name="Service_DPS_Name" xml:space="preserve">
+    <value>Служба политики диагностики</value>
+  </data>
+  <data name="Service_DPS_Desc" xml:space="preserve">
+    <value>Запускает встроенные средства устранения неполадок и диагностику сети. При отключении кнопки «Диагностика неполадок» перестают работать.</value>
+  </data>
+  <data name="Service_SysMain_Name" xml:space="preserve">
+    <value>SysMain (Superfetch)</value>
+  </data>
+  <data name="Service_SysMain_Desc" xml:space="preserve">
+    <value>Заранее подгружает часто используемые приложения в память. Придумана под механические диски; на NVMe SSD создаёт в основном фоновую активность.</value>
+  </data>
+  <data name="Service_WSearch_Name" xml:space="preserve">
+    <value>Windows Search</value>
+  </data>
+  <data name="Service_WSearch_Desc" xml:space="preserve">
+    <value>Индексирует файлы и почту, чтобы поиск в «Пуске» был мгновенным. Отключение убирает фоновую нагрузку на диск и процессор, но поиск файлов в проводнике и «Пуске» становится заметно медленнее.</value>
+  </data>
+  <data name="Service_TrkWks_Name" xml:space="preserve">
+    <value>Клиент отслеживания изменившихся связей</value>
+  </data>
+  <data name="Service_TrkWks_Desc" xml:space="preserve">
+    <value>Поддерживает работоспособность ярлыков при перемещении цели между томами NTFS. Нужна редко.</value>
+  </data>
+  <data name="Service_DoSvc_Name" xml:space="preserve">
+    <value>Оптимизация доставки</value>
+  </data>
+  <data name="Service_DoSvc_Desc" xml:space="preserve">
+    <value>Раздаёт скачанные обновления другим ПК через ваше соединение, включая исходящий трафик. Центр обновления работает и без неё, просто без пирингового кэша.</value>
+  </data>
+  <data name="Service_PushToInstall_Name" xml:space="preserve">
+    <value>Служба PushToInstall</value>
+  </data>
+  <data name="Service_PushToInstall_Desc" xml:space="preserve">
+    <value>Позволяет Store устанавливать приложения удалённо с другого устройства. Почти никем не используется.</value>
+  </data>
+  <data name="Service_edgeupdate_Name" xml:space="preserve">
+    <value>Служба обновления Microsoft Edge</value>
+  </data>
+  <data name="Service_edgeupdate_Desc" xml:space="preserve">
+    <value>Проверяет обновления Edge по расписанию. Edge всё равно обновится при запуске.</value>
+  </data>
+  <data name="Service_MicrosoftEdgeElevationService_Name" xml:space="preserve">
+    <value>Служба повышения прав Microsoft Edge</value>
+  </data>
+  <data name="Service_MicrosoftEdgeElevationService_Desc" xml:space="preserve">
+    <value>Вспомогательная служба, применяющая обновления Edge с повышенными правами.</value>
+  </data>
+  <data name="Service_XblAuthManager_Name" xml:space="preserve">
+    <value>Диспетчер проверки подлинности Xbox Live</value>
+  </data>
+  <data name="Service_XblAuthManager_Desc" xml:space="preserve">
+    <value>Выполняет вход в Xbox Live. Нужна для игр Game Pass и всего, что использует учётную запись Xbox; безопасно отключать, если вы играете только в Steam, Epic или GOG.</value>
+  </data>
+  <data name="Service_XblGameSave_Name" xml:space="preserve">
+    <value>Сохранение игр на Xbox Live</value>
+  </data>
+  <data name="Service_XblGameSave_Desc" xml:space="preserve">
+    <value>Синхронизирует облачные сохранения Xbox. Важна только для игр из Microsoft Store и Game Pass.</value>
+  </data>
+  <data name="Service_XboxNetApiSvc_Name" xml:space="preserve">
+    <value>Сетевая служба Xbox Live</value>
+  </data>
+  <data name="Service_XboxNetApiSvc_Desc" xml:space="preserve">
+    <value>Обеспечивает сетевую игру Xbox Live для игр из Store.</value>
+  </data>
+  <data name="Service_XboxGipSvc_Name" xml:space="preserve">
+    <value>Управление аксессуарами Xbox</value>
+  </data>
+  <data name="Service_XboxGipSvc_Desc" xml:space="preserve">
+    <value>Отвечает за прошивку и сопряжение геймпадов Xbox. Без неё контроллеры работают как обычные XInput-устройства, но прошивка не обновляется.</value>
+  </data>
+  <data name="Service_CDPSvc_Name" xml:space="preserve">
+    <value>Платформа подключённых устройств</value>
+  </data>
+  <data name="Service_CDPSvc_Desc" xml:space="preserve">
+    <value>Находит устройства поблизости для «Обмена с окружением» и «Связи с телефоном».</value>
+  </data>
+  <data name="Service_CDPUserSvc_Name" xml:space="preserve">
+    <value>Платформа подключённых устройств (пользовательская)</value>
+  </data>
+  <data name="Service_CDPUserSvc_Desc" xml:space="preserve">
+    <value>Пользовательская половина платформы подключённых устройств.</value>
+  </data>
+  <data name="Service_OneSyncSvc_Name" xml:space="preserve">
+    <value>Узел синхронизации</value>
+  </data>
+  <data name="Service_OneSyncSvc_Desc" xml:space="preserve">
+    <value>Синхронизирует «Почту», «Люди» и «Календарь» в фоне. При отключении встроенные приложения почты и календаря перестают обновляться.</value>
+  </data>
+  <data name="Service_cbdhsvc_Name" xml:space="preserve">
+    <value>Служба буфера обмена</value>
+  </data>
+  <data name="Service_cbdhsvc_Desc" xml:space="preserve">
+    <value>Обеспечивает журнал буфера обмена и его синхронизацию между устройствами. Без неё Win+V не работает.</value>
+  </data>
+  <data name="Service_PhoneSvc_Name" xml:space="preserve">
+    <value>Служба телефонии</value>
+  </data>
+  <data name="Service_PhoneSvc_Desc" xml:space="preserve">
+    <value>Управляет состоянием телефонии на устройствах с сотовым модемом.</value>
+  </data>
+  <data name="Service_WpnService_Name" xml:space="preserve">
+    <value>Служба push-уведомлений Windows</value>
+  </data>
+  <data name="Service_WpnService_Desc" xml:space="preserve">
+    <value>Доставляет всплывающие уведомления. Отключение убирает уведомления всех приложений, включая Discord, Steam и Teams.</value>
+  </data>
+  <data name="Service_lfsvc_Name" xml:space="preserve">
+    <value>Служба географического положения</value>
+  </data>
+  <data name="Service_lfsvc_Desc" xml:space="preserve">
+    <value>Предоставляет местоположение приложениям. На настольном ПК без GPS больше ничем не используется.</value>
+  </data>
+  <data name="Service_MapsBroker_Name" xml:space="preserve">
+    <value>Диспетчер скачанных карт</value>
+  </data>
+  <data name="Service_MapsBroker_Desc" xml:space="preserve">
+    <value>Поддерживает офлайн-карты в актуальном состоянии для приложения «Карты».</value>
+  </data>
+  <data name="Service_WbioSrvc_Name" xml:space="preserve">
+    <value>Биометрическая служба Windows</value>
+  </data>
+  <data name="Service_WbioSrvc_Desc" xml:space="preserve">
+    <value>Обеспечивает вход по отпечатку и лицу. Отключайте, только если входите по PIN-коду или паролю — Windows Hello перестанет работать.</value>
+  </data>
+  <data name="Service_TabletInputService_Name" xml:space="preserve">
+    <value>Сенсорная клавиатура и панель рукописного ввода</value>
+  </data>
+  <data name="Service_TabletInputService_Desc" xml:space="preserve">
+    <value>Отвечает за экранную клавиатуру и рукописный ввод. На настольном ПК с обычной клавиатурой не нужна.</value>
+  </data>
+  <data name="Service_stisvc_Name" xml:space="preserve">
+    <value>Служба загрузки изображений Windows</value>
+  </data>
+  <data name="Service_stisvc_Desc" xml:space="preserve">
+    <value>Работает со сканерами и камерами по протоколу WIA.</value>
+  </data>
+  <data name="Service_Spooler_Name" xml:space="preserve">
+    <value>Диспетчер печати</value>
+  </data>
+  <data name="Service_Spooler_Desc" xml:space="preserve">
+    <value>Нужен для любой печати, включая «Печать в PDF». Отключайте только на машине, где принтера нет вообще.</value>
+  </data>
+  <data name="Service_PrintNotify_Name" xml:space="preserve">
+    <value>Расширения и уведомления принтеров</value>
+  </data>
+  <data name="Service_PrintNotify_Desc" xml:space="preserve">
+    <value>Показывает всплывающие сообщения о состоянии принтера. Печать работает и без неё.</value>
+  </data>
+  <data name="Service_SEMgrSvc_Name" xml:space="preserve">
+    <value>Платежи и NFC</value>
+  </data>
+  <data name="Service_SEMgrSvc_Desc" xml:space="preserve">
+    <value>Обрабатывает платежи через NFC. Присутствует только на машинах с соответствующим модулем.</value>
+  </data>
+  <data name="Service_WalletService_Name" xml:space="preserve">
+    <value>Служба кошелька</value>
+  </data>
+  <data name="Service_WalletService_Desc" xml:space="preserve">
+    <value>Хранилище платёжных карт и пропусков.</value>
+  </data>
+  <data name="Service_RemoteRegistry_Name" xml:space="preserve">
+    <value>Удалённый реестр</value>
+  </data>
+  <data name="Service_RemoteRegistry_Desc" xml:space="preserve">
+    <value>Позволяет другим машинам править этот реестр по сети. Выключена по умолчанию, и пусть такой и остаётся.</value>
+  </data>
+  <data name="Service_Fax_Name" xml:space="preserve">
+    <value>Факс</value>
+  </data>
+  <data name="Service_Fax_Desc" xml:space="preserve">
+    <value>Поддержка факса. Оставлена для совместимости, используется крайне редко.</value>
+  </data>
+  <data name="Service_RetailDemo_Name" xml:space="preserve">
+    <value>Служба демонстрации магазина</value>
+  </data>
+  <data name="Service_RetailDemo_Desc" xml:space="preserve">
+    <value>Демонстрационный режим для торгового зала. На личной машине не нужен никогда.</value>
+  </data>
+  <data name="Service_WMPNetworkSvc_Name" xml:space="preserve">
+    <value>Служба общих сетевых ресурсов проигрывателя Windows Media</value>
+  </data>
+  <data name="Service_WMPNetworkSvc_Desc" xml:space="preserve">
+    <value>Транслирует библиотеку Media Player на устройства в сети.</value>
+  </data>
+  <data name="Service_AJRouter_Name" xml:space="preserve">
+    <value>Служба маршрутизатора AllJoyn</value>
+  </data>
+  <data name="Service_AJRouter_Desc" xml:space="preserve">
+    <value>Маршрутизирует трафик IoT-устройств AllJoyn. Фактически мёртвая технология.</value>
+  </data>
+  <data name="Service_SharedAccess_Name" xml:space="preserve">
+    <value>Общий доступ к подключению к Интернету</value>
+  </data>
+  <data name="Service_SharedAccess_Desc" xml:space="preserve">
+    <value>Раздаёт интернет-соединение этой машины другим устройствам. Также используется мобильным хот-спотом.</value>
+  </data>
+  <data name="Service_MessagingService_Name" xml:space="preserve">
+    <value>Служба обмена сообщениями</value>
+  </data>
+  <data name="Service_MessagingService_Desc" xml:space="preserve">
+    <value>Поддержка SMS и сообщений для устройств с сотовым модемом.</value>
+  </data>
+  <data name="Service_PimIndexMaintenanceSvc_Name" xml:space="preserve">
+    <value>Индексирование данных контактов</value>
+  </data>
+  <data name="Service_PimIndexMaintenanceSvc_Desc" xml:space="preserve">
+    <value>Индексирует контакты для приложения «Люди».</value>
+  </data>
+  <data name="Cleanup_user_temp_Name" xml:space="preserve">
+    <value>Ваши временные файлы</value>
+  </data>
+  <data name="Cleanup_user_temp_Desc" xml:space="preserve">
+    <value>Всё, что лежит в %TEMP%. Файлы, изменённые за последний час, не трогаются — вдруг они ещё используются.</value>
+  </data>
+  <data name="Cleanup_windows_temp_Name" xml:space="preserve">
+    <value>Временные файлы Windows</value>
+  </data>
+  <data name="Cleanup_windows_temp_Desc" xml:space="preserve">
+    <value>Черновые файлы, которые установщики и компоненты Windows оставляют в системной папке temp.</value>
+  </data>
+  <data name="Cleanup_crash_dumps_Name" xml:space="preserve">
+    <value>Дампы сбоев</value>
+  </data>
+  <data name="Cleanup_crash_dumps_Desc" xml:space="preserve">
+    <value>Дампы памяти после сбоя приложения или ядра. Часто по несколько сотен мегабайт каждый.</value>
+  </data>
+  <data name="Cleanup_error_reports_Name" xml:space="preserve">
+    <value>Очередь отчётов об ошибках</value>
+  </data>
+  <data name="Cleanup_error_reports_Desc" xml:space="preserve">
+    <value>Отчёты, которые служба регистрации ошибок поставила в очередь на отправку, но так и не отправила.</value>
+  </data>
+  <data name="Cleanup_windows_logs_Name" xml:space="preserve">
+    <value>Журналы обслуживания</value>
+  </data>
+  <data name="Cleanup_windows_logs_Desc" xml:space="preserve">
+    <value>Журналы хранилища компонентов и DISM, оставшиеся от прошлых обновлений Windows.</value>
+  </data>
+  <data name="Cleanup_windows_update_cache_Name" xml:space="preserve">
+    <value>Кэш загрузок Центра обновления</value>
+  </data>
+  <data name="Cleanup_windows_update_cache_Desc" xml:space="preserve">
+    <value>Установщики, которые Центр обновления уже применил. Удалять безопасно; единственная плата — при откате недавнего обновления его придётся скачать заново.</value>
+  </data>
+  <data name="Cleanup_delivery_optimization_cache_Name" xml:space="preserve">
+    <value>Кэш оптимизации доставки</value>
+  </data>
+  <data name="Cleanup_delivery_optimization_cache_Desc" xml:space="preserve">
+    <value>Фрагменты обновлений, которые хранятся для раздачи другим ПК в вашей сети.</value>
+  </data>
+  <data name="Cleanup_thumbnail_cache_Name" xml:space="preserve">
+    <value>Кэш эскизов</value>
+  </data>
+  <data name="Cleanup_thumbnail_cache_Desc" xml:space="preserve">
+    <value>Миниатюры изображений проводника. Пересоздаются автоматически при следующем открытии папки.</value>
+  </data>
+  <data name="Cleanup_directx_shader_cache_Name" xml:space="preserve">
+    <value>Кэш шейдеров DirectX</value>
+  </data>
+  <data name="Cleanup_directx_shader_cache_Desc" xml:space="preserve">
+    <value>Скомпилированные шейдеры, которые Windows кэширует для игр на D3D12. Очистка иногда лечит фризы после обновления драйвера ценой одной пересборки шейдеров в каждой игре.</value>
+  </data>
+  <data name="Cleanup_nvidia_shader_cache_Name" xml:space="preserve">
+    <value>Кэш шейдеров NVIDIA</value>
+  </data>
+  <data name="Cleanup_nvidia_shader_cache_Desc" xml:space="preserve">
+    <value>Собственные кэши шейдеров драйвера для DirectX и OpenGL. Пересоздаются при следующем запуске каждой игры.</value>
+  </data>
+  <data name="Cleanup_amd_shader_cache_Name" xml:space="preserve">
+    <value>Кэш шейдеров AMD</value>
+  </data>
+  <data name="Cleanup_amd_shader_cache_Desc" xml:space="preserve">
+    <value>Кэши шейдеров драйвера Radeon. Пересоздаются при следующем запуске каждой игры.</value>
+  </data>
+  <data name="Cleanup_prefetch_Name" xml:space="preserve">
+    <value>Данные Prefetch</value>
+  </data>
+  <data name="Cleanup_prefetch_Desc" xml:space="preserve">
+    <value>По этим файлам Windows предсказывает, что грузить при загрузке и старте приложений. После удаления несколько первых запусков будут медленнее, пока данные не накопятся заново. На SSD устойчивой пользы нет — пункт добавлен только потому, что его часто просят.</value>
+  </data>
+</root>

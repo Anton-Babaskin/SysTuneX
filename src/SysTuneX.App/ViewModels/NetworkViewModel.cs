@@ -1,91 +1,262 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SysTuneX.App.Localization;
+using SysTuneX.App.Services;
+using SysTuneX.Core.Abstractions;
 using SysTuneX.Core.Models;
-using SysTuneX.Core.Services;
 using SysTuneX.Core.Tweaks;
 
 namespace SysTuneX.App.ViewModels;
 
-public partial class NetworkViewModel : ObservableObject
+/// <summary>The network page: latency tweaks plus the DNS card.</summary>
+public sealed partial class NetworkViewModel : TweakPageViewModel
 {
-    private readonly IRegistryService _registry;
-    private readonly INetworkService _networkService;
+    private readonly INetworkService _network;
 
-    public ObservableCollection<TweakItem> Tweaks { get; } = [];
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasAdapter))]
+    private NetworkAdapterInfo? _selectedAdapter;
 
-    [ObservableProperty] private string _currentDnsPrimary = "Auto";
-    [ObservableProperty] private string _currentDnsSecondary = "Auto";
-    [ObservableProperty] private int _selectedDnsPreset = -1;
-    [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private int _appliedCount;
+    [ObservableProperty]
+    private DnsPresetViewModel? _selectedPreset;
 
-    public List<string> DnsPresetNames { get; } = NetworkTweaks.DnsPresets.Select(d => d.Name).ToList();
+    [ObservableProperty]
+    private string _currentDns = string.Empty;
 
-    public NetworkViewModel(IRegistryService registry, INetworkService networkService)
+    [ObservableProperty]
+    private bool _isDnsBusy;
+
+    [ObservableProperty]
+    private string _latency = string.Empty;
+
+    [ObservableProperty]
+    private bool _isMeasuring;
+
+    public NetworkViewModel(
+        ITweakEngine tweaks,
+        IEnvironmentService environment,
+        IUserInteraction interaction,
+        ILocalizationService localization,
+        CatalogText text,
+        IAppSettingsService settings,
+        INetworkService network)
+        : base(tweaks, environment, interaction, localization, text, settings)
     {
-        _registry = registry;
-        _networkService = networkService;
-    }
+        _network = network;
 
-    public void Initialize()
-    {
-        Tweaks.Clear();
-        foreach (var def in NetworkTweaks.All)
+        foreach (DnsPreset preset in NetworkTweaks.DnsPresets)
         {
-            var item = NetworkTweaks.ToTweakItem(def);
-            item.Status = NetworkTweaks.CheckStatus(def, _registry);
-            item.IsEnabled = item.Status == TweakStatus.Applied;
-            Tweaks.Add(item);
+            Presets.Add(new DnsPresetViewModel(preset));
         }
-        var dns = _networkService.GetCurrentDns();
-        CurrentDnsPrimary = dns.Primary;
-        CurrentDnsSecondary = dns.Secondary;
-        AppliedCount = Tweaks.Count(t => t.Status == TweakStatus.Applied);
     }
 
-    [RelayCommand]
-    private async Task ToggleTweak(TweakItem item)
-    {
-        var def = NetworkTweaks.All.FirstOrDefault(t => t.Id == item.Id);
-        if (def == null) return;
+    protected override TweakCategory Category => TweakCategory.Network;
 
-        item.IsBusy = true;
-        await Task.Run(() =>
+    public ObservableCollection<NetworkAdapterInfo> Adapters { get; } = [];
+
+    public ObservableCollection<DnsPresetViewModel> Presets { get; } = [];
+
+    public bool HasAdapter => SelectedAdapter is not null;
+
+    protected override async Task OnEnterAsync()
+    {
+        await base.OnEnterAsync().ConfigureAwait(true);
+        LoadAdapters();
+    }
+
+    partial void OnSelectedAdapterChanged(NetworkAdapterInfo? value) => RefreshDns();
+
+    partial void OnSelectedPresetChanged(DnsPresetViewModel? value)
+    {
+        // The radio buttons bind one-way to IsSelected, so the whole set is kept in sync here
+        // rather than letting each button write back into the view model.
+        foreach (DnsPresetViewModel preset in Presets)
         {
-            if (item.IsEnabled)
-                NetworkTweaks.Revert(def, _registry);
-            else
-                NetworkTweaks.Apply(def, _registry);
-        });
-        item.Status = NetworkTweaks.CheckStatus(def, _registry);
-        item.IsEnabled = item.Status == TweakStatus.Applied;
-        item.IsBusy = false;
-        AppliedCount = Tweaks.Count(t => t.Status == TweakStatus.Applied);
+            preset.IsSelected = ReferenceEquals(preset, value);
+        }
     }
 
     [RelayCommand]
-    private async Task ApplyDns()
+    private void SelectPreset(DnsPresetViewModel? preset) => SelectedPreset = preset;
+
+    [RelayCommand]
+    private void ReloadAdapters() => LoadAdapters();
+
+    [RelayCommand]
+    private async Task ApplyDnsAsync()
     {
-        if (SelectedDnsPreset < 0 || SelectedDnsPreset >= NetworkTweaks.DnsPresets.Length)
+        if (SelectedAdapter is null || SelectedPreset is null || IsDnsBusy)
+        {
             return;
+        }
 
-        IsBusy = true;
-        var preset = NetworkTweaks.DnsPresets[SelectedDnsPreset];
-        await Task.Run(() => _networkService.SetDns(preset.Primary, preset.Secondary));
-        CurrentDnsPrimary = preset.Primary;
-        CurrentDnsSecondary = preset.Secondary;
-        IsBusy = false;
+        IsDnsBusy = true;
+
+        try
+        {
+            OperationResult result = await _network
+                .SetDnsAsync(SelectedAdapter.Id, SelectedPreset.Primary, SelectedPreset.Secondary, PageToken)
+                .ConfigureAwait(true);
+
+            if (result.Success)
+            {
+                Interaction.ShowSuccess(Localization.Format("Msg_DnsApplied", SelectedPreset.Name));
+            }
+            else
+            {
+                Interaction.ShowError(result.Message ?? Localization["Msg_Error"]);
+            }
+
+            LoadAdapters();
+        }
+        finally
+        {
+            IsDnsBusy = false;
+        }
     }
 
     [RelayCommand]
-    private async Task ResetDns()
+    private async Task ResetDnsAsync()
     {
-        IsBusy = true;
-        await Task.Run(() => _networkService.ResetDns());
-        var dns = _networkService.GetCurrentDns();
-        CurrentDnsPrimary = dns.Primary;
-        CurrentDnsSecondary = dns.Secondary;
-        IsBusy = false;
+        if (SelectedAdapter is null || IsDnsBusy)
+        {
+            return;
+        }
+
+        IsDnsBusy = true;
+
+        try
+        {
+            // Restore, not "set to DHCP": if the machine had static resolvers before SysTuneX
+            // touched it, those are what should come back.
+            OperationResult result = await _network
+                .RestoreDnsAsync(SelectedAdapter.Id, PageToken)
+                .ConfigureAwait(true);
+
+            if (result.Success)
+            {
+                Interaction.ShowSuccess(Localization["Msg_DnsReset"]);
+            }
+            else
+            {
+                Interaction.ShowError(result.Message ?? Localization["Msg_Error"]);
+            }
+
+            LoadAdapters();
+        }
+        finally
+        {
+            IsDnsBusy = false;
+        }
     }
+
+    [RelayCommand]
+    private async Task FlushDnsAsync()
+    {
+        OperationResult result = await _network.FlushDnsCacheAsync(PageToken).ConfigureAwait(true);
+
+        if (result.Success)
+        {
+            Interaction.ShowSuccess(Localization["Msg_DnsFlushed"]);
+        }
+        else
+        {
+            Interaction.ShowError(result.Message ?? Localization["Msg_Error"]);
+        }
+    }
+
+    [RelayCommand]
+    private async Task MeasureAsync()
+    {
+        if (IsMeasuring)
+        {
+            return;
+        }
+
+        IsMeasuring = true;
+        Latency = Localization["Network_Measuring"];
+
+        try
+        {
+            foreach (DnsPresetViewModel preset in Presets)
+            {
+                long? milliseconds = await _network.MeasureLatencyAsync(preset.Primary, PageToken).ConfigureAwait(true);
+                preset.LatencyMs = milliseconds;
+            }
+
+            IReadOnlyList<string> current = SelectedAdapter is null ? [] : _network.GetDnsServers(SelectedAdapter.Id);
+            long? currentLatency = current.Count > 0
+                ? await _network.MeasureLatencyAsync(current[0], PageToken).ConfigureAwait(true)
+                : null;
+
+            Latency = currentLatency is null ? "—" : $"{currentLatency} ms";
+        }
+        catch (OperationCanceledException)
+        {
+            Latency = string.Empty;
+        }
+        finally
+        {
+            IsMeasuring = false;
+        }
+    }
+
+    private void LoadAdapters()
+    {
+        string? previousId = SelectedAdapter?.Id;
+
+        Adapters.Clear();
+
+        foreach (NetworkAdapterInfo adapter in _network.GetActiveAdapters())
+        {
+            Adapters.Add(adapter);
+        }
+
+        SelectedAdapter = Adapters.FirstOrDefault(a => a.Id == previousId) ?? Adapters.FirstOrDefault();
+        RefreshDns();
+    }
+
+    private void RefreshDns()
+    {
+        if (SelectedAdapter is null)
+        {
+            CurrentDns = string.Empty;
+            return;
+        }
+
+        IReadOnlyList<string> servers = _network.GetDnsServers(SelectedAdapter.Id);
+
+        CurrentDns = servers.Count == 0
+            ? Localization["Network_Dns_Automatic"]
+            : SelectedAdapter.UsesDhcpForDns
+                ? $"{string.Join(", ", servers)} ({Localization["Network_Dns_Automatic"]})"
+                : string.Join(", ", servers);
+    }
+}
+
+public sealed partial class DnsPresetViewModel : ObservableObject
+{
+    [ObservableProperty]
+    private bool _isSelected;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LatencyText))]
+    private long? _latencyMs;
+
+    public DnsPresetViewModel(DnsPreset preset) => Preset = preset;
+
+    public DnsPreset Preset { get; }
+
+    public string Id => Preset.Id;
+
+    public string Name => Preset.Name;
+
+    public string Primary => Preset.Primary;
+
+    public string Secondary => Preset.Secondary;
+
+    public string Servers => $"{Preset.Primary} · {Preset.Secondary}";
+
+    public string LatencyText => LatencyMs is null ? string.Empty : $"{LatencyMs} ms";
 }
