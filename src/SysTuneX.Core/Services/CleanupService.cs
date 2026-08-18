@@ -1,159 +1,350 @@
-using System.Diagnostics;
+using System.Runtime.Versioning;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using SysTuneX.Core.Abstractions;
+using SysTuneX.Core.Models;
+using SysTuneX.Core.Tweaks;
 
 namespace SysTuneX.Core.Services;
 
-public class CleanupService : ICleanupService
+/// <inheritdoc cref="ICleanupService"/>
+[SupportedOSPlatform("windows")]
+public sealed class CleanupService : ICleanupService
 {
     private readonly ILogger<CleanupService> _logger;
 
-    private static readonly string[] RemovableApps =
-    [
-        "Microsoft.549981C3F5F10",     // Cortana
-        "Microsoft.BingNews",
-        "Microsoft.BingWeather",
-        "Microsoft.GamingApp",
-        "Microsoft.GetHelp",
-        "Microsoft.Getstarted",
-        "Microsoft.MicrosoftOfficeHub",
-        "Microsoft.MicrosoftSolitaireCollection",
-        "Microsoft.MicrosoftStickyNotes",
-        "Microsoft.People",
-        "Microsoft.PowerAutomateDesktop",
-        "Microsoft.Todos",
-        "Microsoft.WindowsAlarms",
-        "Microsoft.WindowsFeedbackHub",
-        "Microsoft.WindowsMaps",
-        "Microsoft.WindowsSoundRecorder",
-        "Microsoft.Xbox.TCUI",
-        "Microsoft.XboxGameOverlay",
-        "Microsoft.XboxGamingOverlay",
-        "Microsoft.XboxSpeechToTextOverlay",
-        "Microsoft.YourPhone",
-        "Microsoft.ZuneMusic",
-        "Microsoft.ZuneVideo",
-        "Clipchamp.Clipchamp",
-        "king.com.CandyCrushSaga",
-        "king.com.CandyCrushFriends",
-    ];
+    public CleanupService(ILogger<CleanupService> logger) => _logger = logger;
 
-    public CleanupService(ILogger<CleanupService> logger)
-    {
-        _logger = logger;
-    }
+    public IReadOnlyList<CleanupTarget> GetTargets() =>
+        CleanupCatalog.All.Where(t => ResolvePaths(t).Count > 0).ToList();
 
-    public long CleanTempFiles()
+    public Task<CleanupScanResult> ScanAsync(CleanupTarget target, CancellationToken cancellationToken = default)
     {
-        var tempPath = Path.GetTempPath();
-        return CleanDirectory(tempPath);
-    }
-
-    public long CleanWindowsTemp()
-    {
-        var winTemp = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Temp");
-        return CleanDirectory(winTemp);
-    }
-
-    public long CleanPrefetch()
-    {
-        var prefetch = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Prefetch");
-        return CleanDirectory(prefetch);
-    }
-
-    public long GetTotalCleanableSize()
-    {
-        long total = 0;
-        total += GetDirectorySize(Path.GetTempPath());
-        total += GetDirectorySize(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Temp"));
-        total += GetDirectorySize(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Prefetch"));
-        return total;
-    }
-
-    public List<string> GetRemovableApps()
-    {
-        try
-        {
-            var psi = new ProcessStartInfo
+        return Task.Run(
+            () =>
             {
-                FileName = "powershell",
-                Arguments = "-NoProfile -Command \"Get-AppxPackage | Select-Object -ExpandProperty Name\"",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true
-            };
-            var process = Process.Start(psi);
-            var output = process?.StandardOutput.ReadToEnd() ?? "";
-            process?.WaitForExit(15000);
+                IReadOnlyList<string> paths = ResolvePaths(target);
+                long size = 0;
+                int files = 0;
+                DateTime cutoff = DateTime.UtcNow - target.MinimumAge;
 
-            var installed = output.Split('\n', StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim())
-                .ToHashSet();
+                foreach (string path in paths)
+                {
+                    foreach (FileInfo file in EnumerateFiles(path, target.SearchPattern, cancellationToken))
+                    {
+                        if (target.MinimumAge > TimeSpan.Zero && file.LastWriteTimeUtc > cutoff)
+                        {
+                            continue;
+                        }
 
-            return RemovableApps.Where(a => installed.Contains(a)).ToList();
-        }
-        catch (Exception ex)
+                        size += file.Length;
+                        files++;
+                    }
+                }
+
+                return new CleanupScanResult
+                {
+                    TargetId = target.Id,
+                    SizeBytes = size,
+                    FileCount = files,
+                    ResolvedPaths = paths,
+                };
+            },
+            cancellationToken);
+    }
+
+    public Task<CleanupRunResult> CleanAsync(
+        IEnumerable<CleanupTarget> targets,
+        IProgress<CleanupProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        List<CleanupTarget> list = targets.ToList();
+
+        return Task.Run(
+            () =>
+            {
+                long freed = 0;
+                int deleted = 0;
+                int skipped = 0;
+                var errors = new List<string>();
+
+                for (int i = 0; i < list.Count; i++)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    CleanupTarget target = list[i];
+                    progress?.Report(new CleanupProgress(target.Name, i, list.Count, freed));
+
+                    DateTime cutoff = DateTime.UtcNow - target.MinimumAge;
+
+                    foreach (string path in ResolvePaths(target))
+                    {
+                        foreach (FileInfo file in EnumerateFiles(path, target.SearchPattern, cancellationToken))
+                        {
+                            if (target.MinimumAge > TimeSpan.Zero && file.LastWriteTimeUtc > cutoff)
+                            {
+                                skipped++;
+                                continue;
+                            }
+
+                            try
+                            {
+                                long size = file.Length;
+
+                                // Read-only leftovers are common in shader caches.
+                                if (file.IsReadOnly)
+                                {
+                                    file.IsReadOnly = false;
+                                }
+
+                                file.Delete();
+                                freed += size;
+                                deleted++;
+                            }
+                            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                            {
+                                // Locked by a running process: expected, not an error worth reporting.
+                                skipped++;
+                            }
+                            catch (Exception ex)
+                            {
+                                errors.Add($"{file.FullName}: {ex.Message}");
+                            }
+                        }
+
+                        if (target.RemoveEmptyDirectories)
+                        {
+                            RemoveEmptyDirectories(path, cancellationToken);
+                        }
+                    }
+                }
+
+                progress?.Report(new CleanupProgress(string.Empty, list.Count, list.Count, freed));
+                _logger.LogInformation("Cleanup freed {Bytes} bytes across {Files} files", freed, deleted);
+
+                return new CleanupRunResult
+                {
+                    FreedBytes = freed,
+                    DeletedFiles = deleted,
+                    SkippedFiles = skipped,
+                    Errors = errors.Take(20).ToList(),
+                };
+            },
+            cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<AppPackage>> GetRemovableAppsAsync(CancellationToken cancellationToken = default)
+    {
+        // Ask for JSON rather than parsing loose text; -AllUsers is deliberately omitted so the
+        // list matches what removing packages for the current user will actually affect.
+        const string script = """
+            Get-AppxPackage |
+                Where-Object { $_.NonRemovable -ne $true } |
+                Select-Object Name, PackageFamilyName, Publisher |
+                ConvertTo-Json -Compress
+            """;
+
+        ProcessRunResult result = await ProcessRunner
+            .RunPowerShellAsync(script, TimeSpan.FromSeconds(90), cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!result.Success || string.IsNullOrWhiteSpace(result.StandardOutput))
         {
-            _logger.LogError(ex, "Failed to list removable apps");
+            _logger.LogWarning("Could not enumerate Store packages: {Error}", result.Output.Trim());
             return [];
         }
-    }
 
-    public bool RemoveApp(string packageName)
-    {
+        var installed = new Dictionary<string, InstalledPackage>(StringComparer.OrdinalIgnoreCase);
+
         try
         {
-            var psi = new ProcessStartInfo
+            using JsonDocument document = JsonDocument.Parse(result.StandardOutput);
+            JsonElement root = document.RootElement;
+
+            // ConvertTo-Json emits a bare object when exactly one package matches.
+            IEnumerable<JsonElement> elements = root.ValueKind == JsonValueKind.Array
+                ? root.EnumerateArray()
+                : [root];
+
+            foreach (JsonElement element in elements)
             {
-                FileName = "powershell",
-                Arguments = $"-NoProfile -Command \"Get-AppxPackage '{packageName}' | Remove-AppxPackage\"",
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-            var process = Process.Start(psi);
-            process?.WaitForExit(30000);
-            _logger.LogInformation("Removed app: {Name}", packageName);
-            return process?.ExitCode == 0;
+                string name = element.TryGetProperty("Name", out JsonElement n) ? n.GetString() ?? string.Empty : string.Empty;
+                if (string.IsNullOrEmpty(name))
+                {
+                    continue;
+                }
+
+                installed[name] = new InstalledPackage(
+                    name,
+                    element.TryGetProperty("PackageFamilyName", out JsonElement f) ? f.GetString() ?? name : name,
+                    element.TryGetProperty("Publisher", out JsonElement p) ? p.GetString() ?? string.Empty : string.Empty);
+            }
         }
-        catch (Exception ex)
+        catch (JsonException ex)
         {
-            _logger.LogError(ex, "Failed to remove app: {Name}", packageName);
-            return false;
+            _logger.LogWarning(ex, "Could not parse the Store package list");
+            return [];
         }
+
+        var packages = new List<AppPackage>();
+
+        foreach (BloatwarePackage candidate in BloatwareCatalog.All)
+        {
+            if (!installed.TryGetValue(candidate.PackageName, out InstalledPackage found))
+            {
+                continue;
+            }
+
+            packages.Add(new AppPackage
+            {
+                PackageFamilyName = candidate.PackageName,
+                DisplayName = candidate.DisplayName,
+                Publisher = found.Publisher,
+                IsSystemRelevant = candidate.IsSystemRelevant,
+            });
+        }
+
+        return packages;
     }
 
-    private long CleanDirectory(string path)
+    public async Task<OperationResult> RemoveAppAsync(string packageName, CancellationToken cancellationToken = default)
     {
-        long freed = 0;
-        try
+        if (string.IsNullOrWhiteSpace(packageName) || packageName.Any(c => c is '\'' or '"' or ';' or '|' or '&'))
         {
-            if (!Directory.Exists(path)) return 0;
-            foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
+            return OperationResult.Fail("Refusing to run with a package name that contains shell metacharacters.");
+        }
+
+        string script = $$"""
+            $ErrorActionPreference = 'Stop'
+            Get-AppxPackage -Name '{{packageName}}' | Remove-AppxPackage
+            """;
+
+        ProcessRunResult result = await ProcessRunner
+            .RunPowerShellAsync(script, TimeSpan.FromSeconds(120), cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!result.Success)
+        {
+            return OperationResult.Fail($"Could not remove {packageName}: {result.Output.Trim()}");
+        }
+
+        _logger.LogInformation("Removed Store package {Package}", packageName);
+        return OperationResult.Ok();
+    }
+
+    private static IReadOnlyList<string> ResolvePaths(CleanupTarget target)
+    {
+        var resolved = new List<string>();
+
+        foreach (string raw in target.Paths)
+        {
+            try
             {
+                string expanded = Environment.ExpandEnvironmentVariables(raw);
+                if (Directory.Exists(expanded))
+                {
+                    resolved.Add(expanded);
+                }
+            }
+            catch
+            {
+                // An unexpandable path simply does not apply to this machine.
+            }
+        }
+
+        return resolved;
+    }
+
+    /// <summary>
+    /// Walks a directory tree without letting one unreadable sub-directory abort the whole scan,
+    /// which is what <c>SearchOption.AllDirectories</c> does.
+    /// </summary>
+    private static IEnumerable<FileInfo> EnumerateFiles(string root, string pattern, CancellationToken cancellationToken)
+    {
+        var stack = new Stack<string>();
+        stack.Push(root);
+
+        while (stack.Count > 0)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            string current = stack.Pop();
+
+            string[] subdirectories;
+            try
+            {
+                subdirectories = Directory.GetDirectories(current);
+            }
+            catch
+            {
+                continue;
+            }
+
+            foreach (string subdirectory in subdirectories)
+            {
+                stack.Push(subdirectory);
+            }
+
+            string[] files;
+            try
+            {
+                files = Directory.GetFiles(current, pattern);
+            }
+            catch
+            {
+                continue;
+            }
+
+            foreach (string file in files)
+            {
+                FileInfo? info = null;
                 try
                 {
-                    var size = new FileInfo(file).Length;
-                    File.Delete(file);
-                    freed += size;
+                    info = new FileInfo(file);
+                    _ = info.Length;
                 }
-                catch { /* skip locked files */ }
+                catch
+                {
+                    info = null;
+                }
+
+                if (info is not null)
+                {
+                    yield return info;
+                }
             }
-            _logger.LogInformation("Cleaned {Size:F1} MB from {Path}", freed / (1024.0 * 1024.0), path);
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to clean directory: {Path}", path);
-        }
-        return freed;
     }
 
-    private static long GetDirectorySize(string path)
+    private static void RemoveEmptyDirectories(string root, CancellationToken cancellationToken)
     {
         try
         {
-            if (!Directory.Exists(path)) return 0;
-            return Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
-                .Sum(f => new FileInfo(f).Length);
+            foreach (string directory in Directory.GetDirectories(root))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                RemoveEmptyDirectories(directory, cancellationToken);
+
+                try
+                {
+                    if (Directory.GetFileSystemEntries(directory).Length == 0)
+                    {
+                        Directory.Delete(directory);
+                    }
+                }
+                catch
+                {
+                    // In use or protected; leave it.
+                }
+            }
         }
-        catch { return 0; }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch
+        {
+            // The root itself is unreadable; nothing to prune.
+        }
     }
+
+    private readonly record struct InstalledPackage(string Name, string FamilyName, string Publisher);
 }

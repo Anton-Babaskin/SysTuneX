@@ -1,0 +1,45 @@
+<pages:SysTuneXPage x:Class="SysTuneX.App.Views.Pages.GamingPage"
+                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:loc="clr-namespace:SysTuneX.App.Localization"
+                    xmlns:pages="clr-namespace:SysTuneX.App.Views.Pages"
+                    xmlns:vm="clr-namespace:SysTuneX.App.ViewModels"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    mc:Ignorable="d"
+                    d:DataContext="{d:DesignInstance Type=vm:GamingViewModel}"
+                    Title="Gaming">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="28,20,28,0"
+                    MaxWidth="{StaticResource MaxContentWidth}"
+                    HorizontalAlignment="Left">
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Gaming_Title}" Style="{StaticResource PageTitle}" />
+                    <TextBlock Text="{loc:Loc Gaming_Subtitle}" Style="{StaticResource PageSubtitle}" />
+                </StackPanel>
+
+                <ContentControl Grid.Column="1" Template="{StaticResource TweakToolbarTemplate}" />
+            </Grid>
+
+            <ContentControl Template="{StaticResource ExplorerRestartBarTemplate}" />
+            <ContentControl Template="{StaticResource TweakFilterBarTemplate}" />
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <ContentControl Template="{StaticResource TweakListTemplate}" />
+            <ContentControl Template="{StaticResource BusyOverlayTemplate}" />
+        </Grid>
+    </Grid>
+</pages:SysTuneXPage>

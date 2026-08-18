@@ -1,0 +1,177 @@
+<pages:SysTuneXPage x:Class="SysTuneX.App.Views.Pages.HistoryPage"
+                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                    xmlns:loc="clr-namespace:SysTuneX.App.Localization"
+                    xmlns:pages="clr-namespace:SysTuneX.App.Views.Pages"
+                    xmlns:vm="clr-namespace:SysTuneX.App.ViewModels"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    mc:Ignorable="d"
+                    d:DataContext="{d:DesignInstance Type=vm:HistoryViewModel}"
+                    Title="Change log">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="28,20,28,0"
+                    MaxWidth="{StaticResource MaxContentWidth}"
+                    HorizontalAlignment="Left">
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc History_Title}" Style="{StaticResource PageTitle}" />
+                    <TextBlock Text="{loc:Loc History_Subtitle}" Style="{StaticResource PageSubtitle}" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                    <Border Style="{StaticResource Pill}"
+                            Background="{StaticResource RiskSafeBackgroundBrush}"
+                            Margin="0,6,12,0">
+                        <TextBlock Style="{StaticResource PillText}" Foreground="{StaticResource RiskSafeBrush}">
+                            <Run Text="{Binding ActiveCount, Mode=OneWay}" />
+                            <Run Text="{loc:Loc History_Active}" />
+                        </TextBlock>
+                    </Border>
+
+                    <ui:Button Content="{loc:Loc History_RevertAll}"
+                               Icon="{ui:SymbolIcon ArrowReset24}"
+                               Appearance="Primary"
+                               Margin="0,0,8,0"
+                               Command="{Binding RevertAllCommand}" />
+
+                    <ui:Button Icon="{ui:SymbolIcon ArrowExport24}"
+                               ToolTip="{loc:Loc History_Export}"
+                               Margin="0,0,8,0"
+                               Command="{Binding ExportCommand}" />
+
+                    <ui:Button Icon="{ui:SymbolIcon Folder24}"
+                               ToolTip="{loc:Loc Settings_OpenFolder}"
+                               Margin="0,0,8,0"
+                               Command="{Binding OpenDataFolderCommand}" />
+
+                    <ui:Button Icon="{ui:SymbolIcon ArrowClockwise24}"
+                               ToolTip="{loc:Loc Common_Refresh}"
+                               Command="{Binding RefreshCommand}" />
+                </StackPanel>
+            </Grid>
+
+            <StackPanel Style="{StaticResource FilterBarPanel}">
+                <ui:TextBox PlaceholderText="{loc:Loc Common_Search}"
+                            Icon="{ui:SymbolIcon Search24}"
+                            Width="320"
+                            Margin="0,0,16,0"
+                            Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+
+                <ui:ToggleSwitch Content="{loc:Loc History_ShowReverted}"
+                                 VerticalAlignment="Center"
+                                 IsChecked="{Binding ShowReverted}" />
+            </StackPanel>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,0,28,28">
+                <Grid MaxWidth="{StaticResource MaxContentWidth}" HorizontalAlignment="Left">
+                    <ItemsControl ItemsSource="{Binding Entries}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:BackupEntryViewModel}">
+                                <Border Style="{StaticResource InteractiveCard}" Margin="0,0,0,6">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Style="{StaticResource Pill}"
+                                                VerticalAlignment="Top"
+                                                Margin="0,2,12,0"
+                                                MinWidth="92"
+                                                Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                                            <TextBlock Text="{Binding KindText}"
+                                                       Style="{StaticResource PillText}"
+                                                       HorizontalAlignment="Center"
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                        </Border>
+
+                                        <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                            <TextBlock Text="{Binding Target}"
+                                                       Style="{StaticResource MonoText}"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                       TextWrapping="Wrap" />
+
+                                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                                <TextBlock Text="{loc:Loc History_OriginalValue}" Style="{StaticResource CaptionText}" />
+                                                <TextBlock Text="{Binding OriginalValue}"
+                                                           Style="{StaticResource CaptionText}"
+                                                           Margin="6,0,0,0"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                            </StackPanel>
+
+                                            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                                <TextBlock Text="{Binding Owner}" Style="{StaticResource CaptionText}" />
+                                                <TextBlock Text="·" Style="{StaticResource CaptionText}" Margin="6,0" />
+                                                <TextBlock Text="{Binding Timestamp}" Style="{StaticResource CaptionText}" />
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <Border Grid.Column="2"
+                                                VerticalAlignment="Top"
+                                                Margin="0,2,0,0">
+                                            <Border.Style>
+                                                <Style TargetType="Border" BasedOn="{StaticResource Pill}">
+                                                    <Setter Property="Background" Value="{StaticResource RiskSafeBackgroundBrush}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                            <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+
+                                            <TextBlock Text="{Binding StateText}">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock" BasedOn="{StaticResource PillText}">
+                                                        <Setter Property="Foreground" Value="{StaticResource RiskSafeBrush}" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <StackPanel HorizontalAlignment="Center"
+                                Margin="0,80,0,0"
+                                Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}">
+                        <ui:SymbolIcon Symbol="History24"
+                                       FontSize="40"
+                                       HorizontalAlignment="Center"
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                        <TextBlock Text="{loc:Loc History_Empty}"
+                                   Style="{StaticResource BodyText}"
+                                   Margin="0,12,0,0"
+                                   HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+
+            <ContentControl Template="{StaticResource BusyOverlayTemplate}" />
+        </Grid>
+    </Grid>
+</pages:SysTuneXPage>

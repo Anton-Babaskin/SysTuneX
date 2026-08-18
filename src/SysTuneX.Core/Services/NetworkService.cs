@@ -1,128 +1,304 @@
-using System.Diagnostics;
+using System.Net.NetworkInformation;
+using System.Runtime.Versioning;
 using Microsoft.Extensions.Logging;
+using SysTuneX.Core.Abstractions;
+using SysTuneX.Core.Models;
 
 namespace SysTuneX.Core.Services;
 
-public class NetworkService : INetworkService
+/// <inheritdoc cref="INetworkService"/>
+[SupportedOSPlatform("windows")]
+public sealed class NetworkService : INetworkService
 {
-    private readonly ILogger<NetworkService> _logger;
+    private const string InterfacesKey = @"HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces";
+    private const string OwnerId = "network:dns";
 
-    public NetworkService(ILogger<NetworkService> logger)
+    private readonly ILogger<NetworkService> _logger;
+    private readonly IRegistryService _registry;
+    private readonly IBackupService _backup;
+
+    public NetworkService(ILogger<NetworkService> logger, IRegistryService registry, IBackupService backup)
     {
         _logger = logger;
+        _registry = registry;
+        _backup = backup;
     }
 
-    public bool SetDns(string primary, string secondary)
+    /// <summary>
+    /// Enumerates real, connected adapters through the IP helper API.
+    ///
+    /// The old code spawned PowerShell and parsed its output to find one adapter name, which was
+    /// slow, flashed a console window, and broke on any localised or renamed adapter.
+    /// </summary>
+    public IReadOnlyList<NetworkAdapterInfo> GetActiveAdapters()
     {
+        var adapters = new List<NetworkAdapterInfo>();
+
         try
         {
-            var adapter = GetActiveAdapterName();
-            if (adapter == null) return false;
+            foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (nic.OperationalStatus != OperationalStatus.Up ||
+                    nic.NetworkInterfaceType is NetworkInterfaceType.Loopback or NetworkInterfaceType.Tunnel)
+                {
+                    continue;
+                }
 
-            RunNetsh($"interface ip set dns name=\"{adapter}\" static {primary}");
-            RunNetsh($"interface ip add dns name=\"{adapter}\" {secondary} index=2");
-            RunNetsh("interface ip set dns name=\"Loopback Pseudo-Interface 1\" static 127.0.0.1");
+                IPInterfaceProperties properties = nic.GetIPProperties();
 
-            _logger.LogInformation("Set DNS to {Primary}/{Secondary} on {Adapter}", primary, secondary, adapter);
-            return true;
+                // No gateway means it is a virtual or host-only adapter, not the machine's route to the internet.
+                if (properties.GatewayAddresses.Count == 0)
+                {
+                    continue;
+                }
+
+                List<string> dns = properties.DnsAddresses
+                    .Where(a => a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                    .Select(a => a.ToString())
+                    .ToList();
+
+                adapters.Add(new NetworkAdapterInfo(
+                    nic.Id,
+                    nic.Name,
+                    nic.Description,
+                    nic.NetworkInterfaceType.ToString(),
+                    !IsDnsStaticallyConfigured(nic.Id),
+                    dns));
+            }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to set DNS");
-            return false;
+            _logger.LogWarning(ex, "Could not enumerate network adapters");
         }
+
+        return adapters;
     }
 
-    public bool ResetDns()
+    public IReadOnlyList<string> GetDnsServers(string adapterId)
     {
         try
         {
-            var adapter = GetActiveAdapterName();
-            if (adapter == null) return false;
+            NetworkInterface? nic = FindAdapter(adapterId);
+            if (nic is null)
+            {
+                return [];
+            }
 
-            RunNetsh($"interface ip set dns name=\"{adapter}\" dhcp");
-            _logger.LogInformation("Reset DNS to DHCP on {Adapter}", adapter);
-            return true;
+            return nic.GetIPProperties().DnsAddresses
+                .Where(a => a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                .Select(a => a.ToString())
+                .ToList();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to reset DNS");
-            return false;
+            _logger.LogDebug(ex, "Could not read DNS servers for {Adapter}", adapterId);
+            return [];
         }
     }
 
-    public (string Primary, string Secondary) GetCurrentDns()
+    public async Task<OperationResult> SetDnsAsync(
+        string adapterId,
+        string primary,
+        string? secondary,
+        CancellationToken cancellationToken = default)
+    {
+        NetworkInterface? nic = FindAdapter(adapterId);
+        if (nic is null)
+        {
+            return OperationResult.Fail("The selected network adapter is no longer available.");
+        }
+
+        if (!System.Net.IPAddress.TryParse(primary, out _))
+        {
+            return OperationResult.Fail($"'{primary}' is not a valid IPv4 address.");
+        }
+
+        int? index = GetInterfaceIndex(nic);
+        if (index is null)
+        {
+            return OperationResult.Fail("The adapter does not expose an IPv4 interface index.");
+        }
+
+        await _backup
+            .RecordDnsAsync(OwnerId, adapterId, !IsDnsStaticallyConfigured(adapterId), GetDnsServers(adapterId), cancellationToken)
+            .ConfigureAwait(false);
+
+        // validate=no keeps netsh from blocking for several seconds probing the new resolver.
+        ProcessRunResult setPrimary = await ProcessRunner.RunAsync(
+                "netsh.exe",
+                $"interface ipv4 set dnsservers name={index} source=static address={primary} register=primary validate=no",
+                TimeSpan.FromSeconds(20),
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!setPrimary.Success)
+        {
+            return OperationResult.Fail($"netsh could not set the primary resolver: {setPrimary.Output.Trim()}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(secondary) && System.Net.IPAddress.TryParse(secondary, out _))
+        {
+            ProcessRunResult setSecondary = await ProcessRunner.RunAsync(
+                    "netsh.exe",
+                    $"interface ipv4 add dnsservers name={index} address={secondary} index=2 validate=no",
+                    TimeSpan.FromSeconds(20),
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            if (!setSecondary.Success)
+            {
+                _logger.LogWarning("Secondary resolver was rejected: {Error}", setSecondary.Output.Trim());
+            }
+        }
+
+        await FlushDnsCacheAsync(cancellationToken).ConfigureAwait(false);
+        _logger.LogInformation("DNS on {Adapter} set to {Primary}/{Secondary}", nic.Name, primary, secondary);
+        return OperationResult.Ok();
+    }
+
+    public async Task<OperationResult> RestoreDnsAsync(string adapterId, CancellationToken cancellationToken = default)
+    {
+        BackupEntry? entry = _backup.FindActive(BackupKind.DnsConfiguration, adapterId);
+
+        // No record means SysTuneX never changed this adapter; DHCP is the Windows default.
+        if (entry?.OriginalValue is null || entry.OriginalValue == "dhcp")
+        {
+            OperationResult dhcp = await ResetDnsToDhcpAsync(adapterId, cancellationToken).ConfigureAwait(false);
+            if (dhcp.Success && entry is not null)
+            {
+                await _backup.MarkRevertedAsync([entry.Id], cancellationToken).ConfigureAwait(false);
+            }
+
+            return dhcp;
+        }
+
+        string[] servers = entry.OriginalValue.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (servers.Length == 0)
+        {
+            return await ResetDnsToDhcpAsync(adapterId, cancellationToken).ConfigureAwait(false);
+        }
+
+        OperationResult restore = await SetDnsAsync(
+                adapterId,
+                servers[0],
+                servers.Length > 1 ? servers[1] : null,
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        if (restore.Success)
+        {
+            await _backup.MarkRevertedAsync([entry.Id], cancellationToken).ConfigureAwait(false);
+        }
+
+        return restore;
+    }
+
+    public async Task<OperationResult> ResetDnsToDhcpAsync(string adapterId, CancellationToken cancellationToken = default)
+    {
+        NetworkInterface? nic = FindAdapter(adapterId);
+        if (nic is null)
+        {
+            return OperationResult.Fail("The selected network adapter is no longer available.");
+        }
+
+        int? index = GetInterfaceIndex(nic);
+        if (index is null)
+        {
+            return OperationResult.Fail("The adapter does not expose an IPv4 interface index.");
+        }
+
+        ProcessRunResult result = await ProcessRunner.RunAsync(
+                "netsh.exe",
+                $"interface ipv4 set dnsservers name={index} source=dhcp",
+                TimeSpan.FromSeconds(20),
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!result.Success)
+        {
+            return OperationResult.Fail($"netsh could not restore DHCP resolvers: {result.Output.Trim()}");
+        }
+
+        await FlushDnsCacheAsync(cancellationToken).ConfigureAwait(false);
+        return OperationResult.Ok();
+    }
+
+    public async Task<OperationResult> FlushDnsCacheAsync(CancellationToken cancellationToken = default)
+    {
+        ProcessRunResult result = await ProcessRunner
+            .RunAsync("ipconfig.exe", "/flushdns", TimeSpan.FromSeconds(15), cancellationToken)
+            .ConfigureAwait(false);
+
+        return result.Success
+            ? OperationResult.Ok()
+            : OperationResult.Fail($"Could not flush the resolver cache: {result.Output.Trim()}");
+    }
+
+    public async Task<long?> MeasureLatencyAsync(string host, CancellationToken cancellationToken = default)
     {
         try
         {
-            var output = RunNetshWithOutput("interface ip show dnsservers");
-            var lines = output.Split('\n')
-                .Where(l => l.Trim().StartsWith("DNS") || char.IsDigit(l.Trim().FirstOrDefault()))
-                .Select(l => l.Trim())
-                .ToList();
+            using var ping = new Ping();
+            var samples = new List<long>();
 
-            // Parse DNS IPs from output
-            var ips = output.Split('\n')
-                .Select(l => l.Trim())
-                .Where(l => l.Split('.').Length == 4 && l.All(c => char.IsDigit(c) || c == '.' || c == ' '))
-                .Select(l => l.Trim())
-                .Take(2)
-                .ToList();
+            for (int i = 0; i < 3; i++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
 
-            return (ips.ElementAtOrDefault(0) ?? "Auto", ips.ElementAtOrDefault(1) ?? "Auto");
+                PingReply reply = await ping.SendPingAsync(host, TimeSpan.FromSeconds(2), cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (reply.Status == IPStatus.Success)
+                {
+                    samples.Add(reply.RoundtripTime);
+                }
+            }
+
+            return samples.Count > 0 ? (long)samples.Average() : null;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Could not measure latency to {Host}", host);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// A non-empty NameServer value under the adapter's TCP/IP key means the resolvers were set
+    /// by hand; DHCP-assigned ones live in DhcpNameServer instead.
+    /// </summary>
+    private bool IsDnsStaticallyConfigured(string adapterId)
+    {
+        string value = _registry.GetValue($@"{InterfacesKey}\{adapterId}", "NameServer") as string ?? string.Empty;
+        return !string.IsNullOrWhiteSpace(value);
+    }
+
+    private static NetworkInterface? FindAdapter(string adapterId)
+    {
+        try
+        {
+            return NetworkInterface.GetAllNetworkInterfaces()
+                .FirstOrDefault(n => string.Equals(n.Id, adapterId, StringComparison.OrdinalIgnoreCase));
         }
         catch
         {
-            return ("Auto", "Auto");
+            return null;
         }
     }
 
-    private string? GetActiveAdapterName()
+    private static int? GetInterfaceIndex(NetworkInterface nic)
     {
         try
         {
-            var psi = new ProcessStartInfo
-            {
-                FileName = "powershell",
-                Arguments = "-NoProfile -Command \"(Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | Select-Object -First 1).Name\"",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true
-            };
-            var process = Process.Start(psi);
-            var name = process?.StandardOutput.ReadToEnd().Trim();
-            process?.WaitForExit(5000);
-            return string.IsNullOrEmpty(name) ? null : name;
+            return nic.GetIPProperties().GetIPv4Properties()?.Index;
         }
-        catch { return null; }
-    }
-
-    private static void RunNetsh(string arguments)
-    {
-        var psi = new ProcessStartInfo
+        catch
         {
-            FileName = "netsh",
-            Arguments = arguments,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-        var process = Process.Start(psi);
-        process?.WaitForExit(5000);
-    }
-
-    private static string RunNetshWithOutput(string arguments)
-    {
-        var psi = new ProcessStartInfo
-        {
-            FileName = "netsh",
-            Arguments = arguments,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true
-        };
-        var process = Process.Start(psi);
-        var output = process?.StandardOutput.ReadToEnd() ?? "";
-        process?.WaitForExit(5000);
-        return output;
+            return null;
+        }
     }
 }
