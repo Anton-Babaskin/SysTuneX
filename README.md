@@ -1,5 +1,7 @@
 # SysTuneX
 
+*[Русская версия](README.ru.md)*
+
 **SysTuneX** is a Windows 10/11 performance and latency tuner built around one rule: every
 change is recorded before it is made, and every recorded change can be put back.
 
@@ -7,6 +9,25 @@ The interface is available in **English and Russian** and follows the Windows li
 
 > No undocumented "magic tweaks". Each optimisation names the registry value it writes, the
 > value Windows shipped, and what you give up by applying it.
+
+---
+
+## Download
+
+**[Releases page](https://github.com/Anton-Babaskin/SysTuneX/releases)** — pick the newest version
+and download `SysTuneX.exe` from its Assets list.
+
+A single self-contained file; no .NET runtime install needed. It asks for administrator rights on
+launch, because every change it makes requires a full administrator token. The binary is not
+code-signed, so SmartScreen will warn — **More info → Run anyway** if you are happy with that.
+
+Each release also ships `SHA256SUMS.txt`:
+
+```powershell
+Get-FileHash .\SysTuneX.exe -Algorithm SHA256
+```
+
+Prefer to build it yourself? See [Build](#build).
 
 ---
 
