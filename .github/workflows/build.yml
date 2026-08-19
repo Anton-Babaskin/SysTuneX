@@ -45,8 +45,15 @@ jobs:
       # The catalog, journal and localization tests are the guard against the data mistakes
       # that are invisible in review: duplicate tweak ids, untranslated entries, a revert that
       # would write a value Windows never shipped.
-      - name: Test
+      - name: Test core
         run: dotnet test tests/SysTuneX.Core.Tests/SysTuneX.Core.Tests.csproj --configuration Release --no-build --verbosity normal
+
+      # XAML is parsed at run time, so a compile-only pipeline says nothing about whether the
+      # app starts. These tests build the real Application, realise every resource and construct
+      # the window and all ten pages through the container - on a runner with no display, which
+      # is fine because none of it is ever shown.
+      - name: Test startup
+        run: dotnet test tests/SysTuneX.App.Tests/SysTuneX.App.Tests.csproj --configuration Release --no-build --verbosity normal
 
   publish:
     name: Publish SysTuneX.exe

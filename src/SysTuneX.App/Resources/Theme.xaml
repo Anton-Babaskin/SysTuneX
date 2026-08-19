@@ -145,24 +145,7 @@
 
     <!-- ── Controls ────────────────────────────────────────────────────────── -->
 
-    <Style x:Key="FilterToggle" TargetType="ToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
-        <Setter Property="Padding" Value="12,5" />
-        <Setter Property="MinWidth" Value="0" />
-        <Setter Property="FontSize" Value="12" />
-        <Setter Property="Margin" Value="0,0,6,0" />
-    </Style>
-
-    <!-- ── Animations ──────────────────────────────────────────────────────── -->
-
-    <Storyboard x:Key="FadeIn">
-        <DoubleAnimation Storyboard.TargetProperty="Opacity"
-                         From="0" To="1" Duration="0:0:0.18" />
-        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
-                         From="8" To="0" Duration="0:0:0.22">
-            <DoubleAnimation.EasingFunction>
-                <CubicEase EasingMode="EaseOut" />
-            </DoubleAnimation.EasingFunction>
-        </DoubleAnimation>
-    </Storyboard>
+    <!-- FilterToggle lives in App.xaml: it derives from the WPF UI ToggleButton style, and a
+         StaticResource inside a merged dictionary can only see that dictionary's own scope. -->
 
 </ResourceDictionary>

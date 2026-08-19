@@ -26,6 +26,19 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--
+        The SDK globs **/*.xaml into Page, but it has no default glob for images: a .png sitting
+        in the project is a None item and never reaches the assembly. Without this line the
+        pack://application:,,,/Assets/SysTuneX.png reference in MainWindow.xaml resolves to
+        nothing and ImageSourceConverter throws while the window's BAML loads, which WPF reports
+        as "Provide value on 'TypeConverterMarkupExtension' threw an exception" - the app dies
+        before it draws a pixel. AssemblyResourceTests keeps this honest.
+    -->
+    <Resource Include="Assets/SysTuneX.png" />
+    <Resource Include="Assets/SysTuneX.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SysTuneX.Core\SysTuneX.Core.csproj" />
   </ItemGroup>
 
