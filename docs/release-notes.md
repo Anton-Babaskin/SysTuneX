@@ -1,7 +1,23 @@
-# SysTuneX 2.0.1
+# SysTuneX 2.0.2
 
 > Notes for the release currently being published. Update this file before tagging a new version;
 > if it is missing, the release workflow falls back to auto-generated notes.
+
+## 2.0.2 — logs and a diagnostics report
+
+2.0.1 starts and works, but when something misbehaves it leaves nothing behind. Every service in
+SysTuneX already logged through `ILogger`; the app only ever registered the debug provider, so on
+a real machine all of it went nowhere.
+
+* **A log file.** `%ProgramData%\SysTuneX\logs`, one file per day, kept for seven days, opened
+  shared so it can be read and copied while the app runs.
+* **Every message you are shown is logged**, at the one place that shows them — so the log and
+  the screen cannot disagree about what happened. Confirmations record what you answered.
+* **Build a report** in Settings writes one text file with the Windows build and edition, whether
+  the process is elevated, the hardware, the full change journal with each recorded previous value,
+  and the tail of the log. That single file is what to attach to a bug report.
+* **Verbose logging** toggle for every registry read and command line. Applies immediately.
+
 
 **Fixes the crash that stopped 2.0.0 from starting at all.** Do not use 2.0.0 — it fails on every
 machine, not just some.

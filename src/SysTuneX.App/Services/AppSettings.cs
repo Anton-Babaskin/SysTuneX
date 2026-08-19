@@ -23,6 +23,9 @@ public sealed class AppSettings
 
     public bool ConfirmAdvancedChanges { get; set; } = true;
 
+    /// <summary>Records every registry read and command line, not just outcomes. Off by default.</summary>
+    public bool VerboseLogging { get; set; }
+
     public double WindowWidth { get; set; } = 1240;
 
     public double WindowHeight { get; set; } = 800;

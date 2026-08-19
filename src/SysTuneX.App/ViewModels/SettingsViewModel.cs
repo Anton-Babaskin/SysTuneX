@@ -18,6 +18,7 @@ public sealed partial class SettingsViewModel : PageViewModel
     private readonly ILocalizationService _localization;
     private readonly IEnvironmentService _environment;
     private readonly IUserInteraction _interaction;
+    private readonly IDiagnosticsService _diagnostics;
 
     private bool _isLoading = true;
 
@@ -36,16 +37,27 @@ public sealed partial class SettingsViewModel : PageViewModel
     [ObservableProperty]
     private bool _confirmAdvanced;
 
+    [ObservableProperty]
+    private bool _verboseLogging;
+
+    [ObservableProperty]
+    private string? _lastReportPath;
+
+    [ObservableProperty]
+    private bool _isBuildingReport;
+
     public SettingsViewModel(
         IAppSettingsService settings,
         ILocalizationService localization,
         IEnvironmentService environment,
-        IUserInteraction interaction)
+        IUserInteraction interaction,
+        IDiagnosticsService diagnostics)
     {
         _settings = settings;
         _localization = localization;
         _environment = environment;
         _interaction = interaction;
+        _diagnostics = diagnostics;
 
         Languages = localization.AvailableLanguages;
     }
@@ -55,6 +67,8 @@ public sealed partial class SettingsViewModel : PageViewModel
     public string Version => typeof(SettingsViewModel).Assembly.GetName().Version?.ToString(3) ?? "2.0.0";
 
     public string DataDirectory => _environment.DataDirectory;
+
+    public string LogDirectory => _diagnostics.LogDirectory;
 
     public string WindowsDescription => _environment.Windows.ToString();
 
@@ -78,6 +92,7 @@ public sealed partial class SettingsViewModel : PageViewModel
         SelectedLanguage = Languages.FirstOrDefault(l => l.Code == current.Language) ?? Languages[0];
         CreateRestorePoint = current.CreateRestorePointBeforeProfiles;
         ConfirmAdvanced = current.ConfirmAdvancedChanges;
+        VerboseLogging = current.VerboseLogging;
 
         _isLoading = false;
         return Task.CompletedTask;
@@ -168,6 +183,21 @@ public sealed partial class SettingsViewModel : PageViewModel
         Save();
     }
 
+    partial void OnVerboseLoggingChanged(bool value)
+    {
+        // Applied immediately rather than on next launch: the reason to turn it on is that
+        // something is misbehaving right now.
+        _diagnostics.IsVerbose = value;
+
+        if (_isLoading)
+        {
+            return;
+        }
+
+        _settings.Current.VerboseLogging = value;
+        Save();
+    }
+
     [RelayCommand]
     private void OpenDataFolder()
     {
@@ -179,6 +209,81 @@ public sealed partial class SettingsViewModel : PageViewModel
         catch (Exception ex)
         {
             _interaction.ShowError(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Bundles the environment, the change journal and the log tail into one file, so a tester
+    /// can send a single attachment instead of hunting through %ProgramData%.
+    /// </summary>
+    [RelayCommand]
+    private async Task CreateReportAsync()
+    {
+        if (IsBuildingReport)
+        {
+            return;
+        }
+
+        IsBuildingReport = true;
+        try
+        {
+            DiagnosticsReport report = await _diagnostics.WriteReportAsync().ConfigureAwait(true);
+
+            if (!report.Result.Success)
+            {
+                _interaction.ShowError(report.Result.Message ?? _localization["Msg_Error"]);
+                return;
+            }
+
+            LastReportPath = report.FilePath;
+            _interaction.ShowSuccess(
+                string.Format(
+                    _localization["Settings_Report_Done"],
+                    Path.GetFileName(report.FilePath),
+                    report.LogLines,
+                    report.JournalEntries));
+
+            Reveal(report.FilePath);
+        }
+        catch (Exception ex)
+        {
+            _interaction.ShowError(ex.Message);
+        }
+        finally
+        {
+            IsBuildingReport = false;
+        }
+    }
+
+    [RelayCommand]
+    private void OpenLogFolder()
+    {
+        try
+        {
+            Directory.CreateDirectory(_diagnostics.LogDirectory);
+            Process.Start(new ProcessStartInfo { FileName = _diagnostics.LogDirectory, UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            _interaction.ShowError(ex.Message);
+        }
+    }
+
+    /// <summary>Opens Explorer with the file already selected - one less step than opening the folder.</summary>
+    private static void Reveal(string filePath)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "explorer.exe",
+                Arguments = $"/select,\"{filePath}\"",
+                UseShellExecute = true,
+            });
+        }
+        catch
+        {
+            // Not being able to show the folder is not worth an error toast; the path is on screen.
         }
     }
 

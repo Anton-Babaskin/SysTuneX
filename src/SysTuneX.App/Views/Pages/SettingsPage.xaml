@@ -85,6 +85,52 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Diagnostics -->
+                <Border Style="{StaticResource Card}" Margin="{StaticResource SectionGap}">
+                    <StackPanel>
+                        <TextBlock Text="{loc:Loc Settings_Diagnostics}"
+                                   Style="{StaticResource SectionTitle}"
+                                   Margin="0,0,0,6" />
+                        <TextBlock Text="{loc:Loc Settings_Diagnostics_Hint}"
+                                   Style="{StaticResource BodyText}"
+                                   Margin="0,0,0,14" />
+
+                        <ui:ToggleSwitch IsChecked="{Binding VerboseLogging, Mode=TwoWay}"
+                                         Content="{loc:Loc Settings_VerboseLogging}" />
+                        <TextBlock Text="{loc:Loc Settings_VerboseLogging_Hint}"
+                                   Style="{StaticResource CaptionText}"
+                                   Margin="0,4,0,14" />
+
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="140" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{loc:Loc Settings_LogFolder}" Style="{StaticResource CaptionText}" />
+                            <TextBlock Grid.Column="1" Text="{Binding LogDirectory}"
+                                       Style="{StaticResource MonoText}" TextWrapping="Wrap" />
+                        </Grid>
+
+                        <StackPanel Orientation="Horizontal">
+                            <ui:Button Content="{loc:Loc Settings_CreateReport}"
+                                       Appearance="Primary"
+                                       Icon="{ui:SymbolIcon ArrowExport24}"
+                                       Margin="0,0,8,0"
+                                       IsEnabled="{Binding IsBuildingReport, Converter={StaticResource InverseBool}}"
+                                       Command="{Binding CreateReportCommand}" />
+                            <ui:Button Content="{loc:Loc Settings_OpenLogFolder}"
+                                       Icon="{ui:SymbolIcon Folder24}"
+                                       Command="{Binding OpenLogFolderCommand}" />
+                        </StackPanel>
+
+                        <TextBlock Text="{Binding LastReportPath}"
+                                   Style="{StaticResource MonoText}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,12,0,0"
+                                   Visibility="{Binding LastReportPath, Converter={StaticResource EmptyToVisibility}}" />
+                    </StackPanel>
+                </Border>
+
                 <!-- About -->
                 <Border Style="{StaticResource Card}">
                     <StackPanel>

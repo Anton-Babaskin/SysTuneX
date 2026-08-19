@@ -1342,4 +1342,28 @@
   <data name="Cleanup_prefetch_Desc" xml:space="preserve">
     <value>По этим файлам Windows предсказывает, что грузить при загрузке и старте приложений. После удаления несколько первых запусков будут медленнее, пока данные не накопятся заново. На SSD устойчивой пользы нет — пункт добавлен только потому, что его часто просят.</value>
   </data>
+  <data name="Settings_Diagnostics" xml:space="preserve">
+    <value>Диагностика</value>
+  </data>
+  <data name="Settings_Diagnostics_Hint" xml:space="preserve">
+    <value>SysTuneX пишет всё, что делает, в журнал. Если что-то ведёт себя не так — соберите отчёт и пришлите его: там журнал, список изменений и описание машины.</value>
+  </data>
+  <data name="Settings_VerboseLogging" xml:space="preserve">
+    <value>Подробный журнал</value>
+  </data>
+  <data name="Settings_VerboseLogging_Hint" xml:space="preserve">
+    <value>Записывает каждое чтение реестра и каждую команду, а не только результаты. Включается сразу; журнал становится заметно больше.</value>
+  </data>
+  <data name="Settings_LogFolder" xml:space="preserve">
+    <value>Папка журналов</value>
+  </data>
+  <data name="Settings_CreateReport" xml:space="preserve">
+    <value>Собрать отчёт</value>
+  </data>
+  <data name="Settings_OpenLogFolder" xml:space="preserve">
+    <value>Открыть журналы</value>
+  </data>
+  <data name="Settings_Report_Done" xml:space="preserve">
+    <value>Отчёт {0} готов — {1} строк журнала, {2} записей об изменениях.</value>
+  </data>
 </root>
