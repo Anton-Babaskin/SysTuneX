@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Resources;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using SysTuneX.App.Diagnostics;
 using SysTuneX.App.Views;
 using SysTuneX.App.Views.Pages;
 
@@ -42,7 +43,10 @@ public sealed class StartupSmokeTests(WpfApplicationFixture host)
             return;
         }
 
-        Assert.Null(host.StartupFailure);
+        Assert.True(
+            host.StartupFailure is null,
+            host.StartupFailure is null ? string.Empty : ExceptionReport.Describe(host.StartupFailure));
+
         Assert.NotNull(Application.Current);
     }
 
@@ -80,6 +84,16 @@ public sealed class StartupSmokeTests(WpfApplicationFixture host)
         });
 
         Assert.Empty(failures);
+
+        // An empty dictionary would satisfy the loop above without proving anything, so pin one
+        // key from each of the three dictionaries the app merges.
+        host.OnUiThread(() =>
+        {
+            Assert.NotNull(Application.Current.TryFindResource("FilterToggle"));
+            Assert.NotNull(Application.Current.TryFindResource("Card"));
+            Assert.NotNull(Application.Current.TryFindResource("InverseBool"));
+            Assert.NotNull(Application.Current.TryFindResource("TweakListTemplate"));
+        });
     }
 
     /// <summary>
@@ -106,19 +120,45 @@ public sealed class StartupSmokeTests(WpfApplicationFixture host)
             return;
         }
 
-        host.OnUiThread(() => Assert.NotNull(App.Services.GetRequiredService<MainWindow>()));
+        host.OnUiThread(() =>
+        {
+            var window = App.Services.GetRequiredService<MainWindow>();
+            Assert.NotNull(window);
+
+            // Never shown - measuring is enough to apply the title bar, banners and navigation
+            // templates, which is where a bad resource would surface.
+            window.Measure(new Size(1240, 800));
+            window.Arrange(new Rect(0, 0, 1240, 800));
+            window.UpdateLayout();
+        });
     }
 
+    /// <summary>
+    /// Constructing a page parses its BAML, but the shared control templates it pulls out of
+    /// PageParts.xaml are only instantiated when layout runs - so a resource that is missing
+    /// inside a template survives construction and dies at first paint. Running a real measure
+    /// and arrange pass forces the templates to apply. No display is involved; WPF lays out
+    /// perfectly well off-screen.
+    /// </summary>
     [Theory]
     [MemberData(nameof(PageTypes))]
-    public void Page_constructs(Type pageType)
+    public void Page_constructs_and_lays_out(Type pageType)
     {
         if (!host.IsSupported)
         {
             return;
         }
 
-        host.OnUiThread(() => Assert.NotNull(App.Services.GetRequiredService(pageType)));
+        host.OnUiThread(() =>
+        {
+            var page = App.Services.GetRequiredService(pageType);
+            Assert.NotNull(page);
+
+            var element = Assert.IsAssignableFrom<FrameworkElement>(page);
+            element.Measure(new Size(1240, 800));
+            element.Arrange(new Rect(0, 0, 1240, 800));
+            element.UpdateLayout();
+        });
     }
 
     /// <summary>Reads the names WPF compiled into the app assembly's generated resource stream.</summary>

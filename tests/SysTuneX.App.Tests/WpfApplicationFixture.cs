@@ -38,6 +38,13 @@ public sealed class WpfApplicationFixture : IDisposable
 
             try
             {
+                // pack://application:,,,/... resolves against Application.ResourceAssembly, which
+                // WPF defaults to the entry assembly. In the real app that is SysTuneX.exe; under
+                // a test runner it is testhost.exe, whose .g.resources holds none of this. Point
+                // it at the app assembly so the host matches production instead of inventing a
+                // failure the shipped executable cannot have.
+                System.Windows.Application.ResourceAssembly = typeof(App).Assembly;
+
                 var application = new App();
 
                 // This is what the generated Main calls, and it is where App.xaml and every
