@@ -35,7 +35,10 @@ What changed:
   reach a release.
 * `FilterToggle` moved from `Resources/Theme.xaml` to `App.xaml`. It derives from the WPF UI
   `ToggleButton` style, and a `StaticResource` inside a merged dictionary can only see that
-  dictionary's own scope — `Theme.xaml` does not merge the WPF UI controls dictionary.
+  dictionary's own scope — `Theme.xaml` does not merge the WPF UI controls dictionary. The
+  filter bar in `PageParts.xaml` now reaches it with `DynamicResource`, because a
+  `StaticResource` inside a `ControlTemplate` resolves against the template's own scope and
+  never reaches `Application.Resources` — it would have thrown at first paint.
 * The failure dialog is now useful. It leads with the innermost exception, prints the whole chain
   with XAML line and file information, and writes a full report to
   `%ProgramData%\SysTuneX\errors.log`. The 2.0.0 dialog showed only the outer message, which
