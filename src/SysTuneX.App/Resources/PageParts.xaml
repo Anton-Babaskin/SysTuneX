@@ -164,7 +164,16 @@
         </StackPanel>
     </ControlTemplate>
 
-    <!-- Search box plus risk and status toggles. -->
+    <!--
+        Search box plus risk and status toggles.
+
+        The toggles bind their style with DynamicResource, not StaticResource. FilterToggle is
+        defined in App.xaml, because it derives from the WPF UI ToggleButton style and that
+        dictionary is only in scope there. A StaticResource inside a ControlTemplate is resolved
+        against the template's own parse-time scope and does not reach Application.Resources, so
+        it would throw the moment the template is applied - at first paint, not at load.
+        DynamicResource looks the style up through the element tree, which does reach it.
+    -->
     <ControlTemplate x:Key="TweakFilterBarTemplate" TargetType="ContentControl">
         <StackPanel Style="{StaticResource FilterBarPanel}">
             <ui:TextBox PlaceholderText="{loc:Loc Common_Search}"
@@ -173,19 +182,19 @@
                         Margin="0,0,12,0"
                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
 
-            <ToggleButton Style="{StaticResource FilterToggle}"
+            <ToggleButton Style="{DynamicResource FilterToggle}"
                           Content="{loc:Loc Risk_Safe}"
                           IsChecked="{Binding RiskFilter, Converter={StaticResource RiskFilterEquals}, ConverterParameter=Safe, Mode=OneWay}"
                           Command="{Binding SetRiskFilterCommand}"
                           CommandParameter="Safe" />
 
-            <ToggleButton Style="{StaticResource FilterToggle}"
+            <ToggleButton Style="{DynamicResource FilterToggle}"
                           Content="{loc:Loc Risk_Moderate}"
                           IsChecked="{Binding RiskFilter, Converter={StaticResource RiskFilterEquals}, ConverterParameter=Moderate, Mode=OneWay}"
                           Command="{Binding SetRiskFilterCommand}"
                           CommandParameter="Moderate" />
 
-            <ToggleButton Style="{StaticResource FilterToggle}"
+            <ToggleButton Style="{DynamicResource FilterToggle}"
                           Content="{loc:Loc Risk_Advanced}"
                           IsChecked="{Binding RiskFilter, Converter={StaticResource RiskFilterEquals}, ConverterParameter=Advanced, Mode=OneWay}"
                           Command="{Binding SetRiskFilterCommand}"
@@ -193,13 +202,13 @@
 
             <Border Width="1" Margin="8,4" Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
 
-            <ToggleButton Style="{StaticResource FilterToggle}"
+            <ToggleButton Style="{DynamicResource FilterToggle}"
                           Content="{loc:Loc Filter_OnlyApplied}"
                           IsChecked="{Binding AppliedFilter, Converter={StaticResource AppliedFilterEquals}, ConverterParameter=applied, Mode=OneWay}"
                           Command="{Binding SetAppliedFilterCommand}"
                           CommandParameter="applied" />
 
-            <ToggleButton Style="{StaticResource FilterToggle}"
+            <ToggleButton Style="{DynamicResource FilterToggle}"
                           Content="{loc:Loc Filter_OnlyNotApplied}"
                           IsChecked="{Binding AppliedFilter, Converter={StaticResource AppliedFilterEquals}, ConverterParameter=not-applied, Mode=OneWay}"
                           Command="{Binding SetAppliedFilterCommand}"
