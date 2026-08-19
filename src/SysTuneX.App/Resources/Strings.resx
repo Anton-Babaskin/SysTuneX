@@ -754,4 +754,28 @@
   <data name="Msg_Error" xml:space="preserve">
     <value>Something went wrong</value>
   </data>
+  <data name="Settings_Diagnostics" xml:space="preserve">
+    <value>Diagnostics</value>
+  </data>
+  <data name="Settings_Diagnostics_Hint" xml:space="preserve">
+    <value>SysTuneX records what it does to a log file. If something misbehaves, build a report and send it — it contains the log, the change journal and what this machine is.</value>
+  </data>
+  <data name="Settings_VerboseLogging" xml:space="preserve">
+    <value>Verbose logging</value>
+  </data>
+  <data name="Settings_VerboseLogging_Hint" xml:space="preserve">
+    <value>Records every registry read and every command line, not just the outcomes. Applies immediately; makes the log considerably larger.</value>
+  </data>
+  <data name="Settings_LogFolder" xml:space="preserve">
+    <value>Log folder</value>
+  </data>
+  <data name="Settings_CreateReport" xml:space="preserve">
+    <value>Build a report</value>
+  </data>
+  <data name="Settings_OpenLogFolder" xml:space="preserve">
+    <value>Open log folder</value>
+  </data>
+  <data name="Settings_Report_Done" xml:space="preserve">
+    <value>Report {0} written — {1} log lines, {2} journal entries.</value>
+  </data>
 </root>

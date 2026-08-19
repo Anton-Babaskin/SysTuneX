@@ -13,6 +13,7 @@ using SysTuneX.App.Views;
 using SysTuneX.App.Views.Pages;
 using SysTuneX.Core;
 using SysTuneX.Core.Abstractions;
+using SysTuneX.Core.Diagnostics;
 using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 using Wpf.Ui.Appearance;
@@ -23,6 +24,9 @@ public partial class App : Application
 {
     private readonly IHost _host;
 
+    // Shared with the container so the settings page can turn verbose logging on without a restart.
+    private readonly LogLevelSwitch _logLevel = new();
+
     public App()
     {
         _host = Host.CreateDefaultBuilder()
@@ -30,10 +34,19 @@ public partial class App : Application
             {
                 logging.ClearProviders();
                 logging.AddDebug();
-                logging.SetMinimumLevel(LogLevel.Information);
+
+                // Every service in Core logs through ILogger, but until now the only provider was
+                // Debug - so on a user's machine all of it went nowhere. This is the sink that
+                // makes a bug report possible without a debugger attached.
+                logging.AddProvider(new FileLoggerProvider(_logLevel));
+
+                // The switch, not a fixed level: the file provider decides per message.
+                logging.SetMinimumLevel(LogLevel.Debug);
             })
             .ConfigureServices((_, services) =>
             {
+                // Registered before Core, which only fills in a default when nothing is there.
+                services.AddSingleton(_logLevel);
                 services.AddSysTuneXCore();
 
                 // The markup extension resolves strings through a static, so the container
@@ -81,6 +94,8 @@ public partial class App : Application
         {
             await _host.StartAsync();
 
+            LogSessionStart();
+
             var localization = _host.Services.GetRequiredService<ILocalizationService>();
 
             var settings = _host.Services.GetRequiredService<IAppSettingsService>();
@@ -117,6 +132,30 @@ public partial class App : Application
         }
 
         base.OnExit(e);
+    }
+
+    /// <summary>
+    /// First lines of every session. Without them a log is a pile of messages with no way to tell
+    /// which build produced it or whether the process even had the rights to do anything.
+    /// </summary>
+    private void LogSessionStart()
+    {
+        try
+        {
+            var logger = _host.Services.GetRequiredService<ILogger<App>>();
+            var environment = _host.Services.GetRequiredService<IEnvironmentService>();
+
+            logger.LogInformation(
+                "SysTuneX {Version} starting - {Windows}, elevated={Elevated}, supported={Supported}",
+                typeof(App).Assembly.GetName().Version?.ToString(3) ?? "unknown",
+                environment.Windows,
+                environment.IsElevated,
+                environment.Windows.IsSupported);
+        }
+        catch (Exception ex)
+        {
+            Log(ex, "startup-banner");
+        }
     }
 
     private static void ApplyTheme(ApplicationTheme theme)

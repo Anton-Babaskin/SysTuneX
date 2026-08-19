@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using SysTuneX.Core.Abstractions;
+using SysTuneX.Core.Diagnostics;
 using SysTuneX.Core.Services;
 
 namespace SysTuneX.Core;
@@ -12,6 +14,10 @@ public static class ServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddSysTuneXCore(this IServiceCollection services)
     {
+        // The host registers its own switch before calling this so the settings page can flip
+        // logging at runtime; TryAdd keeps a standalone consumer of Core working without one.
+        services.TryAddSingleton<LogLevelSwitch>();
+
         services.AddSingleton<IRegistryService, RegistryService>();
         services.AddSingleton<IEnvironmentService, EnvironmentService>();
         services.AddSingleton<IBackupService, BackupService>();
@@ -31,6 +37,7 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<ITweakEngine, TweakEngine>();
         services.AddSingleton<IProfileService, ProfileService>();
+        services.AddSingleton<IDiagnosticsService, DiagnosticsService>();
 
         return services;
     }

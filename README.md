@@ -85,6 +85,14 @@ thumbnails and the DirectX / NVIDIA / AMD shader caches. Every target is measure
 exact folders and total size are shown before deletion. Preinstalled Store apps can be removed
 individually.
 
+### Diagnostics
+
+SysTuneX writes what it does to `%ProgramData%\SysTuneX\logs`, one file per day, kept for a
+week. Every message the app shows you is in there too, so the log and the screen never disagree.
+Settings has a **Build a report** button that bundles the machine description, the change journal
+and the log tail into a single text file — that one file is what to attach to a bug report.
+**Verbose logging** adds every registry read and every command line, and takes effect immediately.
+
 ### Change log
 
 The list of every value SysTuneX recorded before changing it: what it was, who changed it, when,

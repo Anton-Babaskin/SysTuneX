@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using System.Windows;
 using System.Windows.Controls;
 using SysTuneX.App.Localization;
@@ -36,28 +37,48 @@ public sealed class UserInteraction : IUserInteraction
     private readonly ISnackbarService _snackbar;
     private readonly IContentDialogService _dialogs;
     private readonly ILocalizationService _localization;
+    private readonly ILogger<UserInteraction> _logger;
 
     public UserInteraction(
         ISnackbarService snackbar,
         IContentDialogService dialogs,
-        ILocalizationService localization)
+        ILocalizationService localization,
+        ILogger<UserInteraction> logger)
     {
         _snackbar = snackbar;
         _dialogs = dialogs;
         _localization = localization;
+        _logger = logger;
     }
 
-    public void ShowSuccess(string message, string? title = null) =>
+    // Everything the user is told goes through here, so logging at this one point means the log
+    // and the screen can never disagree - which is the whole value of a log during testing.
+    public void ShowSuccess(string message, string? title = null)
+    {
+        _logger.LogInformation("Told the user: {Message}", Combine(title, message));
         Toast(title ?? string.Empty, message, ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
+    }
 
-    public void ShowInfo(string message, string? title = null) =>
+    public void ShowInfo(string message, string? title = null)
+    {
+        _logger.LogInformation("Told the user: {Message}", Combine(title, message));
         Toast(title ?? string.Empty, message, ControlAppearance.Info, SymbolRegular.Info24);
+    }
 
-    public void ShowWarning(string message, string? title = null) =>
+    public void ShowWarning(string message, string? title = null)
+    {
+        _logger.LogWarning("Warned the user: {Message}", Combine(title, message));
         Toast(title ?? string.Empty, message, ControlAppearance.Caution, SymbolRegular.Warning24);
+    }
 
-    public void ShowError(string message, string? title = null) =>
+    public void ShowError(string message, string? title = null)
+    {
+        _logger.LogError("Showed the user an error: {Message}", Combine(title, message));
         Toast(title ?? _localization["Msg_Error"], message, ControlAppearance.Danger, SymbolRegular.DismissCircle24);
+    }
+
+    private static string Combine(string? title, string message) =>
+        string.IsNullOrWhiteSpace(title) ? message : $"{title} - {message}";
 
     public async Task<bool> ConfirmAsync(
         string title,
@@ -78,7 +99,9 @@ public sealed class UserInteraction : IUserInteraction
                     cancellationToken)
                 .ConfigureAwait(true);
 
-            return result == ContentDialogResult.Primary;
+            bool confirmed = result == ContentDialogResult.Primary;
+            _logger.LogInformation("Asked \"{Title}\" - user {Answer}", title, confirmed ? "confirmed" : "declined");
+            return confirmed;
         }
         catch (Exception)
         {
