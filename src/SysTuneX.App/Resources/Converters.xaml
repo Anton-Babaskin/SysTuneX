@@ -1,0 +1,27 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:converters="clr-namespace:SysTuneX.App.Converters">
+
+    <!--
+        Converters live in their own dictionary so any other dictionary can merge them before
+        use. A StaticResource inside a merged dictionary is resolved while that dictionary is
+        being parsed, so it cannot see keys the parent adds afterwards.
+    -->
+
+    <converters:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+    <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility" />
+    <converters:InverseBooleanConverter x:Key="InverseBool" />
+    <converters:EmptyToVisibilityConverter x:Key="EmptyToVisibility" />
+    <converters:NullToVisibilityConverter x:Key="NullToVisibility" />
+    <converters:RiskToBrushConverter x:Key="RiskToBrush" />
+    <converters:StatusToBrushConverter x:Key="StatusToBrush" />
+    <converters:HexToBrushConverter x:Key="HexToBrush" />
+    <converters:BytesToSizeConverter x:Key="BytesToSize" />
+    <converters:MegabytesToSizeConverter x:Key="MegabytesToSize" />
+    <converters:TimeSpanToUptimeConverter x:Key="TimeSpanToUptime" />
+    <converters:FractionToWidthConverter x:Key="FractionToWidth" />
+    <converters:RiskFilterEqualsConverter x:Key="RiskFilterEquals" />
+    <converters:AppliedFilterEqualsConverter x:Key="AppliedFilterEquals" />
+    <converters:StringEqualsConverter x:Key="StringEquals" />
+
+</ResourceDictionary>

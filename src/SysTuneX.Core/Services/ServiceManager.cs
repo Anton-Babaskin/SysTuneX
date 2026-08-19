@@ -1,139 +1,441 @@
+using System.ComponentModel;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.ServiceProcess;
 using Microsoft.Extensions.Logging;
+using SysTuneX.Core.Abstractions;
 using SysTuneX.Core.Models;
+using SysTuneX.Core.Native;
+using SysTuneX.Core.Tweaks;
+
+// Both System.ServiceProcess and the Core models declare a ServiceStartMode; the model type
+// is the one this file speaks in, and the framework enum is referenced fully qualified.
+using ServiceStartMode = SysTuneX.Core.Models.ServiceStartMode;
+using Win32ServiceStartMode = System.ServiceProcess.ServiceStartMode;
 
 namespace SysTuneX.Core.Services;
 
-public class ServiceManager : IServiceManager
+/// <inheritdoc cref="IServiceManager"/>
+[SupportedOSPlatform("windows")]
+public sealed class ServiceManager : IServiceManager
 {
+    private static readonly TimeSpan StateChangeTimeout = TimeSpan.FromSeconds(15);
+
     private readonly ILogger<ServiceManager> _logger;
+    private readonly IBackupService _backup;
+    private readonly IEnvironmentService _environment;
 
-    private static readonly (string Name, string Display, string Desc, RiskLevel Risk)[] ManagedServiceDefs =
-    [
-        ("DiagTrack", "Connected User Experiences and Telemetry", "Microsoft telemetry collection service", RiskLevel.Safe),
-        ("SysMain", "SysMain (Superfetch)", "Preloads apps into RAM — wastes memory for gaming", RiskLevel.Safe),
-        ("WSearch", "Windows Search", "Background indexing — uses CPU and disk I/O", RiskLevel.Moderate),
-        ("Fax", "Fax", "Fax service — unused on modern systems", RiskLevel.Safe),
-        ("lfsvc", "Geolocation Service", "Location tracking service", RiskLevel.Safe),
-        ("MapsBroker", "Downloaded Maps Manager", "Manages offline maps", RiskLevel.Safe),
-        ("XblAuthManager", "Xbox Live Auth Manager", "Xbox Live authentication", RiskLevel.Safe),
-        ("XblGameSave", "Xbox Live Game Save", "Xbox Live cloud saves sync", RiskLevel.Safe),
-        ("XboxGipSvc", "Xbox Accessory Management", "Xbox controller management", RiskLevel.Moderate),
-        ("XboxNetApiSvc", "Xbox Live Networking", "Xbox Live network service", RiskLevel.Safe),
-        ("RetailDemo", "Retail Demo Service", "Store demo mode", RiskLevel.Safe),
-        ("WMPNetworkSvc", "Windows Media Player Network Sharing", "Media streaming", RiskLevel.Safe),
-        ("PhoneSvc", "Phone Service", "Telephony state management", RiskLevel.Safe),
-        ("PrintNotify", "Printer Extensions and Notifications", "Printer notifications", RiskLevel.Moderate),
-        ("RemoteRegistry", "Remote Registry", "Remote registry editing — security risk", RiskLevel.Safe),
-        ("dmwappushservice", "WAP Push Message Routing", "Telemetry routing service", RiskLevel.Safe),
-        ("TabletInputService", "Touch Keyboard and Handwriting Panel", "Tablet input — not needed on desktop", RiskLevel.Moderate),
-        ("WerSvc", "Windows Error Reporting", "Crash reporting to Microsoft", RiskLevel.Safe),
-
-        // Windows 11 specific
-        ("Widgets", "Windows Widgets Service", "Win11 Widgets — fetches live news/weather in background, wastes CPU and network", RiskLevel.Safe),
-        ("WpnService", "Windows Push Notification", "Push notification system — not needed when gaming", RiskLevel.Moderate),
-        ("cbdhsvc", "Clipboard User Service", "Cloud clipboard sync with Microsoft servers", RiskLevel.Moderate),
-        ("WbioSrvc", "Windows Biometric Service", "Fingerprint/face recognition — not needed on desktops without biometrics", RiskLevel.Moderate),
-        ("OneSyncSvc", "Sync Host Service", "Syncs mail, contacts, calendar in background — OneDrive sync overhead", RiskLevel.Moderate),
-        ("CDPSvc", "Connected Devices Platform", "Connects Windows devices and phone — background scanning", RiskLevel.Safe),
-        ("CDPUserSvc", "Connected Devices Platform (User)", "User-level connected devices background service", RiskLevel.Safe),
-        ("PushToInstall", "Windows PushToInstall", "Installs apps pushed from Microsoft Store remotely", RiskLevel.Safe),
-        ("MicrosoftEdgeElevationService", "Microsoft Edge Elevation Service", "Edge auto-update service running in background", RiskLevel.Safe),
-        ("edgeupdate", "Microsoft Edge Update", "Checks for Edge updates — runs periodically", RiskLevel.Safe),
-    ];
-
-    public ServiceManager(ILogger<ServiceManager> logger)
+    public ServiceManager(ILogger<ServiceManager> logger, IBackupService backup, IEnvironmentService environment)
     {
         _logger = logger;
+        _backup = backup;
+        _environment = environment;
     }
 
-    public List<ServiceItem> GetManagedServices()
+    public Task<IReadOnlyList<(ServiceDefinition Definition, ServiceSnapshot State)>> GetManagedServicesAsync(
+        CancellationToken cancellationToken = default)
     {
-        var result = new List<ServiceItem>();
-        foreach (var def in ManagedServiceDefs)
-        {
-            var item = new ServiceItem
+        return Task.Run<IReadOnlyList<(ServiceDefinition, ServiceSnapshot)>>(
+            () =>
             {
-                ServiceName = def.Name,
-                DisplayName = def.Display,
-                Description = def.Desc,
-                Risk = def.Risk,
-                IsRunning = IsServiceRunning(def.Name)
-            };
-            result.Add(item);
-        }
-        return result;
+                int build = _environment.Windows.Build;
+                var results = new List<(ServiceDefinition, ServiceSnapshot)>();
+
+                foreach (ServiceDefinition definition in ServiceCatalog.All)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (build < definition.MinBuild)
+                    {
+                        continue;
+                    }
+
+                    ServiceSnapshot state = GetState(definition.ServiceName);
+
+                    // A definition that matches nothing on this machine is noise, not information.
+                    if (!state.IsInstalled)
+                    {
+                        continue;
+                    }
+
+                    results.Add((definition, state));
+                }
+
+                return results;
+            },
+            cancellationToken);
     }
 
-    public bool IsServiceRunning(string serviceName)
+    public ServiceSnapshot GetState(string serviceName)
+    {
+        string? resolved = ResolveServiceName(serviceName);
+        if (resolved is null)
+        {
+            return new ServiceSnapshot { ServiceName = serviceName, State = ServiceState.NotInstalled };
+        }
+
+        try
+        {
+            using var controller = new ServiceController(resolved);
+            return new ServiceSnapshot
+            {
+                ServiceName = resolved,
+                State = MapState(controller.Status),
+                StartMode = MapStartMode(controller.StartType),
+            };
+        }
+        catch (InvalidOperationException)
+        {
+            return new ServiceSnapshot { ServiceName = serviceName, State = ServiceState.NotInstalled };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Could not read the state of {Service}", serviceName);
+            return new ServiceSnapshot { ServiceName = serviceName, State = ServiceState.Unknown };
+        }
+    }
+
+    public async Task<OperationResult> DisableAsync(ServiceDefinition definition, CancellationToken cancellationToken = default)
+    {
+        string? resolved = ResolveServiceName(definition.ServiceName);
+        if (resolved is null)
+        {
+            return OperationResult.NoChange($"{definition.ServiceName} is not installed on this machine.");
+        }
+
+        ServiceSnapshot before = GetState(resolved);
+
+        // Record the real previous configuration before touching anything, so restore is exact.
+        await _backup
+            .RecordServiceAsync($"service:{definition.ServiceName}", resolved, before.StartMode, before.IsRunning, cancellationToken)
+            .ConfigureAwait(false);
+
+        var errors = new List<string>();
+
+        if (before.IsRunning)
+        {
+            OperationResult stop = await StopAsync(resolved, cancellationToken).ConfigureAwait(false);
+            if (!stop.Success && stop.Message is not null)
+            {
+                errors.Add(stop.Message);
+            }
+        }
+
+        OperationResult startMode = SetStartMode(resolved, definition.DisabledStartMode);
+        if (!startMode.Success && startMode.Message is not null)
+        {
+            errors.Add(startMode.Message);
+        }
+
+        // A service that refuses to stop but will not start again next boot is still a win,
+        // so a failed stop alone is reported rather than treated as a total failure.
+        if (startMode.Success)
+        {
+            return errors.Count == 0
+                ? OperationResult.Ok()
+                : OperationResult.Ok(string.Join(" ", errors));
+        }
+
+        return OperationResult.Fail(string.Join(" ", errors));
+    }
+
+    public async Task<OperationResult> RestoreAsync(string serviceName, CancellationToken cancellationToken = default)
+    {
+        string? resolved = ResolveServiceName(serviceName);
+        if (resolved is null)
+        {
+            return OperationResult.NoChange($"{serviceName} is not installed on this machine.");
+        }
+
+        BackupEntry? entry = _backup.FindActive(BackupKind.ServiceConfiguration, resolved)
+                             ?? _backup.FindActive(BackupKind.ServiceConfiguration, serviceName);
+
+        ServiceDefinition? definition = ServiceCatalog.Find(serviceName);
+
+        // Without a recorded value, fall back to the documented Windows default for this service
+        // rather than guessing "Automatic" for everything.
+        ServiceStartMode targetMode = entry?.OriginalStartMode is { } recorded && recorded != ServiceStartMode.Unknown
+            ? recorded
+            : definition?.DisabledStartMode == ServiceStartMode.Manual
+                ? ServiceStartMode.Manual
+                : ServiceStartMode.Automatic;
+
+        bool shouldRun = entry?.OriginalWasRunning ?? true;
+
+        OperationResult startMode = SetStartMode(resolved, targetMode);
+        if (!startMode.Success)
+        {
+            return startMode;
+        }
+
+        if (shouldRun)
+        {
+            OperationResult start = await StartAsync(resolved, cancellationToken).ConfigureAwait(false);
+            if (!start.Success)
+            {
+                // The start type is restored, so the service comes back at the next boot regardless.
+                _logger.LogWarning("Restored the start type of {Service} but could not start it now", resolved);
+            }
+        }
+
+        if (entry is not null)
+        {
+            await _backup.MarkRevertedAsync([entry.Id], cancellationToken).ConfigureAwait(false);
+        }
+
+        return OperationResult.Ok();
+    }
+
+    public Task<OperationResult> StartAsync(string serviceName, CancellationToken cancellationToken = default)
+    {
+        return Task.Run(
+            () =>
+            {
+                string? resolved = ResolveServiceName(serviceName);
+                if (resolved is null)
+                {
+                    return OperationResult.NoChange($"{serviceName} is not installed.");
+                }
+
+                try
+                {
+                    using var controller = new ServiceController(resolved);
+                    if (controller.Status is ServiceControllerStatus.Running or ServiceControllerStatus.StartPending)
+                    {
+                        return OperationResult.NoChange();
+                    }
+
+                    // A disabled service cannot start; lift it to Manual first.
+                    if (controller.StartType == Win32ServiceStartMode.Disabled)
+                    {
+                        OperationResult lift = SetStartMode(resolved, ServiceStartMode.Manual);
+                        if (!lift.Success)
+                        {
+                            return lift;
+                        }
+                    }
+
+                    controller.Start();
+                    controller.WaitForStatus(ServiceControllerStatus.Running, StateChangeTimeout);
+                    _logger.LogInformation("Started service {Service}", resolved);
+                    return OperationResult.Ok();
+                }
+                catch (System.ServiceProcess.TimeoutException)
+                {
+                    return OperationResult.Fail($"{resolved} did not reach the running state in time.");
+                }
+                catch (Exception ex)
+                {
+                    return OperationResult.Fail($"Could not start {resolved}: {Describe(ex)}", ex);
+                }
+            },
+            cancellationToken);
+    }
+
+    public Task<OperationResult> StopAsync(string serviceName, CancellationToken cancellationToken = default)
+    {
+        return Task.Run(
+            () =>
+            {
+                string? resolved = ResolveServiceName(serviceName);
+                if (resolved is null)
+                {
+                    return OperationResult.NoChange($"{serviceName} is not installed.");
+                }
+
+                try
+                {
+                    using var controller = new ServiceController(resolved);
+                    if (controller.Status == ServiceControllerStatus.Stopped)
+                    {
+                        return OperationResult.NoChange();
+                    }
+
+                    if (!controller.CanStop)
+                    {
+                        return OperationResult.Fail($"Windows does not allow {resolved} to be stopped while it is running.");
+                    }
+
+                    // Dependents hold the service open, so they have to go down first.
+                    foreach (ServiceController dependent in controller.DependentServices)
+                    {
+                        using (dependent)
+                        {
+                            try
+                            {
+                                if (dependent.Status != ServiceControllerStatus.Stopped && dependent.CanStop)
+                                {
+                                    dependent.Stop();
+                                    dependent.WaitForStatus(ServiceControllerStatus.Stopped, StateChangeTimeout);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogDebug(ex, "Could not stop dependent service {Service}", dependent.ServiceName);
+                            }
+                        }
+                    }
+
+                    controller.Stop();
+                    controller.WaitForStatus(ServiceControllerStatus.Stopped, StateChangeTimeout);
+                    _logger.LogInformation("Stopped service {Service}", resolved);
+                    return OperationResult.Ok();
+                }
+                catch (System.ServiceProcess.TimeoutException)
+                {
+                    return OperationResult.Fail($"{resolved} did not stop in time.");
+                }
+                catch (Exception ex)
+                {
+                    return OperationResult.Fail($"Could not stop {resolved}: {Describe(ex)}", ex);
+                }
+            },
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Writes the start type through the service control manager.
+    ///
+    /// The old code shelled out to <c>sc.exe config</c> and only looked at the exit code, so a
+    /// blocked write looked identical to a successful one. This reports the actual Win32 error.
+    /// </summary>
+    public OperationResult SetStartMode(string serviceName, ServiceStartMode startMode)
+    {
+        string? resolved = ResolveServiceName(serviceName);
+        if (resolved is null)
+        {
+            return OperationResult.NoChange($"{serviceName} is not installed.");
+        }
+
+        if (startMode == ServiceStartMode.Unknown)
+        {
+            return OperationResult.Fail("Refusing to write an unknown start type.");
+        }
+
+        IntPtr manager = IntPtr.Zero;
+        IntPtr service = IntPtr.Zero;
+
+        try
+        {
+            manager = NativeMethods.OpenSCManager(null, null, NativeMethods.SC_MANAGER_CONNECT);
+            if (manager == IntPtr.Zero)
+            {
+                return OperationResult.Fail(LastError("Could not connect to the service control manager"));
+            }
+
+            service = NativeMethods.OpenService(
+                manager,
+                resolved,
+                NativeMethods.SERVICE_CHANGE_CONFIG | NativeMethods.SERVICE_QUERY_CONFIG);
+
+            if (service == IntPtr.Zero)
+            {
+                return OperationResult.Fail(LastError($"Could not open {resolved}"));
+            }
+
+            bool changed = NativeMethods.ChangeServiceConfig(
+                service,
+                NativeMethods.SERVICE_NO_CHANGE,
+                (uint)startMode,
+                NativeMethods.SERVICE_NO_CHANGE,
+                null, null, IntPtr.Zero, null, null, null, null);
+
+            if (!changed)
+            {
+                return OperationResult.Fail(LastError($"Could not set the start type of {resolved}"));
+            }
+
+            _logger.LogInformation("Start type of {Service} set to {Mode}", resolved, startMode);
+            return OperationResult.Ok();
+        }
+        catch (Exception ex)
+        {
+            return OperationResult.Fail($"Could not set the start type of {resolved}: {ex.Message}", ex);
+        }
+        finally
+        {
+            if (service != IntPtr.Zero)
+            {
+                NativeMethods.CloseServiceHandle(service);
+            }
+
+            if (manager != IntPtr.Zero)
+            {
+                NativeMethods.CloseServiceHandle(manager);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Per-user services are registered as "CDPUserSvc_4f2a1" and the suffix differs per logon
+    /// session, so a literal name lookup misses them. Match the stem when the exact name fails.
+    /// </summary>
+    private string? ResolveServiceName(string serviceName)
     {
         try
         {
-            using var sc = new ServiceController(serviceName);
-            return sc.Status == ServiceControllerStatus.Running;
+            using var direct = new ServiceController(serviceName);
+            _ = direct.Status;
+            return serviceName;
         }
         catch
         {
-            return false;
+            // Fall through to the prefix scan.
         }
-    }
 
-    public bool StopService(string serviceName)
-    {
         try
         {
-            using var sc = new ServiceController(serviceName);
-            if (sc.Status == ServiceControllerStatus.Stopped) return true;
-            sc.Stop();
-            sc.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(10));
-            _logger.LogInformation("Stopped service: {Name}", serviceName);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to stop service: {Name}", serviceName);
-            return false;
-        }
-    }
-
-    public bool StartService(string serviceName)
-    {
-        try
-        {
-            using var sc = new ServiceController(serviceName);
-            if (sc.Status == ServiceControllerStatus.Running) return true;
-            sc.Start();
-            sc.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(10));
-            _logger.LogInformation("Started service: {Name}", serviceName);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to start service: {Name}", serviceName);
-            return false;
-        }
-    }
-
-    public bool SetServiceStartType(string serviceName, bool disabled)
-    {
-        try
-        {
-            var startType = disabled ? "disabled" : "demand";
-            var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            string prefix = serviceName + "_";
+            ServiceController[] all = ServiceController.GetServices();
+            try
             {
-                FileName = "sc.exe",
-                Arguments = $"config \"{serviceName}\" start= {startType}",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true
-            });
-            process?.WaitForExit(5000);
-            return process?.ExitCode == 0;
+                ServiceController? match = all.FirstOrDefault(
+                    s => s.ServiceName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+                return match?.ServiceName;
+            }
+            finally
+            {
+                foreach (ServiceController controller in all)
+                {
+                    controller.Dispose();
+                }
+            }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to set start type for: {Name}", serviceName);
-            return false;
+            _logger.LogDebug(ex, "Could not enumerate services while resolving {Service}", serviceName);
+            return null;
         }
     }
+
+    private static string LastError(string prefix)
+    {
+        int code = Marshal.GetLastWin32Error();
+        string detail = code == 5
+            ? "access denied - SysTuneX needs to run as administrator"
+            : new Win32Exception(code).Message;
+        return $"{prefix}: {detail} (0x{code:X}).";
+    }
+
+    private static string Describe(Exception ex) =>
+        ex.InnerException is Win32Exception win32 ? win32.Message : ex.Message;
+
+    private static ServiceState MapState(ServiceControllerStatus status) => status switch
+    {
+        ServiceControllerStatus.Running => ServiceState.Running,
+        ServiceControllerStatus.Stopped => ServiceState.Stopped,
+        ServiceControllerStatus.StartPending => ServiceState.StartPending,
+        ServiceControllerStatus.StopPending => ServiceState.StopPending,
+        _ => ServiceState.Unknown,
+    };
+
+    private static ServiceStartMode MapStartMode(Win32ServiceStartMode mode) => mode switch
+    {
+        Win32ServiceStartMode.Boot => ServiceStartMode.Boot,
+        Win32ServiceStartMode.System => ServiceStartMode.System,
+        Win32ServiceStartMode.Automatic => ServiceStartMode.Automatic,
+        Win32ServiceStartMode.Manual => ServiceStartMode.Manual,
+        Win32ServiceStartMode.Disabled => ServiceStartMode.Disabled,
+        _ => ServiceStartMode.Unknown,
+    };
 }

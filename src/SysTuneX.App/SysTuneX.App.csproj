@@ -2,29 +2,56 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <RootNamespace>SysTuneX.App</RootNamespace>
     <AssemblyName>SysTuneX</AssemblyName>
-    <Version>1.0.0</Version>
-    <Authors>Anton Babaskin</Authors>
-    <Description>Windows 11 Game Optimizer</Description>
+    <Description>SysTuneX — Windows 11 performance and latency tuner</Description>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\SysTuneX.ico</ApplicationIcon>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <PublishReadyToRun>true</PublishReadyToRun>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <!-- WPF cannot be trimmed, so a self-contained build is inherently large.
+         Compressing the bundle roughly halves the download for a small start-up cost. -->
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml" SubType="Designer" Generator="MSBuild:Compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+        The SDK globs **/*.xaml into Page, but it has no default glob for images: a .png sitting
+        in the project is a None item and never reaches the assembly. Without this line the
+        pack://application:,,,/Assets/SysTuneX.png reference in MainWindow.xaml resolves to
+        nothing and ImageSourceConverter throws while the window's BAML loads, which WPF reports
+        as "Provide value on 'TypeConverterMarkupExtension' threw an exception" - the app dies
+        before it draws a pixel. AssemblyResourceTests keeps this honest.
+    -->
+    <Resource Include="Assets/SysTuneX.png" />
+    <Resource Include="Assets/SysTuneX.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SysTuneX.Core\SysTuneX.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="WPF-UI" Version="3.0.5" />
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\Strings.resx">
+      <Generator></Generator>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

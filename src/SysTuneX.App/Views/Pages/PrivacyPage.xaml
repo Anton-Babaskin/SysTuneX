@@ -1,0 +1,113 @@
+<pages:SysTuneXPage x:Class="SysTuneX.App.Views.Pages.PrivacyPage"
+                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                    xmlns:loc="clr-namespace:SysTuneX.App.Localization"
+                    xmlns:pages="clr-namespace:SysTuneX.App.Views.Pages"
+                    xmlns:vm="clr-namespace:SysTuneX.App.ViewModels"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    mc:Ignorable="d"
+                    d:DataContext="{d:DesignInstance Type=vm:PrivacyViewModel}"
+                    Title="Privacy">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="28,20,28,0"
+                    MaxWidth="{StaticResource MaxContentWidth}"
+                    HorizontalAlignment="Left">
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Privacy_Title}" Style="{StaticResource PageTitle}" />
+                    <TextBlock Text="{loc:Loc Privacy_Subtitle}" Style="{StaticResource PageSubtitle}" />
+                </StackPanel>
+
+                <ContentControl Grid.Column="1" Template="{StaticResource TweakToolbarTemplate}" />
+            </Grid>
+
+            <ContentControl Template="{StaticResource TweakFilterBarTemplate}" />
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,0,28,28">
+                <Grid MaxWidth="{StaticResource MaxContentWidth}" HorizontalAlignment="Left">
+                    <StackPanel>
+
+                        <!-- Hosts file block: a file edit rather than a registry tweak, so it
+                             gets its own card with the full list of what it will add. -->
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,20"
+                                DataContext="{Binding Hosts}">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Margin="0,0,16,0">
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                            <TextBlock Text="{loc:Loc Privacy_Hosts_Title}"
+                                                       Style="{StaticResource SectionTitle}" />
+                                            <Border Style="{StaticResource Pill}"
+                                                    Margin="10,0,0,0"
+                                                    Background="{StaticResource RiskSafeBackgroundBrush}"
+                                                    Visibility="{Binding IsBlocked, Converter={StaticResource BoolToVisibility}}">
+                                                <TextBlock Text="{loc:Loc Privacy_Hosts_Blocked}"
+                                                           Style="{StaticResource PillText}"
+                                                           Foreground="{StaticResource RiskSafeBrush}" />
+                                            </Border>
+                                        </StackPanel>
+
+                                        <TextBlock Text="{loc:Loc Privacy_Hosts_Description}"
+                                                   Style="{StaticResource BodyText}" />
+
+                                        <ui:HyperlinkButton Content="{Binding ShowListCaption}"
+                                                            Margin="-8,6,0,0"
+                                                            HorizontalAlignment="Left"
+                                                            Command="{Binding ToggleListCommand}" />
+                                    </StackPanel>
+
+                                    <Grid Grid.Column="1" VerticalAlignment="Center" MinWidth="52">
+                                        <ui:ProgressRing IsIndeterminate="True" Width="22" Height="22"
+                                                         Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}" />
+                                        <ui:ToggleSwitch IsChecked="{Binding IsBlocked, Mode=OneWay}"
+                                                         Visibility="{Binding IsBusy, Converter={StaticResource InverseBoolToVisibility}}"
+                                                         Command="{Binding ToggleCommand}" />
+                                    </Grid>
+                                </Grid>
+
+                                <Border Style="{StaticResource SubtleCard}"
+                                        Margin="0,12,0,0"
+                                        MaxHeight="220"
+                                        Visibility="{Binding IsListExpanded, Converter={StaticResource BoolToVisibility}}">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <ItemsControl ItemsSource="{Binding Hosts}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding}" Style="{StaticResource MonoText}" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <ItemsControl ItemsSource="{Binding Groups}" ItemTemplate="{StaticResource TweakGroupTemplate}" />
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+
+            <ContentControl Template="{StaticResource BusyOverlayTemplate}" />
+        </Grid>
+    </Grid>
+</pages:SysTuneXPage>

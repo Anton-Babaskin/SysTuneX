@@ -1,0 +1,248 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                    xmlns:loc="clr-namespace:SysTuneX.App.Localization"
+                    xmlns:vm="clr-namespace:SysTuneX.App.ViewModels">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/SysTuneX;component/Resources/Converters.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/SysTuneX;component/Resources/Theme.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!--
+        Shared building blocks for the tweak pages. Extracted so the four tweak screens are
+        genuinely the same UI rather than four hand-maintained copies that drift apart.
+    -->
+
+    <!-- Risk pill: colour and caption both come from the risk level. -->
+    <DataTemplate x:Key="RiskPillTemplate">
+        <Border Style="{StaticResource Pill}"
+                Background="{Binding Risk, Converter={StaticResource RiskToBrush}, ConverterParameter=background}">
+            <TextBlock Text="{Binding RiskText}"
+                       Style="{StaticResource PillText}"
+                       Foreground="{Binding Risk, Converter={StaticResource RiskToBrush}}" />
+        </Border>
+    </DataTemplate>
+
+    <!-- One tweak row. -->
+    <DataTemplate x:Key="TweakRowTemplate" DataType="{x:Type vm:TweakItemViewModel}">
+        <Border Style="{StaticResource InteractiveCard}" Margin="0,0,0,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <TextBlock Text="{Binding Name}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+
+                        <ContentControl Content="{Binding}"
+                                        ContentTemplate="{StaticResource RiskPillTemplate}"
+                                        Margin="10,0,0,0" />
+
+                        <Border Style="{StaticResource Pill}"
+                                Margin="6,0,0,0"
+                                Background="{DynamicResource SystemFillColorAttentionBackgroundBrush}"
+                                Visibility="{Binding RequiresRestart, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock Text="{loc:Loc Common_RequiresRestart}"
+                                       Style="{StaticResource PillText}"
+                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                        </Border>
+
+                        <Border Style="{StaticResource Pill}"
+                                Margin="6,0,0,0"
+                                Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                Visibility="{Binding RequiresExplorerRestart, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock Text="{loc:Loc Common_RequiresExplorerRestart}"
+                                       Style="{StaticResource PillText}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </Border>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding Description}" Style="{StaticResource BodyText}" />
+
+                    <TextBlock Text="{Binding LastError}"
+                               Style="{StaticResource CaptionText}"
+                               Margin="0,6,0,0"
+                               Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                               Visibility="{Binding LastError, Converter={StaticResource NullToVisibility}}" />
+                </StackPanel>
+
+                <Grid Grid.Column="1" VerticalAlignment="Center" MinWidth="52">
+                    <ui:ProgressRing IsIndeterminate="True"
+                                     Width="22" Height="22"
+                                     Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}" />
+
+                    <ui:ToggleSwitch IsChecked="{Binding IsApplied, Mode=OneWay}"
+                                     IsEnabled="{Binding IsToggleEnabled}"
+                                     Visibility="{Binding IsBusy, Converter={StaticResource InverseBoolToVisibility}}"
+                                     Command="{Binding DataContext.ToggleCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                     CommandParameter="{Binding}" />
+                </Grid>
+            </Grid>
+        </Border>
+    </DataTemplate>
+
+    <!-- A titled group of tweak rows. Hidden entirely when the filters leave it empty. -->
+    <DataTemplate x:Key="TweakGroupTemplate" DataType="{x:Type vm:TweakGroupViewModel}">
+        <StackPanel Margin="0,0,0,20"
+                    Visibility="{Binding IsVisible, Converter={StaticResource BoolToVisibility}}">
+            <TextBlock Text="{Binding Title}"
+                       Style="{StaticResource SectionTitle}"
+                       Margin="2,0,0,10" />
+
+            <ItemsControl ItemsSource="{Binding VisibleItems}"
+                          ItemTemplate="{StaticResource TweakRowTemplate}" />
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Search box plus risk and status filters, shared by the tweak and services pages. -->
+    <Style x:Key="FilterBarPanel" TargetType="StackPanel">
+        <Setter Property="Orientation" Value="Horizontal" />
+        <Setter Property="Margin" Value="0,0,0,16" />
+    </Style>
+
+    <!-- Full-page busy overlay. -->
+    <ControlTemplate x:Key="BusyOverlayTemplate" TargetType="ContentControl">
+        <Border Background="{DynamicResource SmokeFillColorDefaultBrush}"
+                Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}">
+            <Border Style="{StaticResource Card}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    MinWidth="280">
+                <StackPanel>
+                    <ui:ProgressRing IsIndeterminate="True" Width="40" Height="40" HorizontalAlignment="Center" />
+                    <TextBlock Text="{Binding BusyMessage}"
+                               HorizontalAlignment="Center"
+                               Margin="0,14,0,0"
+                               TextTrimming="CharacterEllipsis"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                </StackPanel>
+            </Border>
+        </Border>
+    </ControlTemplate>
+
+    <!--
+        Header toolbar shared by the tweak pages: applied count, bulk actions, refresh.
+        Bindings resolve against the page's DataContext, which is always a TweakPageViewModel.
+    -->
+    <ControlTemplate x:Key="TweakToolbarTemplate" TargetType="ContentControl">
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+            <Border Style="{StaticResource Pill}"
+                    Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                    Margin="0,6,12,0">
+                <TextBlock Text="{Binding CountSummary}"
+                           Style="{StaticResource PillText}"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+            </Border>
+
+            <ui:Button Content="{loc:Loc Common_ApplySafe}"
+                       Icon="{ui:SymbolIcon ShieldCheckmark24}"
+                       Appearance="Primary"
+                       Margin="0,0,8,0"
+                       Command="{Binding ApplySafeCommand}" />
+
+            <ui:Button Icon="{ui:SymbolIcon Flash24}"
+                       ToolTip="{loc:Loc Common_ApplyAll}"
+                       Margin="0,0,8,0"
+                       Command="{Binding ApplyAllCommand}" />
+
+            <ui:Button Icon="{ui:SymbolIcon ArrowReset24}"
+                       ToolTip="{loc:Loc Common_RevertAll}"
+                       Margin="0,0,8,0"
+                       Command="{Binding RevertAllCommand}" />
+
+            <ui:Button Icon="{ui:SymbolIcon ArrowClockwise24}"
+                       ToolTip="{loc:Loc Common_Refresh}"
+                       Command="{Binding RefreshCommand}" />
+        </StackPanel>
+    </ControlTemplate>
+
+    <!--
+        Search box plus risk and status toggles.
+
+        The toggles bind their style with DynamicResource, not StaticResource. FilterToggle is
+        defined in App.xaml, because it derives from the WPF UI ToggleButton style and that
+        dictionary is only in scope there. A StaticResource inside a ControlTemplate is resolved
+        against the template's own parse-time scope and does not reach Application.Resources, so
+        it would throw the moment the template is applied - at first paint, not at load.
+        DynamicResource looks the style up through the element tree, which does reach it.
+    -->
+    <ControlTemplate x:Key="TweakFilterBarTemplate" TargetType="ContentControl">
+        <StackPanel Style="{StaticResource FilterBarPanel}">
+            <ui:TextBox PlaceholderText="{loc:Loc Common_Search}"
+                        Icon="{ui:SymbolIcon Search24}"
+                        Width="280"
+                        Margin="0,0,12,0"
+                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+
+            <ToggleButton Style="{DynamicResource FilterToggle}"
+                          Content="{loc:Loc Risk_Safe}"
+                          IsChecked="{Binding RiskFilter, Converter={StaticResource RiskFilterEquals}, ConverterParameter=Safe, Mode=OneWay}"
+                          Command="{Binding SetRiskFilterCommand}"
+                          CommandParameter="Safe" />
+
+            <ToggleButton Style="{DynamicResource FilterToggle}"
+                          Content="{loc:Loc Risk_Moderate}"
+                          IsChecked="{Binding RiskFilter, Converter={StaticResource RiskFilterEquals}, ConverterParameter=Moderate, Mode=OneWay}"
+                          Command="{Binding SetRiskFilterCommand}"
+                          CommandParameter="Moderate" />
+
+            <ToggleButton Style="{DynamicResource FilterToggle}"
+                          Content="{loc:Loc Risk_Advanced}"
+                          IsChecked="{Binding RiskFilter, Converter={StaticResource RiskFilterEquals}, ConverterParameter=Advanced, Mode=OneWay}"
+                          Command="{Binding SetRiskFilterCommand}"
+                          CommandParameter="Advanced" />
+
+            <Border Width="1" Margin="8,4" Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+
+            <ToggleButton Style="{DynamicResource FilterToggle}"
+                          Content="{loc:Loc Filter_OnlyApplied}"
+                          IsChecked="{Binding AppliedFilter, Converter={StaticResource AppliedFilterEquals}, ConverterParameter=applied, Mode=OneWay}"
+                          Command="{Binding SetAppliedFilterCommand}"
+                          CommandParameter="applied" />
+
+            <ToggleButton Style="{DynamicResource FilterToggle}"
+                          Content="{loc:Loc Filter_OnlyNotApplied}"
+                          IsChecked="{Binding AppliedFilter, Converter={StaticResource AppliedFilterEquals}, ConverterParameter=not-applied, Mode=OneWay}"
+                          Command="{Binding SetAppliedFilterCommand}"
+                          CommandParameter="not-applied" />
+        </StackPanel>
+    </ControlTemplate>
+
+    <!-- Prompt shown after a shell tweak that only becomes visible once Explorer restarts. -->
+    <ControlTemplate x:Key="ExplorerRestartBarTemplate" TargetType="ContentControl">
+        <ui:InfoBar Severity="Informational"
+                    Margin="0,0,0,12"
+                    IsClosable="True"
+                    Title="{loc:Loc Banner_ExplorerRestart_Message}"
+                    IsOpen="{Binding ExplorerRestartSuggested, Mode=TwoWay}">
+            <ui:Button Content="{loc:Loc Common_RequiresExplorerRestart}"
+                       HorizontalAlignment="Left"
+                       Margin="0,8,0,4"
+                       Command="{Binding RestartExplorerCommand}" />
+        </ui:InfoBar>
+    </ControlTemplate>
+
+    <!-- The list of grouped tweak rows plus the empty state. -->
+    <ControlTemplate x:Key="TweakListTemplate" TargetType="ContentControl">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,0,28,28">
+            <Grid MaxWidth="{StaticResource MaxContentWidth}" HorizontalAlignment="Left">
+                <ItemsControl ItemsSource="{Binding Groups}" ItemTemplate="{StaticResource TweakGroupTemplate}" />
+
+                <TextBlock Text="{loc:Loc Common_NothingFound}"
+                           Style="{StaticResource BodyText}"
+                           HorizontalAlignment="Center"
+                           Margin="0,60,0,0"
+                           Visibility="{Binding VisibleCount, Converter={StaticResource EmptyToVisibility}}" />
+            </Grid>
+        </ScrollViewer>
+    </ControlTemplate>
+
+</ResourceDictionary>

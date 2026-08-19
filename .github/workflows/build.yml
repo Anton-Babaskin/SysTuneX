@@ -1,47 +1,172 @@
-name: Build SysTuneX.exe
+name: Build
 
 on:
   push:
-    branches: [ main, master, claude/game-optimizer-windows-tUXOU ]
+    branches: [main, master, 'claude/**']
   pull_request:
-    branches: [ main, master ]
-  workflow_dispatch:   # allow manual trigger from GitHub UI
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: >
+          Publish a GitHub Release with this tag (e.g. v2.0.0). Leave empty to just build.
+          The tag is created at the dispatched commit if it does not exist yet.
+        required: false
+        default: ''
+      prerelease:
+        description: 'Mark the release as a pre-release'
+        type: boolean
+        default: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 jobs:
-  build:
-    name: Build Windows x64 Release
+  test:
+    name: Build and test
     runs-on: windows-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET 8
+      - name: Setup .NET 9
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '9.0.x'
 
-      - name: Restore dependencies
+      - name: Restore
         run: dotnet restore SysTuneX.sln
 
-      - name: Publish single-file EXE
+      - name: Build
+        run: dotnet build SysTuneX.sln --configuration Release --no-restore
+
+      # The catalog, journal and localization tests are the guard against the data mistakes
+      # that are invisible in review: duplicate tweak ids, untranslated entries, a revert that
+      # would write a value Windows never shipped.
+      - name: Test core
+        run: dotnet test tests/SysTuneX.Core.Tests/SysTuneX.Core.Tests.csproj --configuration Release --no-build --verbosity normal
+
+      # XAML is parsed at run time, so a compile-only pipeline says nothing about whether the
+      # app starts. These tests build the real Application, realise every resource and construct
+      # the window and all ten pages through the container - on a runner with no display, which
+      # is fine because none of it is ever shown.
+      - name: Test startup
+        run: dotnet test tests/SysTuneX.App.Tests/SysTuneX.App.Tests.csproj --configuration Release --no-build --verbosity normal
+
+  publish:
+    name: Publish SysTuneX.exe
+    runs-on: windows-latest
+    needs: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Publish single-file executable
+        run: >
+          dotnet publish src/SysTuneX.App/SysTuneX.App.csproj
+          --configuration Release
+          --runtime win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:PublishReadyToRun=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          --output publish
+
+      - name: Checksum
+        shell: pwsh
         run: |
-          dotnet publish src\SysTuneX.App\SysTuneX.App.csproj `
-            -c Release `
-            -r win-x64 `
-            --self-contained `
-            -p:PublishSingleFile=true `
-            -p:PublishReadyToRun=true `
-            -o publish
+          $exe = Get-Item publish/SysTuneX.exe
+          $hash = (Get-FileHash $exe.FullName -Algorithm SHA256).Hash
+          "$hash  SysTuneX.exe" | Out-File -FilePath publish/SHA256SUMS.txt -Encoding ascii
+          "SysTuneX.exe: {0:N1} MB" -f ($exe.Length / 1MB) | Write-Host
+          "SHA256: $hash" | Write-Host
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: SysTuneX-win-x64
-          path: publish\SysTuneX.exe
+          path: |
+            publish/SysTuneX.exe
+            publish/SHA256SUMS.txt
           retention-days: 30
 
-      - name: Show file size
+  release:
+    name: Publish release
+    runs-on: ubuntu-latest
+    needs: publish
+    # Actions artifacts need a GitHub login and arrive as a zip; a release asset is a plain
+    # HTTPS download, which is what someone who just wants to run the thing actually needs.
+    #
+    # The version comes from release.version rather than a pushed tag, because the tag is
+    # created here by the workflow token. Publishing is idempotent: if a release for that
+    # version already exists the job only refreshes its assets, so an unchanged version file
+    # never republishes and a re-run never fails.
+    if: github.event_name != 'pull_request'
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download the built executable
+        uses: actions/download-artifact@v4
+        with:
+          name: SysTuneX-win-x64
+          path: publish
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_OVERRIDE: ${{ inputs.release_tag }}
+          PRERELEASE: ${{ inputs.prerelease }}
         run: |
-          $size = (Get-Item publish\SysTuneX.exe).Length / 1MB
-          Write-Host "SysTuneX.exe size: $([math]::Round($size, 1)) MB"
+          set -euo pipefail
+
+          tag="${TAG_OVERRIDE:-}"
+          if [ -z "$tag" ] && [ -f release.version ]; then
+            tag="$(tr -d '[:space:]' < release.version)"
+          fi
+
+          if [ -z "$tag" ]; then
+            echo "No release.version file and no release_tag input - nothing to publish."
+            exit 0
+          fi
+
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists; refreshing its assets."
+            gh release upload "$tag" publish/SysTuneX.exe publish/SHA256SUMS.txt --clobber
+          else
+            notes_args=(--generate-notes)
+            if [ -f docs/release-notes.md ]; then
+              notes_args=(--notes-file docs/release-notes.md)
+            fi
+
+            prerelease_args=(--prerelease)
+            if [ "${PRERELEASE:-true}" = "false" ]; then
+              prerelease_args=()
+            fi
+
+            gh release create "$tag" \
+              publish/SysTuneX.exe publish/SHA256SUMS.txt \
+              --title "SysTuneX ${tag#v}" \
+              --target "${{ github.sha }}" \
+              "${notes_args[@]}" \
+              "${prerelease_args[@]}"
+          fi
+
+          {
+            echo "### SysTuneX $tag published"
+            echo
+            echo "- Release page: $(gh release view "$tag" --json url --jq .url)"
+            echo "- Direct download: https://github.com/${{ github.repository }}/releases/download/$tag/SysTuneX.exe"
+          } >> "$GITHUB_STEP_SUMMARY"

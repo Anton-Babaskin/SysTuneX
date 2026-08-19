@@ -1,0 +1,781 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="App_Tagline" xml:space="preserve">
+    <value>Windows 11 performance tuner</value>
+  </data>
+  <data name="Nav_Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Nav_Profiles" xml:space="preserve">
+    <value>Profiles</value>
+  </data>
+  <data name="Nav_Gaming" xml:space="preserve">
+    <value>Gaming</value>
+  </data>
+  <data name="Nav_Windows11" xml:space="preserve">
+    <value>Windows 11</value>
+  </data>
+  <data name="Nav_Services" xml:space="preserve">
+    <value>Services</value>
+  </data>
+  <data name="Nav_Privacy" xml:space="preserve">
+    <value>Privacy</value>
+  </data>
+  <data name="Nav_Network" xml:space="preserve">
+    <value>Network</value>
+  </data>
+  <data name="Nav_Cleanup" xml:space="preserve">
+    <value>Cleanup</value>
+  </data>
+  <data name="Nav_History" xml:space="preserve">
+    <value>Change log</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Common_Apply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="Common_Revert" xml:space="preserve">
+    <value>Revert</value>
+  </data>
+  <data name="Common_ApplyAll" xml:space="preserve">
+    <value>Apply all</value>
+  </data>
+  <data name="Common_RevertAll" xml:space="preserve">
+    <value>Revert all</value>
+  </data>
+  <data name="Common_ApplySafe" xml:space="preserve">
+    <value>Apply safe only</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Common_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Common_Continue" xml:space="preserve">
+    <value>Continue</value>
+  </data>
+  <data name="Common_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Common_Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Common_All" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="Common_Loading" xml:space="preserve">
+    <value>Loading…</value>
+  </data>
+  <data name="Common_Working" xml:space="preserve">
+    <value>Working…</value>
+  </data>
+  <data name="Common_Applied" xml:space="preserve">
+    <value>Applied</value>
+  </data>
+  <data name="Common_NotApplied" xml:space="preserve">
+    <value>Not applied</value>
+  </data>
+  <data name="Common_Partial" xml:space="preserve">
+    <value>Partly applied</value>
+  </data>
+  <data name="Common_Unsupported" xml:space="preserve">
+    <value>Not supported here</value>
+  </data>
+  <data name="Common_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="Common_Running" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="Common_Stopped" xml:space="preserve">
+    <value>Stopped</value>
+  </data>
+  <data name="Common_NothingFound" xml:space="preserve">
+    <value>Nothing matches your filters</value>
+  </data>
+  <data name="Common_RequiresRestart" xml:space="preserve">
+    <value>Restart required</value>
+  </data>
+  <data name="Common_RequiresSignOut" xml:space="preserve">
+    <value>Sign out required</value>
+  </data>
+  <data name="Common_RequiresExplorerRestart" xml:space="preserve">
+    <value>Explorer restart</value>
+  </data>
+  <data name="Common_RestartNow" xml:space="preserve">
+    <value>Restart now</value>
+  </data>
+  <data name="Common_Later" xml:space="preserve">
+    <value>Later</value>
+  </data>
+  <data name="Common_Of" xml:space="preserve">
+    <value>of</value>
+  </data>
+  <data name="Common_Enabled" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="Common_Disabled" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="Common_Never" xml:space="preserve">
+    <value>never</value>
+  </data>
+  <data name="Common_Copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="Risk_Safe" xml:space="preserve">
+    <value>Safe</value>
+  </data>
+  <data name="Risk_Moderate" xml:space="preserve">
+    <value>Moderate</value>
+  </data>
+  <data name="Risk_Advanced" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="Filter_Risk" xml:space="preserve">
+    <value>Risk</value>
+  </data>
+  <data name="Filter_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Filter_OnlyApplied" xml:space="preserve">
+    <value>Applied</value>
+  </data>
+  <data name="Filter_OnlyNotApplied" xml:space="preserve">
+    <value>Not applied</value>
+  </data>
+  <data name="Banner_NotElevated_Title" xml:space="preserve">
+    <value>Running without administrator rights</value>
+  </data>
+  <data name="Banner_NotElevated_Message" xml:space="preserve">
+    <value>Registry, service, power and network changes will fail until SysTuneX is restarted as administrator.</value>
+  </data>
+  <data name="Banner_NotElevated_Action" xml:space="preserve">
+    <value>Restart as administrator</value>
+  </data>
+  <data name="Banner_UnsupportedOs_Title" xml:space="preserve">
+    <value>Unsupported Windows version</value>
+  </data>
+  <data name="Banner_UnsupportedOs_Message" xml:space="preserve">
+    <value>SysTuneX targets Windows 10 1809 and newer. Some tweaks will be hidden or will not apply.</value>
+  </data>
+  <data name="Banner_RestartRequired_Title" xml:space="preserve">
+    <value>Restart to finish</value>
+  </data>
+  <data name="Banner_RestartRequired_Message" xml:space="preserve">
+    <value>Some of the changes you applied only take effect after a restart.</value>
+  </data>
+  <data name="Banner_ExplorerRestart_Message" xml:space="preserve">
+    <value>Shell changes become visible after Explorer restarts.</value>
+  </data>
+  <data name="Dashboard_Title" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Dashboard_Subtitle" xml:space="preserve">
+    <value>Live system state and one-click tuning</value>
+  </data>
+  <data name="Dashboard_Score" xml:space="preserve">
+    <value>Tuning score</value>
+  </data>
+  <data name="Dashboard_ScoreHint" xml:space="preserve">
+    <value>Share of applied tweaks, disabled services and the active power scheme.</value>
+  </data>
+  <data name="Dashboard_Score_Stock" xml:space="preserve">
+    <value>Stock Windows</value>
+  </data>
+  <data name="Dashboard_Score_Partial" xml:space="preserve">
+    <value>Partly tuned</value>
+  </data>
+  <data name="Dashboard_Score_Tuned" xml:space="preserve">
+    <value>Well tuned</value>
+  </data>
+  <data name="Dashboard_QuickOptimize" xml:space="preserve">
+    <value>Quick optimise</value>
+  </data>
+  <data name="Dashboard_QuickOptimize_Hint" xml:space="preserve">
+    <value>Applies every safe tweak, switches to a high performance power scheme and trims memory. Nothing marked moderate or advanced is touched.</value>
+  </data>
+  <data name="Dashboard_RestoreAll" xml:space="preserve">
+    <value>Restore everything</value>
+  </data>
+  <data name="Dashboard_RestoreAll_Hint" xml:space="preserve">
+    <value>Puts back every value SysTuneX recorded before changing it.</value>
+  </data>
+  <data name="Dashboard_TrimMemory" xml:space="preserve">
+    <value>Free memory</value>
+  </data>
+  <data name="Dashboard_Cpu" xml:space="preserve">
+    <value>CPU load</value>
+  </data>
+  <data name="Dashboard_Ram" xml:space="preserve">
+    <value>Memory in use</value>
+  </data>
+  <data name="Dashboard_Standby" xml:space="preserve">
+    <value>Cached</value>
+  </data>
+  <data name="Dashboard_TweaksApplied" xml:space="preserve">
+    <value>Tweaks applied</value>
+  </data>
+  <data name="Dashboard_ServicesDisabled" xml:space="preserve">
+    <value>Services off</value>
+  </data>
+  <data name="Dashboard_Storage" xml:space="preserve">
+    <value>System drive</value>
+  </data>
+  <data name="Dashboard_Free" xml:space="preserve">
+    <value>free</value>
+  </data>
+  <data name="Dashboard_SystemInfo" xml:space="preserve">
+    <value>This machine</value>
+  </data>
+  <data name="Dashboard_Label_Cpu" xml:space="preserve">
+    <value>Processor</value>
+  </data>
+  <data name="Dashboard_Label_Gpu" xml:space="preserve">
+    <value>Graphics</value>
+  </data>
+  <data name="Dashboard_Label_Memory" xml:space="preserve">
+    <value>Memory</value>
+  </data>
+  <data name="Dashboard_Label_Os" xml:space="preserve">
+    <value>Windows</value>
+  </data>
+  <data name="Dashboard_Label_Motherboard" xml:space="preserve">
+    <value>Motherboard</value>
+  </data>
+  <data name="Dashboard_Label_Drive" xml:space="preserve">
+    <value>System drive</value>
+  </data>
+  <data name="Dashboard_Label_PowerPlan" xml:space="preserve">
+    <value>Power scheme</value>
+  </data>
+  <data name="Dashboard_Label_Uptime" xml:space="preserve">
+    <value>Uptime</value>
+  </data>
+  <data name="Dashboard_Label_Processes" xml:space="preserve">
+    <value>Processes</value>
+  </data>
+  <data name="Dashboard_Label_Driver" xml:space="preserve">
+    <value>Driver</value>
+  </data>
+  <data name="Dashboard_Elevated" xml:space="preserve">
+    <value>Administrator</value>
+  </data>
+  <data name="Profiles_Title" xml:space="preserve">
+    <value>Profiles</value>
+  </data>
+  <data name="Profiles_Subtitle" xml:space="preserve">
+    <value>Preset bundles for different kinds of games</value>
+  </data>
+  <data name="Profiles_Apply" xml:space="preserve">
+    <value>Apply profile</value>
+  </data>
+  <data name="Profiles_ExampleGames" xml:space="preserve">
+    <value>Tuned against</value>
+  </data>
+  <data name="Profiles_Tweaks" xml:space="preserve">
+    <value>tweaks</value>
+  </data>
+  <data name="Profiles_Services" xml:space="preserve">
+    <value>services</value>
+  </data>
+  <data name="Profiles_Applied" xml:space="preserve">
+    <value>applied</value>
+  </data>
+  <data name="Profiles_IncludeAdvanced" xml:space="preserve">
+    <value>Include advanced changes</value>
+  </data>
+  <data name="Profiles_IncludeAdvanced_Hint" xml:space="preserve">
+    <value>Virtualisation security, boot configuration and services that break visible Windows features.</value>
+  </data>
+  <data name="Profiles_CreateRestorePoint" xml:space="preserve">
+    <value>Create a restore point first</value>
+  </data>
+  <data name="Profiles_NoAdvanced" xml:space="preserve">
+    <value>This profile contains no advanced changes.</value>
+  </data>
+  <data name="Gaming_Title" xml:space="preserve">
+    <value>Gaming</value>
+  </data>
+  <data name="Gaming_Subtitle" xml:space="preserve">
+    <value>Latency, frame pacing and scheduler tuning</value>
+  </data>
+  <data name="Windows11_Title" xml:space="preserve">
+    <value>Windows 11</value>
+  </data>
+  <data name="Windows11_Subtitle" xml:space="preserve">
+    <value>Features unique to Windows 11 that cost frames</value>
+  </data>
+  <data name="Privacy_Title" xml:space="preserve">
+    <value>Privacy</value>
+  </data>
+  <data name="Privacy_Subtitle" xml:space="preserve">
+    <value>Telemetry and data collection</value>
+  </data>
+  <data name="Network_Title" xml:space="preserve">
+    <value>Network</value>
+  </data>
+  <data name="Network_Subtitle" xml:space="preserve">
+    <value>Latency, throughput and DNS</value>
+  </data>
+  <data name="Tweaks_AppliedCount" xml:space="preserve">
+    <value>{0} of {1} applied</value>
+  </data>
+  <data name="Group_GameCapture" xml:space="preserve">
+    <value>Game capture and overlay</value>
+  </data>
+  <data name="Group_Gpu" xml:space="preserve">
+    <value>GPU</value>
+  </data>
+  <data name="Group_Scheduling" xml:space="preserve">
+    <value>CPU scheduling</value>
+  </data>
+  <data name="Group_Input" xml:space="preserve">
+    <value>Input</value>
+  </data>
+  <data name="Group_Responsiveness" xml:space="preserve">
+    <value>Responsiveness</value>
+  </data>
+  <data name="Group_Virtualization" xml:space="preserve">
+    <value>Virtualisation security</value>
+  </data>
+  <data name="Group_Ai" xml:space="preserve">
+    <value>On-device AI</value>
+  </data>
+  <data name="Group_Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Group_Shell" xml:space="preserve">
+    <value>Shell and taskbar</value>
+  </data>
+  <data name="Group_Telemetry" xml:space="preserve">
+    <value>Telemetry</value>
+  </data>
+  <data name="Group_Suggestions" xml:space="preserve">
+    <value>Suggestions and ads</value>
+  </data>
+  <data name="Group_Sensors" xml:space="preserve">
+    <value>Sensors and reporting</value>
+  </data>
+  <data name="Group_Latency" xml:space="preserve">
+    <value>Latency</value>
+  </data>
+  <data name="Group_Throughput" xml:space="preserve">
+    <value>Throughput</value>
+  </data>
+  <data name="Warning_Vbs" xml:space="preserve">
+    <value>Anti-cheat software including Vanguard (Valorant), FACEIT and some EAC titles refuses to run or flags the machine when virtualisation security is off. If the drive is encrypted with BitLocker, have the recovery key to hand before restarting.</value>
+  </data>
+  <data name="Warning_Hypervisor" xml:space="preserve">
+    <value>Hyper-V, WSL2, Docker Desktop, Windows Sandbox, the Android subsystem and any virtual machine software that relies on the Windows hypervisor stop working until this is turned back on.</value>
+  </data>
+  <data name="Warning_GpuPreemption" xml:space="preserve">
+    <value>On some drivers this causes display timeouts: a black screen, a driver reset, or a hang under load. If the desktop misbehaves after a restart, revert this tweak first.</value>
+  </data>
+  <data name="Services_Title" xml:space="preserve">
+    <value>Services</value>
+  </data>
+  <data name="Services_Subtitle" xml:space="preserve">
+    <value>Windows services worth turning off</value>
+  </data>
+  <data name="Services_Disable" xml:space="preserve">
+    <value>Turn off</value>
+  </data>
+  <data name="Services_Restore" xml:space="preserve">
+    <value>Restore</value>
+  </data>
+  <data name="Services_StartMode" xml:space="preserve">
+    <value>Start type</value>
+  </data>
+  <data name="Services_StartMode_Automatic" xml:space="preserve">
+    <value>Automatic</value>
+  </data>
+  <data name="Services_StartMode_Manual" xml:space="preserve">
+    <value>Manual</value>
+  </data>
+  <data name="Services_StartMode_Disabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="Services_StartMode_Boot" xml:space="preserve">
+    <value>Boot</value>
+  </data>
+  <data name="Services_StartMode_System" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="Services_DisabledCount" xml:space="preserve">
+    <value>{0} of {1} turned off</value>
+  </data>
+  <data name="Services_DisableAllSafe" xml:space="preserve">
+    <value>Turn off all safe ones</value>
+  </data>
+  <data name="Privacy_Hosts_Title" xml:space="preserve">
+    <value>Block telemetry hosts</value>
+  </data>
+  <data name="Privacy_Hosts_Description" xml:space="preserve">
+    <value>Adds a clearly marked section to the Windows hosts file that points known telemetry endpoints at 0.0.0.0. Update, activation, Store and Defender endpoints are deliberately left alone. Microsoft Defender may block edits to this file.</value>
+  </data>
+  <data name="Privacy_Hosts_Show" xml:space="preserve">
+    <value>Show the {0} hosts</value>
+  </data>
+  <data name="Privacy_Hosts_Blocked" xml:space="preserve">
+    <value>Blocked</value>
+  </data>
+  <data name="Network_Adapter" xml:space="preserve">
+    <value>Adapter</value>
+  </data>
+  <data name="Network_Dns_Title" xml:space="preserve">
+    <value>DNS resolver</value>
+  </data>
+  <data name="Network_Dns_Current" xml:space="preserve">
+    <value>Currently in use</value>
+  </data>
+  <data name="Network_Dns_Automatic" xml:space="preserve">
+    <value>Assigned by DHCP</value>
+  </data>
+  <data name="Network_Dns_Apply" xml:space="preserve">
+    <value>Use this resolver</value>
+  </data>
+  <data name="Network_Dns_Reset" xml:space="preserve">
+    <value>Back to automatic</value>
+  </data>
+  <data name="Network_Dns_Flush" xml:space="preserve">
+    <value>Flush DNS cache</value>
+  </data>
+  <data name="Network_Latency" xml:space="preserve">
+    <value>Round trip</value>
+  </data>
+  <data name="Network_Measure" xml:space="preserve">
+    <value>Measure</value>
+  </data>
+  <data name="Network_Measuring" xml:space="preserve">
+    <value>Measuring…</value>
+  </data>
+  <data name="Network_NoAdapter" xml:space="preserve">
+    <value>No connected adapter was found.</value>
+  </data>
+  <data name="Cleanup_Title" xml:space="preserve">
+    <value>Cleanup</value>
+  </data>
+  <data name="Cleanup_Subtitle" xml:space="preserve">
+    <value>Reclaim disk space without guessing</value>
+  </data>
+  <data name="Cleanup_Scan" xml:space="preserve">
+    <value>Rescan</value>
+  </data>
+  <data name="Cleanup_Scanning" xml:space="preserve">
+    <value>Measuring…</value>
+  </data>
+  <data name="Cleanup_Clean" xml:space="preserve">
+    <value>Clean selected</value>
+  </data>
+  <data name="Cleanup_Selected" xml:space="preserve">
+    <value>{0} selected</value>
+  </data>
+  <data name="Cleanup_Files" xml:space="preserve">
+    <value>files</value>
+  </data>
+  <data name="Cleanup_Paths" xml:space="preserve">
+    <value>Folders</value>
+  </data>
+  <data name="Cleanup_Apps_Title" xml:space="preserve">
+    <value>Preinstalled apps</value>
+  </data>
+  <data name="Cleanup_Apps_Subtitle" xml:space="preserve">
+    <value>Store packages found on this machine. Removal affects the current user account.</value>
+  </data>
+  <data name="Cleanup_Apps_Empty" xml:space="preserve">
+    <value>Nothing removable was found.</value>
+  </data>
+  <data name="Cleanup_Remove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="Cleanup_SystemRelevant" xml:space="preserve">
+    <value>Part of the shell</value>
+  </data>
+  <data name="Cleanup_Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="History_Title" xml:space="preserve">
+    <value>Change log</value>
+  </data>
+  <data name="History_Subtitle" xml:space="preserve">
+    <value>Everything SysTuneX recorded before it changed something</value>
+  </data>
+  <data name="History_Empty" xml:space="preserve">
+    <value>SysTuneX has not changed anything on this machine yet.</value>
+  </data>
+  <data name="History_Active" xml:space="preserve">
+    <value>In effect</value>
+  </data>
+  <data name="History_Reverted" xml:space="preserve">
+    <value>Reverted</value>
+  </data>
+  <data name="History_RevertAll" xml:space="preserve">
+    <value>Revert everything</value>
+  </data>
+  <data name="History_Export" xml:space="preserve">
+    <value>Export…</value>
+  </data>
+  <data name="History_ShowReverted" xml:space="preserve">
+    <value>Show reverted entries</value>
+  </data>
+  <data name="History_OriginalValue" xml:space="preserve">
+    <value>Original value</value>
+  </data>
+  <data name="History_ValueAbsent" xml:space="preserve">
+    <value>value did not exist</value>
+  </data>
+  <data name="History_Kind_RegistryValue" xml:space="preserve">
+    <value>Registry</value>
+  </data>
+  <data name="History_Kind_ServiceConfiguration" xml:space="preserve">
+    <value>Service</value>
+  </data>
+  <data name="History_Kind_PowerScheme" xml:space="preserve">
+    <value>Power scheme</value>
+  </data>
+  <data name="History_Kind_HostsFile" xml:space="preserve">
+    <value>Hosts file</value>
+  </data>
+  <data name="History_Kind_DnsConfiguration" xml:space="preserve">
+    <value>DNS</value>
+  </data>
+  <data name="History_Kind_BootConfiguration" xml:space="preserve">
+    <value>Boot configuration</value>
+  </data>
+  <data name="Settings_Title" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Settings_Subtitle" xml:space="preserve">
+    <value>Appearance and behaviour</value>
+  </data>
+  <data name="Settings_Appearance" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="Settings_Theme" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="Settings_Theme_System" xml:space="preserve">
+    <value>Follow Windows</value>
+  </data>
+  <data name="Settings_Theme_Light" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Settings_Theme_Dark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Settings_Backdrop" xml:space="preserve">
+    <value>Window material</value>
+  </data>
+  <data name="Settings_Backdrop_Mica" xml:space="preserve">
+    <value>Mica</value>
+  </data>
+  <data name="Settings_Backdrop_Acrylic" xml:space="preserve">
+    <value>Acrylic</value>
+  </data>
+  <data name="Settings_Backdrop_None" xml:space="preserve">
+    <value>Solid</value>
+  </data>
+  <data name="Settings_Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Settings_Language_System" xml:space="preserve">
+    <value>Follow Windows</value>
+  </data>
+  <data name="Settings_Behaviour" xml:space="preserve">
+    <value>Behaviour</value>
+  </data>
+  <data name="Settings_RestorePoint" xml:space="preserve">
+    <value>Create a restore point before applying a profile</value>
+  </data>
+  <data name="Settings_RestorePoint_Hint" xml:space="preserve">
+    <value>Needs System Protection switched on for the system drive.</value>
+  </data>
+  <data name="Settings_ConfirmAdvanced" xml:space="preserve">
+    <value>Confirm every advanced change</value>
+  </data>
+  <data name="Settings_About" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="Settings_Version" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="Settings_DataFolder" xml:space="preserve">
+    <value>Backup journal</value>
+  </data>
+  <data name="Settings_OpenFolder" xml:space="preserve">
+    <value>Open folder</value>
+  </data>
+  <data name="Settings_Repository" xml:space="preserve">
+    <value>Source code</value>
+  </data>
+  <data name="Settings_Disclaimer" xml:space="preserve">
+    <value>SysTuneX changes operating system settings. Every change is recorded before it is made and can be rolled back from the change log, but no tool can guarantee a given result on every machine.</value>
+  </data>
+  <data name="Dialog_Advanced_Title" xml:space="preserve">
+    <value>This is an advanced change</value>
+  </data>
+  <data name="Dialog_Advanced_Apply" xml:space="preserve">
+    <value>Apply anyway</value>
+  </data>
+  <data name="Dialog_Cleanup_Title" xml:space="preserve">
+    <value>Delete these files?</value>
+  </data>
+  <data name="Dialog_Cleanup_Message" xml:space="preserve">
+    <value>{0} will be freed across {1} files. This cannot be undone.</value>
+  </data>
+  <data name="Dialog_RemoveApp_Title" xml:space="preserve">
+    <value>Remove {0}?</value>
+  </data>
+  <data name="Dialog_RemoveApp_Message" xml:space="preserve">
+    <value>The package will be removed for the current user. You can reinstall it from the Microsoft Store.</value>
+  </data>
+  <data name="Dialog_RemoveApp_SystemRelevant" xml:space="preserve">
+    <value>This package is part of the Windows shell. Removing it disables a visible feature.</value>
+  </data>
+  <data name="Dialog_RestoreAll_Title" xml:space="preserve">
+    <value>Roll everything back?</value>
+  </data>
+  <data name="Dialog_RestoreAll_Message" xml:space="preserve">
+    <value>Every value SysTuneX recorded will be written back and services will be restored to the start type they had. Settings you changed yourself are not touched.</value>
+  </data>
+  <data name="Msg_Applied" xml:space="preserve">
+    <value>{0} applied</value>
+  </data>
+  <data name="Msg_Reverted" xml:space="preserve">
+    <value>{0} reverted</value>
+  </data>
+  <data name="Msg_Failed" xml:space="preserve">
+    <value>{0} failed</value>
+  </data>
+  <data name="Msg_BatchDone" xml:space="preserve">
+    <value>{0} applied, {1} failed, {2} skipped</value>
+  </data>
+  <data name="Msg_RestoreDone" xml:space="preserve">
+    <value>{0} changes rolled back</value>
+  </data>
+  <data name="Msg_MemoryFreed" xml:space="preserve">
+    <value>Freed {0} of memory</value>
+  </data>
+  <data name="Msg_MemoryTrimmed" xml:space="preserve">
+    <value>Trimmed {0} processes</value>
+  </data>
+  <data name="Msg_RestorePointCreated" xml:space="preserve">
+    <value>Restore point created</value>
+  </data>
+  <data name="Msg_CleanupDone" xml:space="preserve">
+    <value>Freed {0}</value>
+  </data>
+  <data name="Msg_DnsApplied" xml:space="preserve">
+    <value>Now using {0}</value>
+  </data>
+  <data name="Msg_DnsReset" xml:space="preserve">
+    <value>Back to automatic DNS</value>
+  </data>
+  <data name="Msg_DnsFlushed" xml:space="preserve">
+    <value>Resolver cache cleared</value>
+  </data>
+  <data name="Msg_AppRemoved" xml:space="preserve">
+    <value>{0} removed</value>
+  </data>
+  <data name="Msg_ExplorerRestarted" xml:space="preserve">
+    <value>Explorer restarted</value>
+  </data>
+  <data name="Msg_Exported" xml:space="preserve">
+    <value>Saved to {0}</value>
+  </data>
+  <data name="Msg_ProfileApplied" xml:space="preserve">
+    <value>{0} applied</value>
+  </data>
+  <data name="Msg_NoChanges" xml:space="preserve">
+    <value>Nothing needed changing</value>
+  </data>
+  <data name="Msg_Error" xml:space="preserve">
+    <value>Something went wrong</value>
+  </data>
+  <data name="Settings_Diagnostics" xml:space="preserve">
+    <value>Diagnostics</value>
+  </data>
+  <data name="Settings_Diagnostics_Hint" xml:space="preserve">
+    <value>SysTuneX records what it does to a log file. If something misbehaves, build a report and send it — it contains the log, the change journal and what this machine is.</value>
+  </data>
+  <data name="Settings_VerboseLogging" xml:space="preserve">
+    <value>Verbose logging</value>
+  </data>
+  <data name="Settings_VerboseLogging_Hint" xml:space="preserve">
+    <value>Records every registry read and every command line, not just the outcomes. Applies immediately; makes the log considerably larger.</value>
+  </data>
+  <data name="Settings_LogFolder" xml:space="preserve">
+    <value>Log folder</value>
+  </data>
+  <data name="Settings_CreateReport" xml:space="preserve">
+    <value>Build a report</value>
+  </data>
+  <data name="Settings_OpenLogFolder" xml:space="preserve">
+    <value>Open log folder</value>
+  </data>
+  <data name="Settings_Report_Done" xml:space="preserve">
+    <value>Report {0} written — {1} log lines, {2} journal entries.</value>
+  </data>
+</root>

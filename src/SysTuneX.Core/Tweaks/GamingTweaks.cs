@@ -1,141 +1,312 @@
 using Microsoft.Win32;
 using SysTuneX.Core.Models;
-using SysTuneX.Core.Services;
 
 namespace SysTuneX.Core.Tweaks;
 
+/// <summary>
+/// Latency and frame-pacing oriented tweaks.
+///
+/// Every entry records the documented stock-Windows value in <see cref="RegistryChange.WindowsDefaultValue"/>.
+/// Where a value does not exist on a clean install the default is <see langword="null"/>, so reverting
+/// deletes it instead of inventing a number - the previous build guessed here and could leave a
+/// machine in a state Windows never shipped.
+/// </summary>
 public static class GamingTweaks
 {
-    public record TweakDefinition(
-        string Id,
-        string Name,
-        string Description,
-        RiskLevel Risk,
-        string KeyPath,
-        string ValueName,
-        object EnabledValue,
-        object DisabledValue,
-        RegistryValueKind ValueKind
-    );
+    private const string GameConfigStore = @"HKCU\System\GameConfigStore";
+    private const string GameDvr = @"HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR";
+    private const string SystemProfile = @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile";
+    private const string GamesTask = @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games";
+    private const string GraphicsDrivers = @"HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers";
+    private const string Mouse = @"HKCU\Control Panel\Mouse";
+    private const string Desktop = @"HKCU\Control Panel\Desktop";
 
-    public static readonly TweakDefinition[] All =
+    public static IReadOnlyList<TweakDefinition> All { get; } =
     [
-        new("game_bar", "Disable Game Bar", "Removes Xbox Game Bar overlay — frees CPU and reduces input lag",
-            RiskLevel.Safe,
-            @"HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR", "AppCaptureEnabled", 0, 1, RegistryValueKind.DWord),
+        new()
+        {
+            Id = "game_bar_disable",
+            Category = TweakCategory.Gaming,
+            GroupKey = "Group_GameCapture",
+            Name = "Turn off Game Bar and Game DVR",
+            Description =
+                "Stops the Xbox overlay and the background recorder that keeps the last 30 seconds of " +
+                "gameplay buffered. Frees a CPU thread and removes a present-path hook.",
+            Risk = RiskLevel.Safe,
+            Changes =
+            [
+                new(GameDvr, "AppCaptureEnabled", 0, 1, RegistryValueKind.DWord),
+                new(GameConfigStore, "GameDVR_Enabled", 0, 1, RegistryValueKind.DWord),
+            ],
+        },
 
-        new("game_dvr", "Disable Game DVR", "Stops background game recording — saves CPU and disk I/O",
-            RiskLevel.Safe,
-            @"HKCU\System\GameConfigStore", "GameDVR_Enabled", 0, 1, RegistryValueKind.DWord),
+        new()
+        {
+            Id = "game_dvr_policy_disable",
+            Category = TweakCategory.Gaming,
+            GroupKey = "Group_GameCapture",
+            Name = "Block Game DVR by policy",
+            Description =
+                "Machine-wide policy block so Windows cannot re-enable capture after a feature update. " +
+                "Applies to every user account on the PC.",
+            Risk = RiskLevel.Safe,
+            Changes =
+            [
+                new(@"HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR", "AllowGameDVR", 0, null, RegistryValueKind.DWord),
+            ],
+        },
 
-        new("game_dvr_policy", "Disable Game DVR (Policy)", "Group policy level Game DVR block",
-            RiskLevel.Safe,
-            @"HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR", "AllowGameDVR", 0, 1, RegistryValueKind.DWord),
+        new()
+        {
+            Id = "fullscreen_optimizations_disable",
+            Category = TweakCategory.Gaming,
+            GroupKey = "Group_GameCapture",
+            Name = "Disable fullscreen optimizations",
+            Description =
+                "Makes exclusive fullscreen behave as exclusive fullscreen instead of a borderless " +
+                "composited window. Removes one frame of presentation latency in most engines.",
+            Risk = RiskLevel.Safe,
+            Changes =
+            [
+                new(GameConfigStore, "GameDVR_FSEBehavior", 2, null, RegistryValueKind.DWord),
+                new(GameConfigStore, "GameDVR_FSEBehaviorMode", 2, 0, RegistryValueKind.DWord),
+                new(GameConfigStore, "GameDVR_HonorUserFSEBehaviorMode", 1, 0, RegistryValueKind.DWord),
+                new(GameConfigStore, "GameDVR_DXGIHonorFSEWindowsCompatible", 1, 0, RegistryValueKind.DWord),
+            ],
+        },
 
-        new("hags", "Enable HAGS", "Hardware-Accelerated GPU Scheduling — reduces input lag 5-15% on modern GPUs",
-            RiskLevel.Moderate,
-            @"HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers", "HwSchMode", 2, 1, RegistryValueKind.DWord),
+        new()
+        {
+            Id = "hags_enable",
+            Category = TweakCategory.Gaming,
+            GroupKey = "Group_Gpu",
+            Name = "Enable hardware-accelerated GPU scheduling",
+            Description =
+                "Hands frame queue management to the GPU instead of the Windows scheduler. Needs a " +
+                "GPU and driver that support it (GTX 10-series / RX 5000 and newer); on older hardware " +
+                "Windows ignores the value.",
+            Risk = RiskLevel.Moderate,
+            RequiresRestart = true,
+            Changes =
+            [
+                new(GraphicsDrivers, "HwSchMode", 2, 1, RegistryValueKind.DWord),
+            ],
+        },
 
-        new("gpu_priority", "GPU Priority", "Gives games higher GPU priority",
-            RiskLevel.Moderate,
-            @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games", "GPU Priority", 8, 2, RegistryValueKind.DWord),
+        new()
+        {
+            Id = "gpu_preemption_disable",
+            Category = TweakCategory.Gaming,
+            GroupKey = "Group_Gpu",
+            Name = "Disable GPU preemption",
+            Description =
+                "Stops the driver from interrupting long draw calls. Can smooth frame times on some " +
+                "systems and cause driver timeouts (black screen, TDR recovery) on others.",
+            Risk = RiskLevel.Advanced,
+            RequiresRestart = true,
+            WarningKey = "Warning_GpuPreemption",
+            Changes =
+            [
+                new($@"{GraphicsDrivers}\Scheduler", "EnablePreemption", 0, null, RegistryValueKind.DWord),
+            ],
+        },
 
-        new("cpu_priority", "CPU Priority for Games", "Sets high CPU priority for game processes",
-            RiskLevel.Moderate,
-            @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games", "Priority", 6, 2, RegistryValueKind.DWord),
+        new()
+        {
+            Id = "games_cpu_priority",
+            Category = TweakCategory.Gaming,
+            GroupKey = "Group_Scheduling",
+            Name = "Raise the multimedia priority of games",
+            Description =
+                "Lifts the MMCSS Games task from priority 2 to 6, so game threads win against " +
+                "background work under load. GPU priority and the scheduling category are already " +
+                "at their best values on stock Windows and are left alone.",
+            Risk = RiskLevel.Moderate,
+            Changes =
+            [
+                new(GamesTask, "Priority", 6, 2, RegistryValueKind.DWord),
+            ],
+        },
 
-        new("scheduling_category", "Scheduling Category", "Sets games to High scheduling category",
-            RiskLevel.Moderate,
-            @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games", "Scheduling Category", "High", "Medium", RegistryValueKind.String),
+        new()
+        {
+            Id = "system_responsiveness",
+            Category = TweakCategory.Gaming,
+            GroupKey = "Group_Scheduling",
+            Name = "Reduce the background CPU reservation",
+            Description =
+                "Windows reserves 20 percent of CPU time for background tasks. Microsoft's documented " +
+                "value for multimedia machines is 10, which is what SysTuneX writes. Setting it to 0 " +
+                "is a common guide recommendation but starves the audio engine under load.",
+            Risk = RiskLevel.Safe,
+            Changes =
+            [
+                new(SystemProfile, "SystemResponsiveness", 10, 20, RegistryValueKind.DWord),
+            ],
+        },
 
-        new("timer_resolution", "High Timer Resolution", "Improves frame timing precision on 144Hz+ monitors",
-            RiskLevel.Moderate,
-            @"HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\kernel", "GlobalTimerResolutionRequests", 1, 0, RegistryValueKind.DWord),
+        new()
+        {
+            Id = "power_throttling_disable",
+            Category = TweakCategory.Gaming,
+            GroupKey = "Group_Scheduling",
+            Name = "Disable power throttling",
+            Description =
+                "Stops Windows from parking background threads on efficiency cores to save power. " +
+                "Recommended on desktops; on a laptop it measurably shortens battery life.",
+            Risk = RiskLevel.Moderate,
+            Changes =
+            [
+                new(@"HKLM\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling", "PowerThrottlingOff", 1, null, RegistryValueKind.DWord),
+            ],
+        },
 
-        new("multimedia_throttling", "Disable Multimedia Throttling", "Prevents Windows from throttling multimedia tasks",
-            RiskLevel.Safe,
-            @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile", "SystemResponsiveness", 0, 20, RegistryValueKind.DWord),
+        new()
+        {
+            Id = "core_parking_disable",
+            Category = TweakCategory.Gaming,
+            GroupKey = "Group_Scheduling",
+            Name = "Disable CPU core parking",
+            Description =
+                "Keeps every core awake so a thread waking up does not wait for a core to be unparked. " +
+                "Applied through the power scheme, which is the only way the power manager honours it.",
+            Risk = RiskLevel.Moderate,
+            HandlerKey = "core_parking",
+        },
 
-        new("fullscreen_optimizations", "Disable Fullscreen Optimizations", "Prevents Windows from adding latency to fullscreen games",
-            RiskLevel.Safe,
-            @"HKCU\System\GameConfigStore", "GameDVR_FSEBehaviorMode", 2, 0, RegistryValueKind.DWord),
+        new()
+        {
+            Id = "timer_resolution_global",
+            Category = TweakCategory.Gaming,
+            GroupKey = "Group_Scheduling",
+            Name = "Restore global timer resolution requests",
+            Description =
+                "Windows 11 22H2 made a timer resolution request apply only to the process that asked " +
+                "for it. This restores the pre-22H2 system-wide behaviour, which most frame pacing " +
+                "tools and older games expect.",
+            Risk = RiskLevel.Moderate,
+            RequiresRestart = true,
+            MinBuild = 22621,
+            Changes =
+            [
+                new(@"HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\kernel", "GlobalTimerResolutionRequests", 1, null, RegistryValueKind.DWord),
+            ],
+        },
 
-        new("fullscreen_optimizations2", "Disable FSO (DX)", "Disables DX fullscreen optimizations globally",
-            RiskLevel.Safe,
-            @"HKCU\System\GameConfigStore", "GameDVR_HonorUserFSEBehaviorMode", 1, 0, RegistryValueKind.DWord),
+        new()
+        {
+            Id = "mouse_acceleration_disable",
+            Category = TweakCategory.Gaming,
+            GroupKey = "Group_Input",
+            Name = "Disable mouse acceleration",
+            Description =
+                "Turns off Enhance pointer precision so cursor movement maps 1:1 to mouse counts. " +
+                "SysTuneX also clears both acceleration thresholds and pushes the change into the " +
+                "running session, which a registry write alone does not do.",
+            Risk = RiskLevel.Safe,
+            PostApply = PostApplyAction.RefreshMouseSettings,
+            Changes =
+            [
+                new(Mouse, "MouseSpeed", "0", "1", RegistryValueKind.String),
+                new(Mouse, "MouseThreshold1", "0", "6", RegistryValueKind.String),
+                new(Mouse, "MouseThreshold2", "0", "10", RegistryValueKind.String),
+            ],
+        },
 
-        new("disable_mouse_accel", "Disable Mouse Acceleration", "Raw mouse input — essential for FPS games",
-            RiskLevel.Safe,
-            @"HKCU\Control Panel\Mouse", "MouseSpeed", "0", "1", RegistryValueKind.String),
+        new()
+        {
+            Id = "menu_show_delay",
+            Category = TweakCategory.Gaming,
+            GroupKey = "Group_Responsiveness",
+            Name = "Remove the menu open delay",
+            Description = "Drops the 400 ms delay before a submenu appears, which makes the whole shell feel immediate.",
+            Risk = RiskLevel.Safe,
+            PostApply = PostApplyAction.BroadcastSettingChange,
+            Changes =
+            [
+                new(Desktop, "MenuShowDelay", "0", "400", RegistryValueKind.String),
+            ],
+        },
 
-        new("preemption_gpu", "Disable GPU Preemption", "May reduce micro-stuttering in games",
-            RiskLevel.Advanced,
-            @"HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers\Scheduler", "EnablePreemption", 0, 1, RegistryValueKind.DWord),
+        new()
+        {
+            Id = "visual_effects_performance",
+            Category = TweakCategory.Gaming,
+            GroupKey = "Group_Responsiveness",
+            Name = "Set visual effects to best performance",
+            Description =
+                "Turns off window animations and the fade effects the desktop compositor draws. " +
+                "Frees a little GPU time and removes animation latency from alt-tab.",
+            Risk = RiskLevel.Safe,
+            PostApply = PostApplyAction.BroadcastSettingChange | PostApplyAction.RefreshVisualEffects,
+            Changes =
+            [
+                new(@"HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects", "VisualFXSetting", 2, 0, RegistryValueKind.DWord),
+                new($@"{Desktop}\WindowMetrics", "MinAnimate", "0", "1", RegistryValueKind.String),
+            ],
+        },
 
-        new("disable_power_throttling", "Disable Power Throttling", "Prevents CPU throttling during gaming",
-            RiskLevel.Moderate,
-            @"HKLM\SYSTEM\CurrentControlSet\Control\Power\PowerThrottling", "PowerThrottlingOff", 1, 0, RegistryValueKind.DWord),
+        new()
+        {
+            Id = "transparency_disable",
+            Category = TweakCategory.Gaming,
+            GroupKey = "Group_Responsiveness",
+            Name = "Disable transparency effects",
+            Description = "Removes the acrylic blur behind the taskbar and Start menu, which the GPU redraws continuously.",
+            Risk = RiskLevel.Safe,
+            Changes =
+            [
+                new(@"HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize", "EnableTransparency", 0, 1, RegistryValueKind.DWord),
+            ],
+        },
 
-        new("disable_core_parking", "Disable Core Parking", "Keeps all CPU cores active — better for multi-threaded games",
-            RiskLevel.Moderate,
-            @"HKLM\SYSTEM\CurrentControlSet\Control\Power\PowerSettings\54533251-82be-4824-96c1-47b60b740d00\0cc5b647-c1df-4637-891a-dec35c318583", "ValueMax", 0, 64, RegistryValueKind.DWord),
+        new()
+        {
+            Id = "background_apps_disable",
+            Category = TweakCategory.Gaming,
+            GroupKey = "Group_Responsiveness",
+            Name = "Stop Store apps running in the background",
+            Description =
+                "Blocks packaged apps from waking up to sync, poll or show notifications while a game " +
+                "has focus. Desktop programs and their tray icons are unaffected.",
+            Risk = RiskLevel.Safe,
+            Changes =
+            [
+                new(@"HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications", "GlobalUserDisabled", 1, 0, RegistryValueKind.DWord),
+                new(@"HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy", "LetAppsRunInBackground", 2, null, RegistryValueKind.DWord),
+            ],
+        },
 
-        new("background_apps", "Disable Background Apps", "Stops UWP apps from running in the background",
-            RiskLevel.Safe,
-            @"HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications", "GlobalUserDisabled", 1, 0, RegistryValueKind.DWord),
+        new()
+        {
+            Id = "wait_to_kill_service_timeout",
+            Category = TweakCategory.Gaming,
+            GroupKey = "Group_Responsiveness",
+            Name = "Shorten the service shutdown timeout",
+            Description = "Cuts the wait for a hung service at shutdown from 5 seconds to 2, so restarts finish sooner.",
+            Risk = RiskLevel.Safe,
+            Changes =
+            [
+                new(@"HKLM\SYSTEM\CurrentControlSet\Control", "WaitToKillServiceTimeout", "2000", "5000", RegistryValueKind.String),
+            ],
+        },
 
-        new("visual_fx", "Optimize Visual Effects", "Sets visual effects to performance mode",
-            RiskLevel.Safe,
-            @"HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects", "VisualFXSetting", 2, 1, RegistryValueKind.DWord),
-
-        new("transparency", "Disable Transparency Effects", "Reduces GPU load from Aero effects",
-            RiskLevel.Safe,
-            @"HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize", "EnableTransparency", 0, 1, RegistryValueKind.DWord),
-
-        new("animations", "Disable Animations", "Removes window animations for snappier feel",
-            RiskLevel.Safe,
-            @"HKCU\Control Panel\Desktop\WindowMetrics", "MinAnimate", "0", "1", RegistryValueKind.String),
-
-        new("menu_show_delay", "Reduce Menu Show Delay", "Makes menus appear instantly",
-            RiskLevel.Safe,
-            @"HKCU\Control Panel\Desktop", "MenuShowDelay", "0", "400", RegistryValueKind.String),
-
-        new("sfio_priority", "SFIO High Priority for Games", "Prioritizes Storage I/O for game processes — faster texture/asset streaming",
-            RiskLevel.Moderate,
-            @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games",
-            "SFIO Priority", "High", "Normal", RegistryValueKind.String),
-
-        new("service_kill_timeout", "Faster Service Kill Timeout",
-            "Reduces time Windows waits for hanging services from 5s to 2s — faster game launch after boot",
-            RiskLevel.Safe,
-            @"HKLM\SYSTEM\CurrentControlSet\Control", "WaitToKillServiceTimeout", "2000", "5000", RegistryValueKind.String),
+        new()
+        {
+            Id = "fast_startup_disable",
+            Category = TweakCategory.Gaming,
+            GroupKey = "Group_Responsiveness",
+            Name = "Disable Fast Startup",
+            Description =
+                "Fast Startup hibernates the kernel instead of shutting down, so driver state and " +
+                "timer resolution carry over between sessions. Turning it off makes shutdown a real " +
+                "shutdown, at the cost of a few seconds of boot time.",
+            Risk = RiskLevel.Moderate,
+            RequiresRestart = true,
+            Changes =
+            [
+                new(@"HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Power", "HiberbootEnabled", 0, 1, RegistryValueKind.DWord),
+            ],
+        },
     ];
-
-    public static TweakItem ToTweakItem(TweakDefinition def) => new()
-    {
-        Id = def.Id,
-        Name = def.Name,
-        Description = def.Description,
-        Category = TweakCategory.Gaming,
-        Risk = def.Risk,
-    };
-
-    public static TweakStatus CheckStatus(TweakDefinition def, IRegistryService registry)
-    {
-        var value = registry.GetValue(def.KeyPath, def.ValueName);
-        if (value == null) return TweakStatus.NotApplied;
-        return value.ToString() == def.EnabledValue.ToString()
-            ? TweakStatus.Applied
-            : TweakStatus.NotApplied;
-    }
-
-    public static bool Apply(TweakDefinition def, IRegistryService registry)
-    {
-        return registry.SetValue(def.KeyPath, def.ValueName, def.EnabledValue, def.ValueKind);
-    }
-
-    public static bool Revert(TweakDefinition def, IRegistryService registry)
-    {
-        return registry.SetValue(def.KeyPath, def.ValueName, def.DisabledValue, def.ValueKind);
-    }
 }
