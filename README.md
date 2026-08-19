@@ -143,6 +143,13 @@ dotnet publish src/SysTuneX.App/SysTuneX.App.csproj `
 
 CI builds the same executable on every push and attaches it to the run as an artifact.
 
+### Cutting a release
+
+Bump `release.version` (for example to `v2.1.0`) and update `docs/release-notes.md`, then
+push. CI publishes a GitHub Release at that version with `SysTuneX.exe` and
+`SHA256SUMS.txt` attached. Publishing is idempotent: an unchanged version file never
+republishes, and re-running the job only refreshes the assets.
+
 ---
 
 ## Project layout
