@@ -1,11 +1,42 @@
-# SysTuneX 2.0.0
+# SysTuneX 2.0.1
 
 > Notes for the release currently being published. Update this file before tagging a new version;
 > if it is missing, the release workflow falls back to auto-generated notes.
 
-**This build has not yet been run on a physical Windows machine.** It compiles clean, passes its
-test suite and publishes, but the runtime behaviour on real hardware is unverified — hence the
-pre-release marking. Please report anything that misbehaves.
+**Fixes the crash that stopped 2.0.0 from starting at all.** Do not use 2.0.0 — it fails on every
+machine, not just some.
+
+## 2.0.1 — the app now starts
+
+2.0.0 died at launch with:
+
+> Provide value on 'System.Windows.Baml2006.TypeConverterMarkupExtension' threw an exception.
+
+The title bar referenced its icon through `pack://application:,,,/Assets/SysTuneX.png`, but the
+.NET SDK has no default rule that compiles a `.png` into the assembly — it globs `**/*.xaml` into
+`Page` and nothing else. The file sat in the project as a plain `None` item and never reached the
+binary, so `ImageSourceConverter` could not find it and the window's XAML failed to load before a
+single pixel was drawn.
+
+The build was green throughout, because XAML is parsed at run time and nothing in the pipeline had
+ever run the app.
+
+What changed:
+
+* The icons are declared as `Resource` items, so the pack URI resolves.
+* **A startup test suite now runs on the Windows CI runner**: it constructs the real
+  `Application`, forces every resource in every merged dictionary to materialise, and builds the
+  main window and all ten pages through the container. A build that cannot start can no longer
+  reach a release.
+* `FilterToggle` moved from `Resources/Theme.xaml` to `App.xaml`. It derives from the WPF UI
+  `ToggleButton` style, and a `StaticResource` inside a merged dictionary can only see that
+  dictionary's own scope — `Theme.xaml` does not merge the WPF UI controls dictionary.
+* The failure dialog is now useful. It leads with the innermost exception, prints the whole chain
+  with XAML line and file information, and writes a full report to
+  `%ProgramData%\SysTuneX\errors.log`. The 2.0.0 dialog showed only the outer message, which
+  named neither the file nor the value.
+
+Everything below applies to the 2.0.0 rewrite and is unchanged in 2.0.1.
 
 ## Download
 

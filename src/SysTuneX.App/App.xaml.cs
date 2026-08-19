@@ -1,9 +1,11 @@
 using System.IO;
+using System.Text;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using SysTuneX.App.Diagnostics;
 using SysTuneX.App.Localization;
 using SysTuneX.App.Services;
 using SysTuneX.App.ViewModels;
@@ -95,6 +97,7 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
+            Log(ex, "startup");
             ShowFatal(ex);
             Shutdown(1);
         }
@@ -185,7 +188,7 @@ public partial class App : Application
             Directory.CreateDirectory(environment.DataDirectory);
             File.AppendAllText(
                 Path.Combine(environment.DataDirectory, "errors.log"),
-                $"[{DateTime.Now:u}] ({source}) {exception}{Environment.NewLine}{Environment.NewLine}");
+                $"[{DateTime.Now:u}] ({source}) {ExceptionReport.Describe(exception)}{Environment.NewLine}{exception}{Environment.NewLine}{Environment.NewLine}");
         }
         catch
         {
@@ -193,10 +196,39 @@ public partial class App : Application
         }
     }
 
-    private static void ShowFatal(Exception exception) =>
-        MessageBox.Show(
-            $"SysTuneX could not start.\n\n{exception.Message}",
-            "SysTuneX",
-            MessageBoxButton.OK,
-            MessageBoxImage.Error);
+    private void ShowFatal(Exception exception)
+    {
+        // The outer message of a startup failure is almost always useless on its own - WPF's
+        // "Provide value on 'TypeConverterMarkupExtension' threw an exception" names nothing.
+        // Lead with the innermost cause and print the whole chain underneath, so a screenshot
+        // of this dialog is enough to find the fault.
+        var root = ExceptionReport.RootCause(exception);
+        var text = new StringBuilder()
+            .AppendLine("SysTuneX could not start.")
+            .AppendLine()
+            .AppendLine(root.Message)
+            .AppendLine()
+            .AppendLine("Details:")
+            .AppendLine(ExceptionReport.Describe(exception));
+
+        if (LogPath() is { } path)
+        {
+            text.AppendLine().Append("A full report was written to ").Append(path).AppendLine(".");
+        }
+
+        MessageBox.Show(text.ToString(), "SysTuneX", MessageBoxButton.OK, MessageBoxImage.Error);
+    }
+
+    private string? LogPath()
+    {
+        try
+        {
+            var environment = _host.Services.GetService<IEnvironmentService>();
+            return environment is null ? null : Path.Combine(environment.DataDirectory, "errors.log");
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }

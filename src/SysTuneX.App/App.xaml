@@ -14,6 +14,19 @@
                 <ResourceDictionary Source="pack://application:,,,/Resources/PageParts.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
+            <!--
+                Styles that derive from a WPF UI control style have to live here, not in
+                Resources/Theme.xaml. A StaticResource inside a merged dictionary is resolved
+                at parse time against that dictionary's own scope, and Theme.xaml does not
+                merge ui:ControlsDictionary - so BasedOn would fail while the dictionary loads.
+            -->
+            <Style x:Key="FilterToggle" TargetType="ToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
+                <Setter Property="Padding" Value="12,5" />
+                <Setter Property="MinWidth" Value="0" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Margin" Value="0,0,6,0" />
+            </Style>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

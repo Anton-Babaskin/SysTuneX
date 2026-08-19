@@ -143,6 +143,12 @@ dotnet publish src/SysTuneX.App/SysTuneX.App.csproj `
 
 CI builds the same executable on every push and attaches it to the run as an artifact.
 
+`SysTuneX.App.Tests` needs a real WPF stack, so it only does anything on Windows; on any other
+host it reports as passed without running. It builds the actual `Application`, forces every
+resource in every merged dictionary to materialise, and constructs the main window and all ten
+pages through the container — which is the only way to catch a XAML fault, since XAML is parsed
+at run time and a green build proves nothing about whether the app starts.
+
 ### Cutting a release
 
 Bump `release.version` (for example to `v2.1.0`) and update `docs/release-notes.md`, then
@@ -170,7 +176,9 @@ SysTuneX/
 │       ├── Resources/            Design tokens, shared templates, en/ru strings
 │       ├── ViewModels/
 │       └── Views/Pages/
-└── tests/SysTuneX.Core.Tests/    Catalog, journal and localization coverage tests
+└── tests/
+    ├── SysTuneX.Core.Tests/      Catalog, journal and localization coverage
+    └── SysTuneX.App.Tests/       Startup smoke tests: real WPF, every page constructed
 ```
 
 ### SysTuneX.Core
