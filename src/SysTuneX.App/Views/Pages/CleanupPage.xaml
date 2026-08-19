@@ -1,0 +1,206 @@
+<pages:SysTuneXPage x:Class="SysTuneX.App.Views.Pages.CleanupPage"
+                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                    xmlns:loc="clr-namespace:SysTuneX.App.Localization"
+                    xmlns:pages="clr-namespace:SysTuneX.App.Views.Pages"
+                    xmlns:vm="clr-namespace:SysTuneX.App.ViewModels"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    mc:Ignorable="d"
+                    d:DataContext="{d:DesignInstance Type=vm:CleanupViewModel}"
+                    Title="Cleanup">
+
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="{StaticResource PagePadding}">
+            <Grid MaxWidth="{StaticResource MaxContentWidth}" HorizontalAlignment="Left">
+                <StackPanel>
+
+                    <Grid Margin="{StaticResource SectionGap}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel>
+                            <TextBlock Text="{loc:Loc Cleanup_Title}" Style="{StaticResource PageTitle}" />
+                            <TextBlock Text="{loc:Loc Cleanup_Subtitle}" Style="{StaticResource PageSubtitle}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                            <Border Style="{StaticResource Pill}"
+                                    Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                    Margin="0,6,12,0">
+                                <TextBlock Style="{StaticResource PillText}"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                    <Run Text="{loc:Loc Cleanup_Total}" />
+                                    <Run Text="{Binding TotalSizeText, Mode=OneWay}" />
+                                </TextBlock>
+                            </Border>
+
+                            <ui:Button Content="{loc:Loc Cleanup_Clean}"
+                                       Icon="{ui:SymbolIcon Broom24}"
+                                       Appearance="Primary"
+                                       Margin="0,0,8,0"
+                                       IsEnabled="{Binding HasSelection}"
+                                       Command="{Binding CleanCommand}" />
+
+                            <ui:Button Icon="{ui:SymbolIcon ArrowClockwise24}"
+                                       ToolTip="{loc:Loc Cleanup_Scan}"
+                                       Command="{Binding ScanCommand}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Border Style="{StaticResource SubtleCard}" Margin="{StaticResource StackGap}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:ProgressRing IsIndeterminate="True" Width="18" Height="18" Margin="0,0,10,0"
+                                             Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibility}}" />
+                            <TextBlock VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                <Run Text="{loc:Loc Cleanup_Selected}" />
+                                <Run Text="{Binding SelectedSizeText, Mode=OneWay}" FontWeight="SemiBold" />
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <ItemsControl ItemsSource="{Binding Targets}" Margin="0,0,0,20">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:CleanupTargetViewModel}">
+                                <Border Style="{StaticResource InteractiveCard}" Margin="0,0,0,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <CheckBox IsChecked="{Binding IsSelected}"
+                                                  VerticalAlignment="Center"
+                                                  Margin="0,0,10,0" />
+
+                                        <StackPanel Grid.Column="1" Margin="0,0,16,0">
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                <TextBlock Text="{Binding Name}"
+                                                           FontWeight="SemiBold"
+                                                           FontSize="14"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+
+                                                <ContentControl Content="{Binding}"
+                                                                ContentTemplate="{StaticResource RiskPillTemplate}"
+                                                                Margin="10,0,0,0" />
+                                            </StackPanel>
+
+                                            <TextBlock Text="{Binding Description}" Style="{StaticResource BodyText}" />
+                                            <TextBlock Text="{Binding Paths}"
+                                                       Style="{StaticResource MonoText}"
+                                                       Margin="0,6,0,0" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="2" VerticalAlignment="Center" MinWidth="90">
+                                            <ui:ProgressRing IsIndeterminate="True" Width="18" Height="18"
+                                                             HorizontalAlignment="Right"
+                                                             Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibility}}" />
+
+                                            <StackPanel Visibility="{Binding IsScanning, Converter={StaticResource InverseBoolToVisibility}}">
+                                                <TextBlock Text="{Binding SizeText}"
+                                                           FontSize="16"
+                                                           FontWeight="SemiBold"
+                                                           HorizontalAlignment="Right"
+                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                                <TextBlock HorizontalAlignment="Right" Style="{StaticResource CaptionText}">
+                                                    <Run Text="{Binding FileCount, Mode=OneWay}" />
+                                                    <Run Text="{loc:Loc Cleanup_Files}" />
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Preinstalled Store apps -->
+                    <StackPanel>
+                        <TextBlock Text="{loc:Loc Cleanup_Apps_Title}" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="{loc:Loc Cleanup_Apps_Subtitle}"
+                                   Style="{StaticResource CaptionText}"
+                                   Margin="0,4,0,12" />
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12"
+                                    Visibility="{Binding IsLoadingApps, Converter={StaticResource BoolToVisibility}}">
+                            <ui:ProgressRing IsIndeterminate="True" Width="18" Height="18" Margin="0,0,10,0" />
+                            <TextBlock Text="{loc:Loc Common_Loading}"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+
+                        <ItemsControl ItemsSource="{Binding Apps}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type vm:AppPackageViewModel}">
+                                    <Border Style="{StaticResource InteractiveCard}"
+                                            Margin="0,0,8,8"
+                                            MinWidth="230">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel VerticalAlignment="Center" Margin="0,0,10,0">
+                                                <TextBlock Text="{Binding DisplayName}"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                                <TextBlock Text="{loc:Loc Cleanup_SystemRelevant}"
+                                                           Style="{StaticResource CaptionText}"
+                                                           Foreground="{StaticResource RiskModerateBrush}"
+                                                           Visibility="{Binding IsSystemRelevant, Converter={StaticResource BoolToVisibility}}" />
+                                            </StackPanel>
+
+                                            <Grid Grid.Column="1" VerticalAlignment="Center">
+                                                <ui:ProgressRing IsIndeterminate="True" Width="18" Height="18"
+                                                                 Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}" />
+                                                <ui:Button Icon="{ui:SymbolIcon Delete24}"
+                                                           Appearance="Secondary"
+                                                           ToolTip="{loc:Loc Cleanup_Remove}"
+                                                           Visibility="{Binding IsBusy, Converter={StaticResource InverseBoolToVisibility}}"
+                                                           Command="{Binding DataContext.RemoveAppCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                           CommandParameter="{Binding}" />
+                                            </Grid>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Text="{loc:Loc Cleanup_Apps_Empty}" Margin="0,8,0,0">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource BodyText}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding IsLoadingApps}" Value="False" />
+                                                <Condition Binding="{Binding Apps.Count}" Value="0" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+
+        <ContentControl Template="{StaticResource BusyOverlayTemplate}" />
+    </Grid>
+</pages:SysTuneXPage>

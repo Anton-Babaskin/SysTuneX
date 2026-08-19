@@ -1,0 +1,161 @@
+<pages:SysTuneXPage x:Class="SysTuneX.App.Views.Pages.ServicesPage"
+                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                    xmlns:loc="clr-namespace:SysTuneX.App.Localization"
+                    xmlns:pages="clr-namespace:SysTuneX.App.Views.Pages"
+                    xmlns:vm="clr-namespace:SysTuneX.App.ViewModels"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    mc:Ignorable="d"
+                    d:DataContext="{d:DesignInstance Type=vm:ServicesViewModel}"
+                    Title="Services">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="28,20,28,0"
+                    MaxWidth="{StaticResource MaxContentWidth}"
+                    HorizontalAlignment="Left">
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Services_Title}" Style="{StaticResource PageTitle}" />
+                    <TextBlock Text="{loc:Loc Services_Subtitle}" Style="{StaticResource PageSubtitle}" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                    <Border Style="{StaticResource Pill}"
+                            Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                            Margin="0,6,12,0">
+                        <TextBlock Text="{Binding CountSummary}"
+                                   Style="{StaticResource PillText}"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    </Border>
+
+                    <ui:Button Content="{loc:Loc Services_DisableAllSafe}"
+                               Icon="{ui:SymbolIcon ShieldCheckmark24}"
+                               Appearance="Primary"
+                               Margin="0,0,8,0"
+                               Command="{Binding DisableSafeCommand}" />
+
+                    <ui:Button Icon="{ui:SymbolIcon ArrowReset24}"
+                               ToolTip="{loc:Loc Common_RevertAll}"
+                               Margin="0,0,8,0"
+                               Command="{Binding RestoreAllCommand}" />
+
+                    <ui:Button Icon="{ui:SymbolIcon ArrowClockwise24}"
+                               ToolTip="{loc:Loc Common_Refresh}"
+                               Command="{Binding RefreshCommand}" />
+                </StackPanel>
+            </Grid>
+
+            <StackPanel Style="{StaticResource FilterBarPanel}">
+                <ui:TextBox PlaceholderText="{loc:Loc Common_Search}"
+                            Icon="{ui:SymbolIcon Search24}"
+                            Width="280"
+                            Margin="0,0,12,0"
+                            Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+
+                <ToggleButton Style="{StaticResource FilterToggle}"
+                              Content="{loc:Loc Risk_Safe}"
+                              IsChecked="{Binding RiskFilter, Converter={StaticResource RiskFilterEquals}, ConverterParameter=Safe, Mode=OneWay}"
+                              Command="{Binding SetRiskFilterCommand}"
+                              CommandParameter="Safe" />
+
+                <ToggleButton Style="{StaticResource FilterToggle}"
+                              Content="{loc:Loc Risk_Moderate}"
+                              IsChecked="{Binding RiskFilter, Converter={StaticResource RiskFilterEquals}, ConverterParameter=Moderate, Mode=OneWay}"
+                              Command="{Binding SetRiskFilterCommand}"
+                              CommandParameter="Moderate" />
+
+                <ToggleButton Style="{StaticResource FilterToggle}"
+                              Content="{loc:Loc Risk_Advanced}"
+                              IsChecked="{Binding RiskFilter, Converter={StaticResource RiskFilterEquals}, ConverterParameter=Advanced, Mode=OneWay}"
+                              Command="{Binding SetRiskFilterCommand}"
+                              CommandParameter="Advanced" />
+            </StackPanel>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,0,28,28">
+                <Grid MaxWidth="{StaticResource MaxContentWidth}" HorizontalAlignment="Left">
+                    <ItemsControl ItemsSource="{Binding VisibleItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:ServiceItemViewModel}">
+                                <Border Style="{StaticResource InteractiveCard}" Margin="0,0,0,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Margin="0,0,16,0">
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                <TextBlock Text="{Binding Name}"
+                                                           FontWeight="SemiBold"
+                                                           FontSize="14"
+                                                           TextWrapping="Wrap"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+
+                                                <ContentControl Content="{Binding}"
+                                                                ContentTemplate="{StaticResource RiskPillTemplate}"
+                                                                Margin="10,0,0,0" />
+
+                                                <Border Style="{StaticResource Pill}"
+                                                        Margin="6,0,0,0"
+                                                        Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                                                    <TextBlock Style="{StaticResource PillText}"
+                                                               FontWeight="Normal"
+                                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}">
+                                                        <Run Text="{Binding ServiceName, Mode=OneWay}" />
+                                                    </TextBlock>
+                                                </Border>
+                                            </StackPanel>
+
+                                            <TextBlock Text="{Binding Description}" Style="{StaticResource BodyText}" />
+
+                                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                                <TextBlock Text="{Binding StateText}" Style="{StaticResource CaptionText}" />
+                                                <TextBlock Text="·" Style="{StaticResource CaptionText}" Margin="6,0" />
+                                                <TextBlock Text="{Binding StartModeText}" Style="{StaticResource CaptionText}" />
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <Grid Grid.Column="1" VerticalAlignment="Center" MinWidth="52">
+                                            <ui:ProgressRing IsIndeterminate="True" Width="22" Height="22"
+                                                             Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}" />
+
+                                            <!-- Checked means "SysTuneX has turned this off", which
+                                                 is why the switch reads IsDisabled rather than IsRunning. -->
+                                            <ui:ToggleSwitch IsChecked="{Binding IsDisabled, Mode=OneWay}"
+                                                             Visibility="{Binding IsBusy, Converter={StaticResource InverseBoolToVisibility}}"
+                                                             Command="{Binding DataContext.ToggleCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                             CommandParameter="{Binding}" />
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="{loc:Loc Common_NothingFound}"
+                               Style="{StaticResource BodyText}"
+                               HorizontalAlignment="Center"
+                               Margin="0,60,0,0"
+                               Visibility="{Binding VisibleItems.Count, Converter={StaticResource EmptyToVisibility}}" />
+                </Grid>
+            </ScrollViewer>
+
+            <ContentControl Template="{StaticResource BusyOverlayTemplate}" />
+        </Grid>
+    </Grid>
+</pages:SysTuneXPage>

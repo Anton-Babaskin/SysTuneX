@@ -1,0 +1,269 @@
+<pages:SysTuneXPage x:Class="SysTuneX.App.Views.Pages.DashboardPage"
+                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                    xmlns:loc="clr-namespace:SysTuneX.App.Localization"
+                    xmlns:pages="clr-namespace:SysTuneX.App.Views.Pages"
+                    xmlns:controls="clr-namespace:SysTuneX.App.Controls"
+                    xmlns:vm="clr-namespace:SysTuneX.App.ViewModels"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    mc:Ignorable="d"
+                    d:DataContext="{d:DesignInstance Type=vm:DashboardViewModel}"
+                    Title="Dashboard">
+
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="{StaticResource PagePadding}">
+            <Grid MaxWidth="{StaticResource MaxContentWidth}" HorizontalAlignment="Left">
+                <StackPanel>
+
+                    <!-- Header -->
+                    <Grid Margin="{StaticResource SectionGap}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel>
+                            <TextBlock Text="{loc:Loc Dashboard_Title}" Style="{StaticResource PageTitle}" />
+                            <TextBlock Text="{loc:Loc Dashboard_Subtitle}" Style="{StaticResource PageSubtitle}" />
+                        </StackPanel>
+
+                        <ui:Button Grid.Column="1"
+                                   Icon="{ui:SymbolIcon ArrowClockwise24}"
+                                   Appearance="Secondary"
+                                   VerticalAlignment="Top"
+                                   ToolTip="{loc:Loc Common_Refresh}"
+                                   Command="{Binding RefreshCommand}" />
+                    </Grid>
+
+                    <!-- Score and quick actions -->
+                    <Border Style="{StaticResource Card}" Margin="{StaticResource StackGap}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Grid Width="104" Height="104" Margin="0,0,24,0">
+                                <ui:ProgressRing Progress="{Binding Score}"
+                                                 IsIndeterminate="False"
+                                                 Width="104" Height="104" />
+                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Score, StringFormat={}{0:F0}}"
+                                               FontSize="26"
+                                               FontWeight="SemiBold"
+                                               HorizontalAlignment="Center"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                    <TextBlock Text="/ 100"
+                                               FontSize="11"
+                                               HorizontalAlignment="Center"
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{loc:Loc Dashboard_Score}" Style="{StaticResource SectionTitle}" />
+                                <TextBlock Text="{Binding ScoreCaption}"
+                                           FontSize="13"
+                                           Margin="0,2,0,6"
+                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                <TextBlock Text="{loc:Loc Dashboard_ScoreHint}" Style="{StaticResource CaptionText}" />
+
+                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                    <Border Style="{StaticResource Pill}"
+                                            Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                            Margin="0,0,8,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{loc:Loc Dashboard_TweaksApplied}" Style="{StaticResource PillText}"
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock Style="{StaticResource PillText}" Margin="6,0,0,0"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                                                <Run Text="{Binding AppliedTweaks, Mode=OneWay}" />
+                                                <Run Text="/" />
+                                                <Run Text="{Binding TotalTweaks, Mode=OneWay}" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Style="{StaticResource Pill}"
+                                            Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                            Margin="0,0,8,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{loc:Loc Dashboard_ServicesDisabled}" Style="{StaticResource PillText}"
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock Style="{StaticResource PillText}" Margin="6,0,0,0"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                                                <Run Text="{Binding DisabledServices, Mode=OneWay}" />
+                                                <Run Text="/" />
+                                                <Run Text="{Binding TotalServices, Mode=OneWay}" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Style="{StaticResource Pill}"
+                                            Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                                        <TextBlock Text="{Binding PowerPlan}" Style="{StaticResource PillText}"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                    </Border>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" VerticalAlignment="Center" MinWidth="210">
+                                <ui:Button Content="{loc:Loc Dashboard_QuickOptimize}"
+                                           Icon="{ui:SymbolIcon Flash24}"
+                                           Appearance="Primary"
+                                           HorizontalAlignment="Stretch"
+                                           ToolTip="{loc:Loc Dashboard_QuickOptimize_Hint}"
+                                           Command="{Binding QuickOptimizeCommand}" />
+
+                                <ui:Button Content="{loc:Loc Dashboard_TrimMemory}"
+                                           Icon="{ui:SymbolIcon Ram20}"
+                                           Margin="0,8,0,0"
+                                           HorizontalAlignment="Stretch"
+                                           Command="{Binding TrimMemoryCommand}" />
+
+                                <ui:Button Content="{loc:Loc Dashboard_RestoreAll}"
+                                           Icon="{ui:SymbolIcon ArrowReset24}"
+                                           Margin="0,8,0,0"
+                                           HorizontalAlignment="Stretch"
+                                           ToolTip="{loc:Loc Dashboard_RestoreAll_Hint}"
+                                           Command="{Binding RestoreAllCommand}" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Live counters -->
+                    <UniformGrid Columns="4" Margin="{StaticResource StackGap}">
+                        <Border Style="{StaticResource Card}" Margin="0,0,6,0">
+                            <Grid Height="118">
+                                <controls:Sparkline Values="{Binding CpuHistory}"
+                                                    Maximum="100"
+                                                    Capacity="60"
+                                                    Margin="-20,32,-20,-20"
+                                                    Stroke="{StaticResource BrandBrush}"
+                                                    Fill="#227C5CFF" />
+                                <StackPanel VerticalAlignment="Top">
+                                    <TextBlock Text="{loc:Loc Dashboard_Cpu}" Style="{StaticResource CaptionText}" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding CpuUsage, StringFormat={}{0:F0}}"
+                                                   Style="{StaticResource MetricValue}" />
+                                        <TextBlock Text="%" Style="{StaticResource MetricUnit}" />
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding CpuTopology}" Style="{StaticResource CaptionText}" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}" Margin="6,0,6,0">
+                            <Grid Height="118">
+                                <controls:Sparkline Values="{Binding RamHistory}"
+                                                    Maximum="100"
+                                                    Capacity="60"
+                                                    Margin="-20,32,-20,-20"
+                                                    Stroke="{StaticResource BrandSecondaryBrush}"
+                                                    Fill="#2222B8E6" />
+                                <StackPanel VerticalAlignment="Top">
+                                    <TextBlock Text="{loc:Loc Dashboard_Ram}" Style="{StaticResource CaptionText}" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding RamUsedMb, Converter={StaticResource MegabytesToSize}}"
+                                                   Style="{StaticResource MetricValue}" />
+                                    </StackPanel>
+                                    <TextBlock Style="{StaticResource CaptionText}">
+                                        <Run Text="{loc:Loc Common_Of}" />
+                                        <Run Text="{Binding RamTotalMb, Converter={StaticResource MegabytesToSize}, Mode=OneWay}" />
+                                    </TextBlock>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}" Margin="6,0,6,0">
+                            <StackPanel Height="118">
+                                <TextBlock Text="{loc:Loc Dashboard_Standby}" Style="{StaticResource CaptionText}" />
+                                <TextBlock Text="{Binding StandbyMb, Converter={StaticResource MegabytesToSize}}"
+                                           Style="{StaticResource MetricValue}" />
+                                <TextBlock Style="{StaticResource CaptionText}" Margin="0,4,0,0">
+                                    <Run Text="{loc:Loc Dashboard_Label_Processes}" />
+                                    <Run Text="{Binding ProcessCount, Mode=OneWay}" />
+                                </TextBlock>
+                                <TextBlock Style="{StaticResource CaptionText}" Margin="0,2,0,0">
+                                    <Run Text="{loc:Loc Dashboard_Label_Uptime}" />
+                                    <Run Text="{Binding Uptime, Converter={StaticResource TimeSpanToUptime}, Mode=OneWay}" />
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}" Margin="6,0,0,0">
+                            <StackPanel Height="118">
+                                <TextBlock Text="{loc:Loc Dashboard_Storage}" Style="{StaticResource CaptionText}" />
+                                <TextBlock Text="{Binding DriveFreeMb, Converter={StaticResource MegabytesToSize}}"
+                                           Style="{StaticResource MetricValue}" />
+                                <TextBlock Style="{StaticResource CaptionText}">
+                                    <Run Text="{loc:Loc Dashboard_Free}" />
+                                    <Run Text="{loc:Loc Common_Of}" />
+                                    <Run Text="{Binding DriveTotalMb, Converter={StaticResource MegabytesToSize}, Mode=OneWay}" />
+                                </TextBlock>
+                                <TextBlock Text="{Binding DriveModel}"
+                                           Style="{StaticResource CaptionText}"
+                                           Margin="0,4,0,0"
+                                           TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
+
+                    <!-- Machine details -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="{loc:Loc Dashboard_SystemInfo}"
+                                       Style="{StaticResource SectionTitle}"
+                                       Margin="0,0,0,14" />
+
+                            <UniformGrid Columns="2">
+                                <StackPanel Margin="0,0,16,14">
+                                    <TextBlock Text="{loc:Loc Dashboard_Label_Cpu}" Style="{StaticResource CaptionText}" />
+                                    <TextBlock Text="{Binding CpuName}" FontWeight="SemiBold" TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                </StackPanel>
+
+                                <StackPanel Margin="0,0,0,14">
+                                    <TextBlock Text="{loc:Loc Dashboard_Label_Gpu}" Style="{StaticResource CaptionText}" />
+                                    <TextBlock Text="{Binding GpuName}" FontWeight="SemiBold" TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                    <TextBlock Text="{Binding GpuDetail}" Style="{StaticResource CaptionText}" />
+                                </StackPanel>
+
+                                <StackPanel Margin="0,0,16,14">
+                                    <TextBlock Text="{loc:Loc Dashboard_Label_Memory}" Style="{StaticResource CaptionText}" />
+                                    <TextBlock Text="{Binding MemorySummary}" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                </StackPanel>
+
+                                <StackPanel Margin="0,0,0,14">
+                                    <TextBlock Text="{loc:Loc Dashboard_Label_Os}" Style="{StaticResource CaptionText}" />
+                                    <TextBlock Text="{Binding WindowsSummary}" FontWeight="SemiBold" TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                </StackPanel>
+
+                                <StackPanel Margin="0,0,16,0">
+                                    <TextBlock Text="{loc:Loc Dashboard_Label_Motherboard}" Style="{StaticResource CaptionText}" />
+                                    <TextBlock Text="{Binding Motherboard}" FontWeight="SemiBold" TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                </StackPanel>
+
+                                <StackPanel>
+                                    <TextBlock Text="{loc:Loc Dashboard_Label_PowerPlan}" Style="{StaticResource CaptionText}" />
+                                    <TextBlock Text="{Binding PowerPlan}" FontWeight="SemiBold" TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                </StackPanel>
+                            </UniformGrid>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+
+        <ContentControl Template="{StaticResource BusyOverlayTemplate}" />
+    </Grid>
+</pages:SysTuneXPage>
