@@ -5,8 +5,8 @@
                     xmlns:vm="clr-namespace:SysTuneX.App.ViewModels">
 
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="pack://application:,,,/Resources/Converters.xaml" />
-        <ResourceDictionary Source="pack://application:,,,/Resources/Theme.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/SysTuneX;component/Resources/Converters.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/SysTuneX;component/Resources/Theme.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <!--

@@ -38,12 +38,11 @@ public sealed class WpfApplicationFixture : IDisposable
 
             try
             {
-                // pack://application:,,,/... resolves against Application.ResourceAssembly, which
-                // WPF defaults to the entry assembly. In the real app that is SysTuneX.exe; under
-                // a test runner it is testhost.exe, whose .g.resources holds none of this. Point
-                // it at the app assembly so the host matches production instead of inventing a
-                // failure the shipped executable cannot have.
-                System.Windows.Application.ResourceAssembly = typeof(App).Assembly;
+                // A pack URI that omits the assembly resolves against Application.ResourceAssembly,
+                // which WPF fixes to the entry assembly - SysTuneX.exe when shipped, testhost.exe
+                // here - and refuses to change afterwards. The app's URIs name their assembly, so
+                // this is only a best-effort nudge for anything that does not.
+                TryPointResourceAssemblyAtTheApp();
 
                 var application = new App();
 
@@ -87,6 +86,13 @@ public sealed class WpfApplicationFixture : IDisposable
     /// <summary>Runs <paramref name="action"/> on the UI thread and rethrows what it throws.</summary>
     public void OnUiThread(Action action)
     {
+        // Without this, every later test reports a confusing NullReferenceException from
+        // Application.Current instead of the startup failure that actually caused it.
+        if (StartupFailure is not null)
+        {
+            throw new WpfHostException(StartupFailure);
+        }
+
         if (_dispatcher is null)
         {
             throw new InvalidOperationException("The WPF test host is not running.");
@@ -112,6 +118,22 @@ public sealed class WpfApplicationFixture : IDisposable
     }
 
     public void Dispose() => _dispatcher?.InvokeShutdown();
+
+    private static void TryPointResourceAssemblyAtTheApp()
+    {
+        try
+        {
+            if (!ReferenceEquals(Application.ResourceAssembly, typeof(App).Assembly))
+            {
+                Application.ResourceAssembly = typeof(App).Assembly;
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            // Already pinned to the runner by the time we got here. Harmless: every pack URI in
+            // the app names its assembly, so none of them go looking through this property.
+        }
+    }
 }
 
 [CollectionDefinition(WpfApplicationCollection.Name)]
