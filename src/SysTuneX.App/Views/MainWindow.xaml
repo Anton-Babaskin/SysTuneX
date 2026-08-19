@@ -35,7 +35,7 @@
                      ShowMinimize="True"
                      ShowClose="True">
             <ui:TitleBar.Icon>
-                <ui:ImageIcon Source="pack://application:,,,/Assets/SysTuneX.png" Width="18" Height="18" />
+                <ui:ImageIcon Source="pack://application:,,,/SysTuneX;component/Assets/SysTuneX.png" Width="18" Height="18" />
             </ui:TitleBar.Icon>
         </ui:TitleBar>
 

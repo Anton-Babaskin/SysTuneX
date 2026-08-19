@@ -9,9 +9,9 @@
                 <!-- Theme is re-applied at start-up from the saved setting; Dark is only the seed. -->
                 <ui:ThemesDictionary Theme="Dark" />
                 <ui:ControlsDictionary />
-                <ResourceDictionary Source="pack://application:,,,/Resources/Converters.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/Resources/Theme.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/Resources/PageParts.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/SysTuneX;component/Resources/Converters.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/SysTuneX;component/Resources/Theme.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/SysTuneX;component/Resources/PageParts.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <!--

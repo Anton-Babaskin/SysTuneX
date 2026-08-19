@@ -24,6 +24,11 @@ ever run the app.
 What changed:
 
 * The icons are declared as `Resource` items, so the pack URI resolves.
+* Every hand-written pack URI now names its assembly
+  (`pack://application:,,,/SysTuneX;component/...`). Without the assembly, WPF resolves the URI
+  against `Application.ResourceAssembly` — whichever assembly happens to be the entry point —
+  which is correct for the shipped executable but means the same XAML cannot be loaded by
+  anything else, a test host included.
 * **A startup test suite now runs on the Windows CI runner**: it constructs the real
   `Application`, forces every resource in every merged dictionary to materialise, and builds the
   main window and all ten pages through the container. A build that cannot start can no longer
