@@ -111,6 +111,8 @@ public partial class App : Application
 
             await StartGameModeAutomationAsync(settings.Current.AutoGameMode);
 
+            _host.Services.GetRequiredService<GameModeScheduler>().Schedule = settings.Current.Schedule;
+
             if (settings.Current.ShowTrayIcon)
             {
                 _host.Services.GetRequiredService<ITrayIconService>().Show();

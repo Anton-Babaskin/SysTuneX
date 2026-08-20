@@ -85,6 +85,61 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Schedule -->
+                <Border Style="{StaticResource Card}" Margin="{StaticResource SectionGap}">
+                    <StackPanel>
+                        <TextBlock Text="{loc:Loc Settings_Schedule}"
+                                   Style="{StaticResource SectionTitle}"
+                                   Margin="0,0,0,6" />
+                        <TextBlock Text="{loc:Loc Settings_Schedule_Hint}"
+                                   Style="{StaticResource BodyText}"
+                                   Margin="0,0,0,14" />
+
+                        <ui:ToggleSwitch IsChecked="{Binding ScheduleEnabled, Mode=TwoWay}"
+                                         Content="{loc:Loc Settings_Schedule_On}"
+                                         Margin="0,0,0,14" />
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                            <TextBlock Text="{loc:Loc Settings_Schedule_From}"
+                                       Style="{StaticResource CaptionText}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0" />
+                            <ui:TextBox Text="{Binding ScheduleStart, UpdateSourceTrigger=LostFocus}"
+                                        Width="90"
+                                        Margin="0,0,16,0" />
+
+                            <TextBlock Text="{loc:Loc Settings_Schedule_To}"
+                                       Style="{StaticResource CaptionText}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0" />
+                            <ui:TextBox Text="{Binding ScheduleEnd, UpdateSourceTrigger=LostFocus}"
+                                        Width="90" />
+                        </StackPanel>
+
+                        <TextBlock Text="{loc:Loc Settings_Schedule_Days}"
+                                   Style="{StaticResource CaptionText}"
+                                   Margin="0,0,0,8" />
+
+                        <ItemsControl ItemsSource="{Binding ScheduleDays}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <ToggleButton Style="{DynamicResource FilterToggle}"
+                                                  Content="{Binding Label}"
+                                                  IsChecked="{Binding Selected, Mode=OneWay}"
+                                                  Command="{Binding DataContext.ToggleScheduleDayCommand,
+                                                            RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                  CommandParameter="{Binding}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
                 <!-- Tray -->
                 <Border Style="{StaticResource Card}" Margin="{StaticResource SectionGap}">
                     <StackPanel>

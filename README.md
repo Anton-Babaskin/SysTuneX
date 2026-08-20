@@ -120,6 +120,23 @@ Settings has a **Build a report** button that bundles the machine description, t
 and the log tail into a single text file — that one file is what to attach to a bug report.
 **Verbose logging** adds every registry read and every command line, and takes effect immediately.
 
+### Before and after
+
+Record the machine before a change and again after it, then compare the two. The result names
+every tweak that became applied, every service that started or stopped, and a changed power
+scheme. Memory and process counts are reported only when they move further than they drift on
+their own.
+
+This is not a performance measurement — SysTuneX cannot see frame times. For those, run the same
+benchmark on both sides and compare it yourself.
+
+### Tray icon and schedule
+
+The tray icon shows CPU, memory and temperatures on hover and carries the game mode switch in its
+menu. The schedule holds game mode on during a window of the day; it is evaluated against the
+clock once a minute rather than set as a timer, so a machine that slept through the start still
+catches up.
+
 ### Change log
 
 The list of every value SysTuneX recorded before changing it: what it was, who changed it, when,

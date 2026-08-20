@@ -1636,4 +1636,64 @@
   <data name="Settings_MinimizeToTray" xml:space="preserve">
     <value>Закрытие окна оставляет SysTuneX работать в трее</value>
   </data>
+  <data name="Snapshot_Section" xml:space="preserve">
+    <value>До и после</value>
+  </data>
+  <data name="Snapshot_Hint" xml:space="preserve">
+    <value>Запишите состояние машины до изменения и после, затем сравните. Здесь видно, что реально изменилось в системе — это не измерение производительности: SysTuneX не видит времени кадра. Для этого прогоните один и тот же бенчмарк с обеих сторон.</value>
+  </data>
+  <data name="Snapshot_Capture" xml:space="preserve">
+    <value>Записать сейчас</value>
+  </data>
+  <data name="Snapshot_Capturing" xml:space="preserve">
+    <value>Читаю текущее состояние…</value>
+  </data>
+  <data name="Snapshot_Label" xml:space="preserve">
+    <value>Название, например «до профиля Киберспорт»</value>
+  </data>
+  <data name="Snapshot_Compare" xml:space="preserve">
+    <value>Сравнить</value>
+  </data>
+  <data name="Snapshot_PickTwo" xml:space="preserve">
+    <value>Выберите два разных снимка для сравнения.</value>
+  </data>
+  <data name="Snapshot_NoDifference" xml:space="preserve">
+    <value>Между этими двумя ничего не изменилось.</value>
+  </data>
+  <data name="Snapshot_Differences" xml:space="preserve">
+    <value>Различий: {0}.</value>
+  </data>
+  <data name="Snapshot_Before" xml:space="preserve">
+    <value>До</value>
+  </data>
+  <data name="Snapshot_After" xml:space="preserve">
+    <value>После</value>
+  </data>
+  <data name="Snapshot_Empty" xml:space="preserve">
+    <value>Снимков пока нет.</value>
+  </data>
+  <data name="Snapshot_First" xml:space="preserve">
+    <value>Первый</value>
+  </data>
+  <data name="Snapshot_Second" xml:space="preserve">
+    <value>Второй</value>
+  </data>
+  <data name="Settings_Schedule" xml:space="preserve">
+    <value>Расписание</value>
+  </data>
+  <data name="Settings_Schedule_Hint" xml:space="preserve">
+    <value>Держит игровой режим включённым в заданное окно дня. Проверяется раз в минуту по часам, а не таймером на края окна: машина, проспавшая начало, всё равно догонит. Расписание выключает только то, что само включило — режим, включённый руками, оно не трогает.</value>
+  </data>
+  <data name="Settings_Schedule_On" xml:space="preserve">
+    <value>Включать игровой режим по расписанию</value>
+  </data>
+  <data name="Settings_Schedule_From" xml:space="preserve">
+    <value>С</value>
+  </data>
+  <data name="Settings_Schedule_To" xml:space="preserve">
+    <value>До</value>
+  </data>
+  <data name="Settings_Schedule_Days" xml:space="preserve">
+    <value>Дни (ничего не выбрано — каждый день)</value>
+  </data>
 </root>

@@ -42,6 +42,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IGameModeService, GameModeService>();
         services.AddSingleton<IGameWatcher, GameWatcher>();
         services.AddSingleton<GameModeAutomation>();
+        services.AddSingleton<ISnapshotService, SnapshotService>();
+        services.AddSingleton<GameModeScheduler>();
 
         return services;
     }
