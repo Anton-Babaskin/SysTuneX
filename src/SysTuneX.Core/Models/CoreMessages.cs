@@ -193,6 +193,12 @@ public static class CoreMessages
     public static readonly MessageTemplate GameModeNotOn =
         new("GameMode_NotOn", "Game mode is not on.");
 
+    public static readonly MessageTemplate GameNameEmpty =
+        new("Game_NameEmpty", "Enter the executable name of the game, for example dota2.exe.");
+
+    public static readonly MessageTemplate GameAlreadyWatched =
+        new("Game_AlreadyWatched", "{0} is already on the watch list.");
+
     // ── Journal and diagnostics ─────────────────────────────────────────────────
 
     public static readonly MessageTemplate BackupExportFailed =
@@ -219,7 +225,7 @@ public static class CoreMessages
         TweakBuildGated, TweakNoHandler, TweakApplyFailed,
         CleanupUnsafePackageName, CleanupPackageRemoveFailed,
         EnvironmentExecutableUnknown, EnvironmentElevationRefused, EnvironmentExplorerRestartFailed,
-        GameModeNeedsAdministrator, GameModeAlreadyOn, GameModeNotOn,
+        GameModeNeedsAdministrator, GameModeAlreadyOn, GameModeNotOn, GameNameEmpty, GameAlreadyWatched,
         BackupExportFailed, DiagnosticsReportFailed,
     ];
 }

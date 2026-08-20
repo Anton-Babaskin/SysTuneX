@@ -26,6 +26,9 @@ public sealed class AppSettings
     /// <summary>Records every registry read and command line, not just outcomes. Off by default.</summary>
     public bool VerboseLogging { get; set; }
 
+    /// <summary>Turn game mode on and off automatically as a watched game starts and exits.</summary>
+    public bool AutoGameMode { get; set; }
+
     public double WindowWidth { get; set; } = 1240;
 
     public double WindowHeight { get; set; } = 800;

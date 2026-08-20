@@ -20,15 +20,17 @@ public sealed class GameModeService : IGameModeService
     private readonly IProcessService _processes;
     private readonly SemaphoreSlim _gate = new(1, 1);
 
-    private readonly string _sessionFile = Path.Combine(AppPaths.DataDirectory, "gamemode.json");
+    private readonly string _sessionFile;
 
     public GameModeService(
         ILogger<GameModeService> logger,
         IEnvironmentService environment,
         IServiceManager services,
         IPowerService power,
-        IProcessService processes)
+        IProcessService processes,
+        string? dataDirectory = null)
     {
+        _sessionFile = Path.Combine(dataDirectory ?? AppPaths.DataDirectory, "gamemode.json");
         _logger = logger;
         _environment = environment;
         _services = services;
@@ -76,6 +78,7 @@ public sealed class GameModeService : IGameModeService
 
     public async Task<GameModeResult> EnableAsync(
         IProgress<string>? progress = null,
+        WatchedGame? trigger = null,
         CancellationToken cancellationToken = default)
     {
         if (!_environment.IsElevated)
@@ -110,6 +113,8 @@ public sealed class GameModeService : IGameModeService
                 PreviousPowerScheme = previousScheme,
                 PreviousPowerSchemeName = previousName,
                 FreedMemoryMb = freedMb,
+                AutoStarted = trigger is not null,
+                TriggeredBy = trigger?.DisplayName ?? string.Empty,
             };
 
             await SaveSessionAsync(cancellationToken).ConfigureAwait(false);
@@ -283,7 +288,7 @@ public sealed class GameModeService : IGameModeService
     {
         try
         {
-            Directory.CreateDirectory(AppPaths.DataDirectory);
+            Directory.CreateDirectory(Path.GetDirectoryName(_sessionFile)!);
             await using FileStream stream = File.Create(_sessionFile);
             await JsonSerializer.SerializeAsync(stream, Session, Json, cancellationToken).ConfigureAwait(false);
         }

@@ -49,6 +49,15 @@ stopped rather than disabled, so their start type is untouched and the next boot
 the previous power scheme is recorded and restored. Nothing it does needs a reboot, which is what
 separates it from applying a profile.
 
+### Automatic game mode
+
+SysTuneX can watch for a game starting and switch game mode on and off with it. Twenty-five
+games are recognised out of the box and anything else is a one-field addition by executable name.
+Only a session the watcher started is ended by the watcher — turning game mode on by hand and
+having a game exit undo it would be rude.
+
+It runs only while SysTuneX is open; doing it with the app closed would mean a Windows service.
+
 ### Temperatures
 
 GPU temperature, load and fan speed through NVIDIA's NVML, which ships with the driver. CPU

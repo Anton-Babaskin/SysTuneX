@@ -1585,4 +1585,31 @@
   <data name="Core_Diagnostics_ReportFailed" xml:space="preserve">
     <value>Не удалось записать отчёт диагностики: {0}</value>
   </data>
+  <data name="Core_Game_NameEmpty" xml:space="preserve">
+    <value>Укажите имя исполняемого файла игры, например dota2.exe.</value>
+  </data>
+  <data name="Core_Game_AlreadyWatched" xml:space="preserve">
+    <value>{0} уже в списке наблюдения.</value>
+  </data>
+  <data name="Settings_AutoGameMode" xml:space="preserve">
+    <value>Автоматический игровой режим</value>
+  </data>
+  <data name="Settings_AutoGameMode_Hint" xml:space="preserve">
+    <value>Включает игровой режим, когда запускается одна из игр ниже, и выключает при выходе. Работает только пока запущен SysTuneX: делать это при закрытом приложении означало бы службу Windows, а фоновой службе, которая останавливает другие службы, доверия нужно куда больше.</value>
+  </data>
+  <data name="Settings_WatchedGames" xml:space="preserve">
+    <value>Отслеживаемые игры</value>
+  </data>
+  <data name="Settings_AddGame" xml:space="preserve">
+    <value>Добавить</value>
+  </data>
+  <data name="Settings_AddGame_Placeholder" xml:space="preserve">
+    <value>Имя исполняемого файла, например dota2.exe</value>
+  </data>
+  <data name="Settings_RemoveGame" xml:space="preserve">
+    <value>Убрать</value>
+  </data>
+  <data name="GameMode_TriggeredBy" xml:space="preserve">
+    <value>Включён автоматически для «{0}».</value>
+  </data>
 </root>

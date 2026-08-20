@@ -27,7 +27,13 @@ public interface IGameModeService
     /// </summary>
     Task LoadAsync(CancellationToken cancellationToken = default);
 
-    Task<GameModeResult> EnableAsync(IProgress<string>? progress = null, CancellationToken cancellationToken = default);
+    /// <param name="trigger">
+    /// The game that caused this, when the watcher started it. Null means the user did.
+    /// </param>
+    Task<GameModeResult> EnableAsync(
+        IProgress<string>? progress = null,
+        WatchedGame? trigger = null,
+        CancellationToken cancellationToken = default);
 
     Task<GameModeResult> DisableAsync(IProgress<string>? progress = null, CancellationToken cancellationToken = default);
 }
@@ -46,6 +52,15 @@ public sealed record GameModeSession
 
     /// <summary>Megabytes the memory trim freed when the session started, for the UI to report.</summary>
     public long FreedMemoryMb { get; init; }
+
+    /// <summary>
+    /// The watcher turned this on, not the user. Only an automatic session is turned off
+    /// automatically — switching it on by hand and having a game exit undo it would be rude.
+    /// </summary>
+    public bool AutoStarted { get; init; }
+
+    /// <summary>Game that triggered an automatic session, for the interface to name.</summary>
+    public string TriggeredBy { get; init; } = string.Empty;
 }
 
 /// <param name="Result">Whether the switch did what it said.</param>

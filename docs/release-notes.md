@@ -1,4 +1,28 @@
-# SysTuneX 2.2.0
+# SysTuneX 2.3.0
+
+## 2.3.0 — game mode follows the game
+
+Turn on **Automatic game mode** in Settings and SysTuneX watches for a game starting: game mode
+goes on when it appears and off again when it exits. Twenty-five games are recognised out of the
+box — Dota 2, CS2, VALORANT, Apex, Fortnite, WoW, Cyberpunk, iRacing and the rest — and anything
+else is a one-field addition by executable name.
+
+Two rules keep it from being annoying:
+
+* **Only an automatic session is undone automatically.** Switching game mode on by hand and
+  having it turn itself off because a game exited would be rude, so the session records who
+  started it.
+* **Detection is edge-triggered.** The watcher fires on the transition, not on every poll —
+  otherwise game mode would re-enter every few seconds for as long as the game was up, each time
+  recording a fresh session over the previous one's restore data.
+
+It only runs while SysTuneX is open. Doing it with the app closed would mean a Windows service,
+and a background service that stops other services is a much bigger thing to ask someone to
+trust than a window they can see.
+
+The watch list is matched on process name without the extension, so it survives a game moving
+between drives, and typing `dota2.exe` or `dota2` both work.
+
 
 ## 2.2.0 — the system layer speaks Russian too
 

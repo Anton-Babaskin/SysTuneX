@@ -997,4 +997,31 @@
   <data name="Core_Diagnostics_ReportFailed" xml:space="preserve">
     <value>Could not write the diagnostics report: {0}</value>
   </data>
+  <data name="Core_Game_NameEmpty" xml:space="preserve">
+    <value>Enter the executable name of the game, for example dota2.exe.</value>
+  </data>
+  <data name="Core_Game_AlreadyWatched" xml:space="preserve">
+    <value>{0} is already on the watch list.</value>
+  </data>
+  <data name="Settings_AutoGameMode" xml:space="preserve">
+    <value>Automatic game mode</value>
+  </data>
+  <data name="Settings_AutoGameMode_Hint" xml:space="preserve">
+    <value>Turns game mode on when one of the games below starts, and off again when it exits. Only while SysTuneX is running — doing it with the app closed would mean a Windows service, and a background service that stops other services is a much bigger thing to trust.</value>
+  </data>
+  <data name="Settings_WatchedGames" xml:space="preserve">
+    <value>Watched games</value>
+  </data>
+  <data name="Settings_AddGame" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="Settings_AddGame_Placeholder" xml:space="preserve">
+    <value>Executable name, e.g. dota2.exe</value>
+  </data>
+  <data name="Settings_RemoveGame" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="GameMode_TriggeredBy" xml:space="preserve">
+    <value>Started automatically for {0}.</value>
+  </data>
 </root>
