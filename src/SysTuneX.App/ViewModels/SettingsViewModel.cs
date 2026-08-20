@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -26,6 +27,7 @@ public sealed partial class SettingsViewModel : PageViewModel
     private readonly IGameWatcher _watcher;
     private readonly GameModeAutomation _automation;
     private readonly ITrayIconService _tray;
+    private readonly GameModeScheduler _scheduler;
 
     private bool _isLoading = true;
 
@@ -69,6 +71,15 @@ public sealed partial class SettingsViewModel : PageViewModel
     [ObservableProperty]
     private bool _minimizeToTray;
 
+    [ObservableProperty]
+    private bool _scheduleEnabled;
+
+    [ObservableProperty]
+    private string _scheduleStart = "19:00";
+
+    [ObservableProperty]
+    private string _scheduleEnd = "23:00";
+
     public SettingsViewModel(
         IAppSettingsService settings,
         ILocalizationService localization,
@@ -78,7 +89,8 @@ public sealed partial class SettingsViewModel : PageViewModel
         IPowerService power,
         IGameWatcher watcher,
         GameModeAutomation automation,
-        ITrayIconService tray)
+        ITrayIconService tray,
+        GameModeScheduler scheduler)
     {
         _settings = settings;
         _localization = localization;
@@ -89,6 +101,7 @@ public sealed partial class SettingsViewModel : PageViewModel
         _watcher = watcher;
         _automation = automation;
         _tray = tray;
+        _scheduler = scheduler;
 
         Languages = localization.AvailableLanguages;
     }
@@ -131,6 +144,14 @@ public sealed partial class SettingsViewModel : PageViewModel
         AutoGameMode = current.AutoGameMode;
         ShowTrayIcon = current.ShowTrayIcon;
         MinimizeToTray = current.MinimizeToTray;
+        ScheduleEnabled = current.Schedule.Enabled;
+        ScheduleStart = current.Schedule.StartsAt.ToString("HH:mm");
+        ScheduleEnd = current.Schedule.EndsAt.ToString("HH:mm");
+        ScheduleDays = [.. ScheduleDayNames.Select((name, index) => new ScheduleDay(
+            (DayOfWeek)(((int)DayOfWeek.Monday + index) % 7),
+            name,
+            current.Schedule.Days.Contains((DayOfWeek)(((int)DayOfWeek.Monday + index) % 7))))];
+        OnPropertyChanged(nameof(ScheduleDays));
 
         _isLoading = false;
 
@@ -272,6 +293,61 @@ public sealed partial class SettingsViewModel : PageViewModel
 
     /// <summary>Closing to the tray only makes sense while there is a tray icon to come back from.</summary>
     public bool CanMinimizeToTray => ShowTrayIcon;
+
+    /// <summary>Monday first, which is what a week looks like to most of the people using this.</summary>
+    private static readonly string[] ScheduleDayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+    public IReadOnlyList<ScheduleDay> ScheduleDays { get; private set; } = [];
+
+    partial void OnScheduleEnabledChanged(bool value) => ApplySchedule();
+
+    partial void OnScheduleStartChanged(string value) => ApplySchedule();
+
+    partial void OnScheduleEndChanged(string value) => ApplySchedule();
+
+    [RelayCommand]
+    private void ToggleScheduleDay(ScheduleDay? day)
+    {
+        if (day is null)
+        {
+            return;
+        }
+
+        day.Selected = !day.Selected;
+        ApplySchedule();
+    }
+
+    /// <summary>
+    /// Rebuilds the schedule from what is on screen. A time that will not parse leaves the
+    /// stored one alone rather than resetting it to midnight while someone is mid-edit.
+    /// </summary>
+    private void ApplySchedule()
+    {
+        if (_isLoading)
+        {
+            return;
+        }
+
+        GameModeSchedule current = _settings.Current.Schedule;
+
+        var schedule = new GameModeSchedule
+        {
+            Enabled = ScheduleEnabled,
+            StartsAt = ParseTime(ScheduleStart, current.StartsAt),
+            EndsAt = ParseTime(ScheduleEnd, current.EndsAt),
+            Days = [.. ScheduleDays.Where(d => d.Selected).Select(d => d.Day)],
+        };
+
+        _settings.Current.Schedule = schedule;
+        _scheduler.Schedule = schedule;
+        Save();
+    }
+
+    private static TimeOnly ParseTime(string text, TimeOnly fallback) =>
+        TimeOnly.TryParse(text, CultureInfo.CurrentCulture, out TimeOnly parsed) ||
+        TimeOnly.TryParse(text, CultureInfo.InvariantCulture, out parsed)
+            ? parsed
+            : fallback;
 
     partial void OnShowTrayIconChanged(bool value)
     {

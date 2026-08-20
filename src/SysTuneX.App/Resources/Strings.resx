@@ -1048,4 +1048,64 @@
   <data name="Settings_MinimizeToTray" xml:space="preserve">
     <value>Closing the window leaves SysTuneX running in the tray</value>
   </data>
+  <data name="Snapshot_Section" xml:space="preserve">
+    <value>Before and after</value>
+  </data>
+  <data name="Snapshot_Hint" xml:space="preserve">
+    <value>Record the machine before a change and again after it, then compare the two. This lists what actually changed on the system — it is not a performance measurement, because SysTuneX cannot see frame times. For those, run the same benchmark on both sides.</value>
+  </data>
+  <data name="Snapshot_Capture" xml:space="preserve">
+    <value>Record now</value>
+  </data>
+  <data name="Snapshot_Capturing" xml:space="preserve">
+    <value>Reading the current state…</value>
+  </data>
+  <data name="Snapshot_Label" xml:space="preserve">
+    <value>Name, e.g. before Competitive FPS</value>
+  </data>
+  <data name="Snapshot_Compare" xml:space="preserve">
+    <value>Compare</value>
+  </data>
+  <data name="Snapshot_PickTwo" xml:space="preserve">
+    <value>Pick two different snapshots to compare.</value>
+  </data>
+  <data name="Snapshot_NoDifference" xml:space="preserve">
+    <value>Nothing changed between these two.</value>
+  </data>
+  <data name="Snapshot_Differences" xml:space="preserve">
+    <value>{0} differences.</value>
+  </data>
+  <data name="Snapshot_Before" xml:space="preserve">
+    <value>Before</value>
+  </data>
+  <data name="Snapshot_After" xml:space="preserve">
+    <value>After</value>
+  </data>
+  <data name="Snapshot_Empty" xml:space="preserve">
+    <value>No snapshots yet.</value>
+  </data>
+  <data name="Snapshot_First" xml:space="preserve">
+    <value>First</value>
+  </data>
+  <data name="Snapshot_Second" xml:space="preserve">
+    <value>Second</value>
+  </data>
+  <data name="Settings_Schedule" xml:space="preserve">
+    <value>Schedule</value>
+  </data>
+  <data name="Settings_Schedule_Hint" xml:space="preserve">
+    <value>Holds game mode on during a window of the day. Checked once a minute against the clock rather than set as a timer, so a machine that slept through the start still catches up. Only a scheduled session is ended by the schedule — switching game mode on by hand outlives it.</value>
+  </data>
+  <data name="Settings_Schedule_On" xml:space="preserve">
+    <value>Turn game mode on by schedule</value>
+  </data>
+  <data name="Settings_Schedule_From" xml:space="preserve">
+    <value>From</value>
+  </data>
+  <data name="Settings_Schedule_To" xml:space="preserve">
+    <value>To</value>
+  </data>
+  <data name="Settings_Schedule_Days" xml:space="preserve">
+    <value>Days (none selected means every day)</value>
+  </data>
 </root>

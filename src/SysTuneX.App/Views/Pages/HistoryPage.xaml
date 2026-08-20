@@ -63,6 +63,120 @@
                 </StackPanel>
             </Grid>
 
+            <!--
+                Before and after. Collapsed by default: it is a deliberate act, not something
+                to trip over on the way to the change log.
+            -->
+            <ui:CardExpander Header="{loc:Loc Snapshot_Section}"
+                             Icon="{ui:SymbolIcon Pulse24}"
+                             Margin="0,0,0,16"
+                             IsExpanded="False">
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Snapshot_Hint}"
+                               Style="{StaticResource BodyText}"
+                               Margin="0,0,0,14" />
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                        <ui:TextBox PlaceholderText="{loc:Loc Snapshot_Label}"
+                                    Text="{Binding SnapshotLabel, UpdateSourceTrigger=PropertyChanged}"
+                                    Width="320"
+                                    Margin="0,0,8,0" />
+                        <ui:Button Content="{loc:Loc Snapshot_Capture}"
+                                   Icon="{ui:SymbolIcon Camera24}"
+                                   Appearance="Primary"
+                                   Command="{Binding CaptureSnapshotCommand}" />
+                    </StackPanel>
+
+                    <Grid Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <TextBlock Text="{loc:Loc Snapshot_First}" Style="{StaticResource CaptionText}" />
+                            <ComboBox ItemsSource="{Binding Snapshots}"
+                                      SelectedItem="{Binding FirstSnapshot, Mode=TwoWay}"
+                                      DisplayMemberPath="Label"
+                                      Margin="0,4,0,0" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                            <TextBlock Text="{loc:Loc Snapshot_Second}" Style="{StaticResource CaptionText}" />
+                            <ComboBox ItemsSource="{Binding Snapshots}"
+                                      SelectedItem="{Binding SecondSnapshot, Mode=TwoWay}"
+                                      DisplayMemberPath="Label"
+                                      Margin="0,4,0,0" />
+                        </StackPanel>
+
+                        <ui:Button Grid.Column="2"
+                                   Content="{loc:Loc Snapshot_Compare}"
+                                   Icon="{ui:SymbolIcon Pulse24}"
+                                   VerticalAlignment="Bottom"
+                                   Command="{Binding CompareSnapshotsCommand}" />
+                    </Grid>
+
+                    <TextBlock Text="{loc:Loc Snapshot_Empty}"
+                               Style="{StaticResource CaptionText}"
+                               Visibility="{Binding Snapshots.Count, Converter={StaticResource EmptyToVisibility}}" />
+
+                    <StackPanel Visibility="{Binding HasComparison, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="{Binding ComparisonSummary}"
+                                   Style="{StaticResource SectionTitle}"
+                                   Margin="0,4,0,10" />
+
+                        <ItemsControl ItemsSource="{Binding Differences}" MaxHeight="320">
+                            <ItemsControl.Template>
+                                <ControlTemplate TargetType="ItemsControl">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <ItemsPresenter />
+                                    </ScrollViewer>
+                                </ControlTemplate>
+                            </ItemsControl.Template>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource SubtleCard}" Margin="0,0,0,6">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="90" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding Category}"
+                                                       Style="{StaticResource CaptionText}"
+                                                       VerticalAlignment="Center" />
+
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding Item}"
+                                                       Style="{StaticResource MonoText}"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,12,0" />
+
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                                <TextBlock Text="{Binding Before}"
+                                                           Style="{StaticResource CaptionText}"
+                                                           VerticalAlignment="Center" />
+                                                <ui:SymbolIcon Symbol="ArrowRight24"
+                                                               Margin="8,0"
+                                                               FontSize="14"
+                                                               VerticalAlignment="Center" />
+                                                <TextBlock Text="{Binding After}"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                           VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </StackPanel>
+            </ui:CardExpander>
+
             <StackPanel Style="{StaticResource FilterBarPanel}">
                 <ui:TextBox PlaceholderText="{loc:Loc Common_Search}"
                             Icon="{ui:SymbolIcon Search24}"

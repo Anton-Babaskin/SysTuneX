@@ -1,4 +1,30 @@
-# SysTuneX 2.3.0
+# SysTuneX 2.4.0
+
+## 2.4.0 — tray icon, before-and-after, schedule
+
+**A tray icon.** Hover for CPU, memory and whichever temperatures the machine reports; the menu
+opens the window, toggles game mode and quits. Optionally, closing the window leaves SysTuneX
+running there instead of exiting — gated on the icon actually being visible, so the window can
+never vanish with no way back.
+
+**Before and after**, in the change log. Record the machine before a change and again after it,
+then compare: the result lists every tweak that became applied, every service that started or
+stopped, and a changed power scheme.
+
+It is not a performance measurement and does not pretend to be. SysTuneX cannot see frame times;
+for those, run the same benchmark on both sides. Memory and process counts are only reported when
+they move further than they drift on their own — listing a 3 MB difference as the effect of a
+tweak would be a lie dressed as data.
+
+**A schedule.** Hold game mode on during a window of the day, optionally on chosen days. Checked
+once a minute against the clock rather than set as timers on the two edges, because a timer
+misses its moment whenever the machine sleeps through it and a missed edge would leave game mode
+stuck on. A window that ends before it starts runs past midnight and belongs to the day it began:
+Friday 23:00–02:00 is still Friday's window at half past midnight.
+
+Only a session the automation started is ended by it — switching game mode on by hand at 23:05
+outlives a schedule that ended at 23:00.
+
 
 ## 2.3.0 — game mode follows the game
 

@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using SysTuneX.Core.Abstractions;
+using SysTuneX.Core.Models;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 
@@ -34,6 +35,9 @@ public sealed class AppSettings
 
     /// <summary>Closing the window leaves SysTuneX in the tray instead of exiting.</summary>
     public bool MinimizeToTray { get; set; }
+
+    /// <summary>Window of the day during which game mode is held on.</summary>
+    public GameModeSchedule Schedule { get; set; } = new();
 
     public double WindowWidth { get; set; } = 1240;
 
