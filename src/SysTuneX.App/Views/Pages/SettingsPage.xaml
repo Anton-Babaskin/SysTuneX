@@ -85,6 +85,30 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Power -->
+                <Border Style="{StaticResource Card}" Margin="{StaticResource SectionGap}">
+                    <StackPanel>
+                        <TextBlock Text="{loc:Loc Settings_PowerPlan}"
+                                   Style="{StaticResource SectionTitle}"
+                                   Margin="0,0,0,6" />
+                        <TextBlock Text="{loc:Loc Settings_PowerPlan_Hint}"
+                                   Style="{StaticResource BodyText}"
+                                   Margin="0,0,0,14" />
+
+                        <ComboBox ItemsSource="{Binding PowerSchemes}"
+                                  SelectedItem="{Binding SelectedPowerScheme, Mode=TwoWay}"
+                                  DisplayMemberPath="Name"
+                                  MinWidth="320"
+                                  HorizontalAlignment="Left"
+                                  Margin="0,0,0,12" />
+
+                        <ui:Button Content="{loc:Loc Settings_PowerPlan_Apply}"
+                                   Icon="{ui:SymbolIcon Flash24}"
+                                   HorizontalAlignment="Left"
+                                   Command="{Binding ApplyPowerSchemeCommand}" />
+                    </StackPanel>
+                </Border>
+
                 <!-- Diagnostics -->
                 <Border Style="{StaticResource Card}" Margin="{StaticResource SectionGap}">
                     <StackPanel>

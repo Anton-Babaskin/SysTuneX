@@ -1366,4 +1366,67 @@
   <data name="Settings_Report_Done" xml:space="preserve">
     <value>Отчёт {0} готов — {1} строк журнала, {2} записей об изменениях.</value>
   </data>
+  <data name="Dashboard_Temperatures" xml:space="preserve">
+    <value>Температуры</value>
+  </data>
+  <data name="Dashboard_CpuTemp" xml:space="preserve">
+    <value>Процессор</value>
+  </data>
+  <data name="Dashboard_GpuTemp" xml:space="preserve">
+    <value>Видеокарта</value>
+  </data>
+  <data name="Dashboard_GpuLoad" xml:space="preserve">
+    <value>Загрузка GPU</value>
+  </data>
+  <data name="Dashboard_NoSensors" xml:space="preserve">
+    <value>Ни один датчик температуры на этой машине не ответил. Чтобы честно читать температуру ядра процессора, нужен драйвер уровня ядра, а доступные заблокированы Windows и вызывают срабатывание античитов — поэтому SysTuneX показывает пусто, а не выдуманное число.</value>
+  </data>
+  <data name="GameMode_Title" xml:space="preserve">
+    <value>Игровой режим</value>
+  </data>
+  <data name="GameMode_On" xml:space="preserve">
+    <value>Включён</value>
+  </data>
+  <data name="GameMode_Off" xml:space="preserve">
+    <value>Выключен</value>
+  </data>
+  <data name="GameMode_Hint" xml:space="preserve">
+    <value>Останавливает фоновые службы, переключает схему питания на высокую производительность и освобождает память. Всё, что он делает, отменяется при выключении — без перезагрузки и без следов в реестре.</value>
+  </data>
+  <data name="GameMode_Detail" xml:space="preserve">
+    <value>Остановлено служб: {0}, освобождено {1} МБ, включён с {2}.</value>
+  </data>
+  <data name="GameMode_Starting" xml:space="preserve">
+    <value>Включаю игровой режим…</value>
+  </data>
+  <data name="GameMode_Stopping" xml:space="preserve">
+    <value>Выключаю игровой режим…</value>
+  </data>
+  <data name="GameMode_Step_Power" xml:space="preserve">
+    <value>Переключаю схему питания…</value>
+  </data>
+  <data name="GameMode_Step_Services" xml:space="preserve">
+    <value>Останавливаю фоновые службы…</value>
+  </data>
+  <data name="GameMode_Step_Memory" xml:space="preserve">
+    <value>Освобождаю память…</value>
+  </data>
+  <data name="GameMode_Enabled" xml:space="preserve">
+    <value>Игровой режим включён — остановлено служб: {0}, освобождено {1} МБ.</value>
+  </data>
+  <data name="GameMode_Disabled" xml:space="preserve">
+    <value>Игровой режим выключен — снова запущено служб: {0}.</value>
+  </data>
+  <data name="Settings_PowerPlan" xml:space="preserve">
+    <value>Схема питания</value>
+  </data>
+  <data name="Settings_PowerPlan_Hint" xml:space="preserve">
+    <value>Схема, которую Windows использует сейчас. Переключение записывается, поэтому его можно откатить из журнала изменений, как и всё остальное.</value>
+  </data>
+  <data name="Settings_PowerPlan_Apply" xml:space="preserve">
+    <value>Переключить</value>
+  </data>
+  <data name="Settings_PowerPlan_Done" xml:space="preserve">
+    <value>Схема питания переключена на {0}.</value>
+  </data>
 </root>

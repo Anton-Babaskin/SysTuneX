@@ -41,6 +41,24 @@ Live CPU and memory graphs, a tuning score, and the two buttons most people want
   scheme and trims memory. It never touches anything marked Moderate or Advanced.
 * **Restore everything** — writes back every value recorded in the change log.
 
+### Game mode
+
+One switch. It stops the background services the catalog grades as safe, switches to a high
+performance power scheme and frees memory — and undoes all of it when switched off. Services are
+stopped rather than disabled, so their start type is untouched and the next boot is unchanged;
+the previous power scheme is recorded and restored. Nothing it does needs a reboot, which is what
+separates it from applying a profile.
+
+### Temperatures
+
+GPU temperature, load and fan speed through NVIDIA's NVML, which ships with the driver. CPU
+temperature from the ACPI thermal zone where the firmware exposes one — it is a board thermal
+zone rather than the CPU package, and the dashboard says so.
+
+SysTuneX ships no kernel driver. Reading a CPU package temperature properly needs a ring-0
+helper, and the off-the-shelf ones are on Microsoft's vulnerable driver blocklist and trip
+anti-cheat. Where no sensor answers, nothing is shown — a missing reading is not zero degrees.
+
 ### Profiles
 
 Preset bundles for different workloads: competitive FPS, battle royale, open world and RPG,

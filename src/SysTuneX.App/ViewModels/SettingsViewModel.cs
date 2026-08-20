@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -5,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using SysTuneX.App.Localization;
 using SysTuneX.App.Services;
 using SysTuneX.Core.Abstractions;
+using SysTuneX.Core.Models;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 
@@ -19,6 +21,7 @@ public sealed partial class SettingsViewModel : PageViewModel
     private readonly IEnvironmentService _environment;
     private readonly IUserInteraction _interaction;
     private readonly IDiagnosticsService _diagnostics;
+    private readonly IPowerService _power;
 
     private bool _isLoading = true;
 
@@ -46,23 +49,30 @@ public sealed partial class SettingsViewModel : PageViewModel
     [ObservableProperty]
     private bool _isBuildingReport;
 
+    [ObservableProperty]
+    private PowerScheme? _selectedPowerScheme;
+
     public SettingsViewModel(
         IAppSettingsService settings,
         ILocalizationService localization,
         IEnvironmentService environment,
         IUserInteraction interaction,
-        IDiagnosticsService diagnostics)
+        IDiagnosticsService diagnostics,
+        IPowerService power)
     {
         _settings = settings;
         _localization = localization;
         _environment = environment;
         _interaction = interaction;
         _diagnostics = diagnostics;
+        _power = power;
 
         Languages = localization.AvailableLanguages;
     }
 
     public IReadOnlyList<LanguageOption> Languages { get; }
+
+    public ObservableCollection<PowerScheme> PowerSchemes { get; } = [];
 
     public string Version => typeof(SettingsViewModel).Assembly.GetName().Version?.ToString(3) ?? "2.0.0";
 
@@ -95,7 +105,55 @@ public sealed partial class SettingsViewModel : PageViewModel
         VerboseLogging = current.VerboseLogging;
 
         _isLoading = false;
-        return Task.CompletedTask;
+
+        return LoadPowerSchemesAsync();
+    }
+
+    /// <summary>
+    /// Reads the schemes registered on this machine rather than assuming the three well-known
+    /// GUIDs: OEMs ship their own, and Ultimate Performance only exists once something has
+    /// duplicated it.
+    /// </summary>
+    private async Task LoadPowerSchemesAsync()
+    {
+        try
+        {
+            IReadOnlyList<PowerScheme> schemes = await _power.GetSchemesAsync().ConfigureAwait(true);
+
+            PowerSchemes.Clear();
+            foreach (PowerScheme scheme in schemes)
+            {
+                PowerSchemes.Add(scheme);
+            }
+
+            SelectedPowerScheme = schemes.FirstOrDefault(s => s.IsActive);
+        }
+        catch (Exception ex)
+        {
+            _interaction.ShowError(ex.Message);
+        }
+    }
+
+    [RelayCommand]
+    private async Task ApplyPowerSchemeAsync()
+    {
+        if (SelectedPowerScheme is not { } scheme || scheme.IsActive)
+        {
+            return;
+        }
+
+        OperationResult result = await _power.SetActiveSchemeAsync(scheme.Guid).ConfigureAwait(true);
+
+        if (!result.Success)
+        {
+            _interaction.ShowError(result.Message ?? _localization["Msg_Error"]);
+            return;
+        }
+
+        _interaction.ShowSuccess(string.Format(_localization["Settings_PowerPlan_Done"], scheme.Name));
+
+        // Re-read rather than assume: the scheme that ends up active is the one powercfg says is.
+        await LoadPowerSchemesAsync().ConfigureAwait(true);
     }
 
     partial void OnSelectedThemeChanged(string value)

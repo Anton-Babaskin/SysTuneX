@@ -1,4 +1,29 @@
-# SysTuneX 2.0.2
+# SysTuneX 2.1.0
+
+## 2.1.0 — game mode, temperatures, power plan picker
+
+**Game mode** — one switch on the dashboard. It stops the background services the catalog grades
+as safe, switches to a high performance power scheme and frees memory. It is deliberately not
+"apply a profile": everything behind the switch is undoable *immediately*. Services are stopped,
+not disabled, so their start type is untouched and the next boot is exactly as it was; the
+previous power scheme is recorded and put back. Nothing needs a reboot, so turning it off really
+does restore the machine instead of leaving it half-tuned. The session is written to
+`%ProgramData%\SysTuneX\gamemode.json`, so an interrupted session can still be turned off and
+restored rather than stranding stopped services.
+
+**Temperatures on the dashboard** — GPU temperature, load and fan through NVIDIA's NVML, which
+ships with the driver and needs no install; CPU temperature from the ACPI thermal zone where the
+firmware exposes one.
+
+A tile appears only when its sensor actually answered. There is no kernel driver and there will
+not be one: reading a CPU package temperature properly needs a ring-0 helper, and every
+off-the-shelf one is on Microsoft's vulnerable driver blocklist and trips anti-cheat — not a
+trade worth making in a tool aimed at gamers. Where nothing answers, the card says so and why.
+AMD and Intel GPUs report no temperature yet; their vendor libraries are not wired up.
+
+**Power plan picker** in Settings, listing the schemes actually registered on the machine rather
+than assuming the three well-known GUIDs.
+
 
 > Notes for the release currently being published. Update this file before tagging a new version;
 > if it is missing, the release workflow falls back to auto-generated notes.
