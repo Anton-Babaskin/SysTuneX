@@ -1,4 +1,22 @@
-# SysTuneX 2.1.0
+# SysTuneX 2.2.0
+
+## 2.2.0 — the system layer speaks Russian too
+
+The interface was fully translated; the messages underneath it were not. Every failure coming
+out of the registry, service, power, network, hosts and restore-point code was an English string
+literal at the throw site, so a Russian interface would report a problem in English — which is
+what you hit with the System Protection warning.
+
+All 52 of them now live in one catalog with a stable code each. Core still renders English,
+because that is the language the log should be in — one the developer reads, rather than whichever
+one the machine is set to. The interface looks the code up in its own resources and falls back to
+the English text when a translation is missing, so an untranslated message reads a little out of
+place instead of showing a raw key.
+
+Three tests hold it together: every message must be translated in every shipped language, every
+translation must take the same number of arguments as the original — a mismatch would throw in
+front of the user — and no translation may be blank.
+
 
 ## 2.1.0 — game mode, temperatures, power plan picker
 

@@ -66,7 +66,7 @@ public sealed partial class HostsBlockViewModel : ObservableObject
             }
             else
             {
-                _interaction.ShowError(result.Message ?? _localization["Msg_Error"], _localization["Privacy_Hosts_Title"]);
+                _interaction.ShowError(result.Describe(_localization), _localization["Privacy_Hosts_Title"]);
             }
         }
         finally

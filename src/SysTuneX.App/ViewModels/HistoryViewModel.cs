@@ -128,7 +128,7 @@ public sealed partial class HistoryViewModel : PageViewModel
         }
         else
         {
-            _interaction.ShowError(result.Message ?? _localization["Msg_Error"]);
+            _interaction.ShowError(result.Describe(_localization));
         }
     }
 

@@ -101,7 +101,7 @@ public sealed partial class ServicesViewModel : PageViewModel
             }
             else
             {
-                _interaction.ShowError(result.Message ?? _localization["Msg_Error"], item.Name);
+                _interaction.ShowError(result.Describe(_localization), item.Name);
             }
         }
         catch (OperationCanceledException)
@@ -212,7 +212,7 @@ public sealed partial class ServicesViewModel : PageViewModel
     {
         // A service that refused to stop but did get its start type changed reports a message
         // alongside success, and the user should see it rather than a plain "done".
-        if (result.Message is { Length: > 0 } detail)
+        if (result.Detail(_localization) is { Length: > 0 } detail)
         {
             _interaction.ShowWarning(detail, item.Name);
             return;

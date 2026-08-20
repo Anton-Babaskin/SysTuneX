@@ -105,7 +105,7 @@ public sealed partial class NetworkViewModel : TweakPageViewModel
             }
             else
             {
-                Interaction.ShowError(result.Message ?? Localization["Msg_Error"]);
+                Interaction.ShowError(result.Describe(Localization));
             }
 
             LoadAdapters();
@@ -140,7 +140,7 @@ public sealed partial class NetworkViewModel : TweakPageViewModel
             }
             else
             {
-                Interaction.ShowError(result.Message ?? Localization["Msg_Error"]);
+                Interaction.ShowError(result.Describe(Localization));
             }
 
             LoadAdapters();
@@ -162,7 +162,7 @@ public sealed partial class NetworkViewModel : TweakPageViewModel
         }
         else
         {
-            Interaction.ShowError(result.Message ?? Localization["Msg_Error"]);
+            Interaction.ShowError(result.Describe(Localization));
         }
     }
 
