@@ -1,6 +1,9 @@
-# SysTuneX 2.4.0
+# Changelog
 
-## 2.4.0 — tray icon, before-and-after, schedule
+Every released version, newest first. The release workflow publishes only the section
+for the version being released, so a release page shows that version and nothing else.
+
+## v2.4.0
 
 **A tray icon.** Hover for CPU, memory and whichever temperatures the machine reports; the menu
 opens the window, toggles game mode and quits. Optionally, closing the window leaves SysTuneX
@@ -25,8 +28,9 @@ Friday 23:00–02:00 is still Friday's window at half past midnight.
 Only a session the automation started is ended by it — switching game mode on by hand at 23:05
 outlives a schedule that ended at 23:00.
 
+---
 
-## 2.3.0 — game mode follows the game
+## v2.3.0
 
 Turn on **Automatic game mode** in Settings and SysTuneX watches for a game starting: game mode
 goes on when it appears and off again when it exits. Twenty-five games are recognised out of the
@@ -49,8 +53,9 @@ trust than a window they can see.
 The watch list is matched on process name without the extension, so it survives a game moving
 between drives, and typing `dota2.exe` or `dota2` both work.
 
+---
 
-## 2.2.0 — the system layer speaks Russian too
+## v2.2.0
 
 The interface was fully translated; the messages underneath it were not. Every failure coming
 out of the registry, service, power, network, hosts and restore-point code was an English string
@@ -67,8 +72,9 @@ Three tests hold it together: every message must be translated in every shipped 
 translation must take the same number of arguments as the original — a mismatch would throw in
 front of the user — and no translation may be blank.
 
+---
 
-## 2.1.0 — game mode, temperatures, power plan picker
+## v2.1.0
 
 **Game mode** — one switch on the dashboard. It stops the background services the catalog grades
 as safe, switches to a high performance power scheme and frees memory. It is deliberately not
@@ -96,7 +102,9 @@ than assuming the three well-known GUIDs.
 > Notes for the release currently being published. Update this file before tagging a new version;
 > if it is missing, the release workflow falls back to auto-generated notes.
 
-## 2.0.2 — logs and a diagnostics report
+---
+
+## v2.0.2
 
 2.0.1 starts and works, but when something misbehaves it leaves nothing behind. Every service in
 SysTuneX already logged through `ILogger`; the app only ever registered the debug provider, so on
@@ -115,7 +123,9 @@ a real machine all of it went nowhere.
 **Fixes the crash that stopped 2.0.0 from starting at all.** Do not use 2.0.0 — it fails on every
 machine, not just some.
 
-## 2.0.1 — the app now starts
+---
+
+## v2.0.1
 
 2.0.0 died at launch with:
 
@@ -155,23 +165,11 @@ What changed:
 
 Everything below applies to the 2.0.0 rewrite and is unchanged in 2.0.1.
 
-## Download
-
-`SysTuneX.exe` below is a self-contained single file. No .NET runtime install needed. It requests
-administrator rights on launch, because every change it makes needs a full administrator token.
-
-Verify the download against `SHA256SUMS.txt` if you like:
-
-```powershell
-Get-FileHash .\SysTuneX.exe -Algorithm SHA256
-```
-
-Windows SmartScreen will warn about an unsigned executable — the binary is not code-signed.
-Choose **More info → Run anyway** if you are happy with that.
-
 ---
 
-## What changed
+## v2.0.0
+
+### What changed
 
 This is a full rewrite. The previous build looked complete but did very little on a real machine.
 
@@ -229,7 +227,7 @@ A timer ran WMI queries and `Process.GetProcesses()` on the UI thread every two 
 plus view models were transient, so every navigation created another one and leaked the previous
 timer.
 
-## New in this release
+### New in this release
 
 * **Russian and English**, switchable at runtime without a restart
 * **Light, dark and system theming** — every colour resolves through theme resources, so the app is
@@ -246,12 +244,4 @@ timer.
 * 58 tests covering catalog integrity, the backup journal, registry value comparison and translation
   coverage, run in CI on every push
 
-## Known limitations
-
-* Not code-signed, so SmartScreen will warn.
-* The hosts-file block can be refused by Microsoft Defender tamper protection. The app reports that
-  rather than failing silently.
-* Restore points need System Protection switched on for the system drive; if it is off, the app says
-  so instead of pretending a restore point was created.
-* Ultimate Performance is unavailable on some Windows editions. SysTuneX falls back to High
-  Performance and reports which one it used.
+---

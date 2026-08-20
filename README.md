@@ -382,6 +382,23 @@ This catches runtime XAML failures that a successful compilation alone cannot de
 
 ---
 
+### Cutting a release
+
+Releases are published from the default branch only. A release cut from a feature branch would
+describe code nobody has merged, and would leave its tag on a commit that may never reach `main`.
+
+1. Add a `## vX.Y.Z` section at the top of [`CHANGELOG.md`](CHANGELOG.md).
+2. Put the same version in `release.version`.
+3. Merge to `main`.
+
+CI then builds, tests, publishes `SysTuneX.exe` and `SHA256SUMS.txt`, and creates the release
+with **only that version's changelog section** plus the shared footer.
+
+A version with a suffix — `v2.5.0-rc1` — is marked as a pre-release; a plain `v2.5.0` is not.
+Re-running the job on an unchanged version only refreshes the assets, so it is safe to repeat.
+
+---
+
 ## Build from source
 
 Requirements:
