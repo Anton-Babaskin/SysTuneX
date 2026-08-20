@@ -57,7 +57,7 @@ public sealed class RegistryService : IRegistryService
             using RegistryKey? key = CreateKey(keyPath);
             if (key is null)
             {
-                return OperationResult.Fail($"Could not open or create {keyPath}.");
+                return OperationResult.Fail(CoreMessages.RegistryOpenFailed, keyPath);
             }
 
             key.SetValue(valueName, value, kind);
@@ -66,7 +66,7 @@ public sealed class RegistryService : IRegistryService
             (object? written, _) = GetValueWithKind(keyPath, valueName);
             if (!RegistryValueComparer.AreEqual(written, value))
             {
-                return OperationResult.Fail($"{keyPath}\\{valueName} did not keep the written value.");
+                return OperationResult.Fail(CoreMessages.RegistryValueNotKept, keyPath, valueName);
             }
 
             _logger.LogInformation("Set {Path}\\{Name} = {Value}", keyPath, valueName, value);
@@ -74,12 +74,12 @@ public sealed class RegistryService : IRegistryService
         }
         catch (UnauthorizedAccessException ex)
         {
-            return OperationResult.Fail($"Access denied writing {keyPath}\\{valueName}. Run SysTuneX as administrator.", ex);
+            return OperationResult.Fail(CoreMessages.RegistryAccessDeniedWrite, ex, keyPath, valueName);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to write {Path}\\{Name}", keyPath, valueName);
-            return OperationResult.Fail($"Failed to write {keyPath}\\{valueName}: {ex.Message}", ex);
+            return OperationResult.Fail(CoreMessages.RegistryWriteFailed, ex, keyPath, valueName, ex.Message);
         }
     }
 
@@ -104,12 +104,12 @@ public sealed class RegistryService : IRegistryService
         }
         catch (UnauthorizedAccessException ex)
         {
-            return OperationResult.Fail($"Access denied deleting {keyPath}\\{valueName}.", ex);
+            return OperationResult.Fail(CoreMessages.RegistryAccessDeniedDelete, ex, keyPath, valueName);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to delete {Path}\\{Name}", keyPath, valueName);
-            return OperationResult.Fail($"Failed to delete {keyPath}\\{valueName}: {ex.Message}", ex);
+            return OperationResult.Fail(CoreMessages.RegistryDeleteFailed, ex, keyPath, valueName, ex.Message);
         }
     }
 

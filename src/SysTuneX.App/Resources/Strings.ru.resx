@@ -1366,4 +1366,334 @@
   <data name="Settings_Report_Done" xml:space="preserve">
     <value>Отчёт {0} готов — {1} строк журнала, {2} записей об изменениях.</value>
   </data>
+  <data name="Dashboard_Temperatures" xml:space="preserve">
+    <value>Температуры</value>
+  </data>
+  <data name="Dashboard_CpuTemp" xml:space="preserve">
+    <value>Процессор</value>
+  </data>
+  <data name="Dashboard_GpuTemp" xml:space="preserve">
+    <value>Видеокарта</value>
+  </data>
+  <data name="Dashboard_GpuLoad" xml:space="preserve">
+    <value>Загрузка GPU</value>
+  </data>
+  <data name="Dashboard_NoSensors" xml:space="preserve">
+    <value>Ни один датчик температуры на этой машине не ответил. Чтобы честно читать температуру ядра процессора, нужен драйвер уровня ядра, а доступные заблокированы Windows и вызывают срабатывание античитов — поэтому SysTuneX показывает пусто, а не выдуманное число.</value>
+  </data>
+  <data name="GameMode_Title" xml:space="preserve">
+    <value>Игровой режим</value>
+  </data>
+  <data name="GameMode_On" xml:space="preserve">
+    <value>Включён</value>
+  </data>
+  <data name="GameMode_Off" xml:space="preserve">
+    <value>Выключен</value>
+  </data>
+  <data name="GameMode_Hint" xml:space="preserve">
+    <value>Останавливает фоновые службы, переключает схему питания на высокую производительность и освобождает память. Всё, что он делает, отменяется при выключении — без перезагрузки и без следов в реестре.</value>
+  </data>
+  <data name="GameMode_Detail" xml:space="preserve">
+    <value>Остановлено служб: {0}, освобождено {1} МБ, включён с {2}.</value>
+  </data>
+  <data name="GameMode_Starting" xml:space="preserve">
+    <value>Включаю игровой режим…</value>
+  </data>
+  <data name="GameMode_Stopping" xml:space="preserve">
+    <value>Выключаю игровой режим…</value>
+  </data>
+  <data name="GameMode_Step_Power" xml:space="preserve">
+    <value>Переключаю схему питания…</value>
+  </data>
+  <data name="GameMode_Step_Services" xml:space="preserve">
+    <value>Останавливаю фоновые службы…</value>
+  </data>
+  <data name="GameMode_Step_Memory" xml:space="preserve">
+    <value>Освобождаю память…</value>
+  </data>
+  <data name="GameMode_Enabled" xml:space="preserve">
+    <value>Игровой режим включён — остановлено служб: {0}, освобождено {1} МБ.</value>
+  </data>
+  <data name="GameMode_Disabled" xml:space="preserve">
+    <value>Игровой режим выключен — снова запущено служб: {0}.</value>
+  </data>
+  <data name="Settings_PowerPlan" xml:space="preserve">
+    <value>Схема питания</value>
+  </data>
+  <data name="Settings_PowerPlan_Hint" xml:space="preserve">
+    <value>Схема, которую Windows использует сейчас. Переключение записывается, поэтому его можно откатить из журнала изменений, как и всё остальное.</value>
+  </data>
+  <data name="Settings_PowerPlan_Apply" xml:space="preserve">
+    <value>Переключить</value>
+  </data>
+  <data name="Settings_PowerPlan_Done" xml:space="preserve">
+    <value>Схема питания переключена на {0}.</value>
+  </data>
+  <data name="Core_Registry_OpenFailed" xml:space="preserve">
+    <value>Не удалось открыть или создать {0}.</value>
+  </data>
+  <data name="Core_Registry_ValueNotKept" xml:space="preserve">
+    <value>{0}\{1}: записанное значение не сохранилось.</value>
+  </data>
+  <data name="Core_Registry_AccessDeniedWrite" xml:space="preserve">
+    <value>Отказано в доступе при записи {0}\{1}. Запустите SysTuneX от имени администратора.</value>
+  </data>
+  <data name="Core_Registry_WriteFailed" xml:space="preserve">
+    <value>Не удалось записать {0}\{1}: {2}</value>
+  </data>
+  <data name="Core_Registry_AccessDeniedDelete" xml:space="preserve">
+    <value>Отказано в доступе при удалении {0}\{1}.</value>
+  </data>
+  <data name="Core_Registry_DeleteFailed" xml:space="preserve">
+    <value>Не удалось удалить {0}\{1}: {2}</value>
+  </data>
+  <data name="Core_Service_NotInstalled" xml:space="preserve">
+    <value>Служба {0} не установлена на этой машине.</value>
+  </data>
+  <data name="Core_Service_StartTimedOut" xml:space="preserve">
+    <value>Служба {0} не успела перейти в состояние «Выполняется».</value>
+  </data>
+  <data name="Core_Service_StartFailed" xml:space="preserve">
+    <value>Не удалось запустить {0}: {1}</value>
+  </data>
+  <data name="Core_Service_CannotBeStopped" xml:space="preserve">
+    <value>Windows не разрешает останавливать {0} во время работы.</value>
+  </data>
+  <data name="Core_Service_StopTimedOut" xml:space="preserve">
+    <value>Служба {0} не успела остановиться.</value>
+  </data>
+  <data name="Core_Service_StopFailed" xml:space="preserve">
+    <value>Не удалось остановить {0}: {1}</value>
+  </data>
+  <data name="Core_Service_UnknownStartType" xml:space="preserve">
+    <value>Отказ: неизвестный тип запуска записывать нельзя.</value>
+  </data>
+  <data name="Core_Service_SetStartTypeFailed" xml:space="preserve">
+    <value>Не удалось изменить тип запуска {0}: {1}</value>
+  </data>
+  <data name="Core_Power_NoHighPerformanceScheme" xml:space="preserve">
+    <value>Ни «Максимальная производительность», ни «Высокая производительность» недоступны в этой редакции Windows.</value>
+  </data>
+  <data name="Core_Power_ActivateFailed" xml:space="preserve">
+    <value>powercfg не смог активировать схему: {0}</value>
+  </data>
+  <data name="Core_Power_CoreParkingRejected" xml:space="preserve">
+    <value>powercfg отклонил изменение парковки ядер: {0}</value>
+  </data>
+  <data name="Core_Power_ReapplyFailed" xml:space="preserve">
+    <value>Не удалось переприменить схему питания: {0}</value>
+  </data>
+  <data name="Core_Power_HibernationFailed" xml:space="preserve">
+    <value>powercfg не смог изменить режим гибернации: {0}</value>
+  </data>
+  <data name="Core_Network_AdapterGone" xml:space="preserve">
+    <value>Выбранный сетевой адаптер больше недоступен.</value>
+  </data>
+  <data name="Core_Network_InvalidAddress" xml:space="preserve">
+    <value>«{0}» не является корректным адресом IPv4.</value>
+  </data>
+  <data name="Core_Network_NoIpv4Interface" xml:space="preserve">
+    <value>У адаптера нет индекса интерфейса IPv4.</value>
+  </data>
+  <data name="Core_Network_SetResolverFailed" xml:space="preserve">
+    <value>netsh не смог задать основной DNS-сервер: {0}</value>
+  </data>
+  <data name="Core_Network_RestoreDhcpFailed" xml:space="preserve">
+    <value>netsh не смог вернуть получение DNS по DHCP: {0}</value>
+  </data>
+  <data name="Core_Network_FlushCacheFailed" xml:space="preserve">
+    <value>Не удалось очистить кэш DNS: {0}</value>
+  </data>
+  <data name="Core_Network_NoConnectedAdapter" xml:space="preserve">
+    <value>Не найден подключённый сетевой адаптер, к которому можно применить изменение.</value>
+  </data>
+  <data name="Core_Hosts_NeedsAdministrator" xml:space="preserve">
+    <value>Для правки файла hosts нужны права администратора.</value>
+  </data>
+  <data name="Core_Hosts_Locked" xml:space="preserve">
+    <value>Файл hosts заблокирован. Защита в реальном времени Microsoft Defender не даёт его изменить — добавьте исключение или временно отключите защиту от подделки.</value>
+  </data>
+  <data name="Core_Hosts_UpdateFailed" xml:space="preserve">
+    <value>Не удалось обновить файл hosts: {0}</value>
+  </data>
+  <data name="Core_RestorePoint_NeedsAdministrator" xml:space="preserve">
+    <value>Для создания точки восстановления нужны права администратора.</value>
+  </data>
+  <data name="Core_RestorePoint_ProtectionOff" xml:space="preserve">
+    <value>Защита системы отключена для системного диска. Включите её в «Свойства системы → Защита системы», чтобы SysTuneX мог создавать точки восстановления.</value>
+  </data>
+  <data name="Core_RestorePoint_Refused" xml:space="preserve">
+    <value>Windows отказалась создать точку восстановления: {0}</value>
+  </data>
+  <data name="Core_RestorePoint_Failed" xml:space="preserve">
+    <value>Не удалось создать точку восстановления: {0}</value>
+  </data>
+  <data name="Core_Process_NotRunning" xml:space="preserve">
+    <value>Процесс {0} уже не запущен.</value>
+  </data>
+  <data name="Core_Process_SetPriorityFailed" xml:space="preserve">
+    <value>Не удалось задать приоритет для PID {0}: {1}</value>
+  </data>
+  <data name="Core_Process_ZeroAffinity" xml:space="preserve">
+    <value>Нулевая маска процессоров не оставила бы процессу ни одного ядра.</value>
+  </data>
+  <data name="Core_Process_SetAffinityFailed" xml:space="preserve">
+    <value>Не удалось задать привязку к ядрам для PID {0}: {1}</value>
+  </data>
+  <data name="Core_Boot_NeedsAdministrator" xml:space="preserve">
+    <value>Для изменения конфигурации загрузки нужны права администратора.</value>
+  </data>
+  <data name="Core_Boot_BcdeditRefused" xml:space="preserve">
+    <value>bcdedit отклонил изменение: {0}</value>
+  </data>
+  <data name="Core_Tweak_BuildGated" xml:space="preserve">
+    <value>«{0}» не применяется к сборке Windows {1}.</value>
+  </data>
+  <data name="Core_Tweak_NoHandler" xml:space="preserve">
+    <value>Для «{0}» не зарегистрирован обработчик.</value>
+  </data>
+  <data name="Core_Tweak_ApplyFailed" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Core_Cleanup_UnsafePackageName" xml:space="preserve">
+    <value>Отказ: имя пакета содержит служебные символы командной оболочки.</value>
+  </data>
+  <data name="Core_Cleanup_PackageRemoveFailed" xml:space="preserve">
+    <value>Не удалось удалить {0}: {1}</value>
+  </data>
+  <data name="Core_Environment_ExecutableUnknown" xml:space="preserve">
+    <value>Не удалось определить путь к исполняемому файлу SysTuneX.</value>
+  </data>
+  <data name="Core_Environment_ElevationRefused" xml:space="preserve">
+    <value>Запрос повышения прав отменён или заблокирован политикой.</value>
+  </data>
+  <data name="Core_Environment_ExplorerRestartFailed" xml:space="preserve">
+    <value>Не удалось перезапустить проводник: {0}</value>
+  </data>
+  <data name="Core_GameMode_NeedsAdministrator" xml:space="preserve">
+    <value>Игровому режиму нужны права администратора, чтобы останавливать службы и переключать схему питания.</value>
+  </data>
+  <data name="Core_GameMode_AlreadyOn" xml:space="preserve">
+    <value>Игровой режим уже включён.</value>
+  </data>
+  <data name="Core_GameMode_NotOn" xml:space="preserve">
+    <value>Игровой режим не включён.</value>
+  </data>
+  <data name="Core_Backup_ExportFailed" xml:space="preserve">
+    <value>Не удалось выполнить экспорт: {0}</value>
+  </data>
+  <data name="Core_Diagnostics_ReportFailed" xml:space="preserve">
+    <value>Не удалось записать отчёт диагностики: {0}</value>
+  </data>
+  <data name="Core_Game_NameEmpty" xml:space="preserve">
+    <value>Укажите имя исполняемого файла игры, например dota2.exe.</value>
+  </data>
+  <data name="Core_Game_AlreadyWatched" xml:space="preserve">
+    <value>{0} уже в списке наблюдения.</value>
+  </data>
+  <data name="Settings_AutoGameMode" xml:space="preserve">
+    <value>Автоматический игровой режим</value>
+  </data>
+  <data name="Settings_AutoGameMode_Hint" xml:space="preserve">
+    <value>Включает игровой режим, когда запускается одна из игр ниже, и выключает при выходе. Работает только пока запущен SysTuneX: делать это при закрытом приложении означало бы службу Windows, а фоновой службе, которая останавливает другие службы, доверия нужно куда больше.</value>
+  </data>
+  <data name="Settings_WatchedGames" xml:space="preserve">
+    <value>Отслеживаемые игры</value>
+  </data>
+  <data name="Settings_AddGame" xml:space="preserve">
+    <value>Добавить</value>
+  </data>
+  <data name="Settings_AddGame_Placeholder" xml:space="preserve">
+    <value>Имя исполняемого файла, например dota2.exe</value>
+  </data>
+  <data name="Settings_RemoveGame" xml:space="preserve">
+    <value>Убрать</value>
+  </data>
+  <data name="GameMode_TriggeredBy" xml:space="preserve">
+    <value>Включён автоматически для «{0}».</value>
+  </data>
+  <data name="Tray_Open" xml:space="preserve">
+    <value>Открыть SysTuneX</value>
+  </data>
+  <data name="Tray_Quit" xml:space="preserve">
+    <value>Выход</value>
+  </data>
+  <data name="Tray_GameMode_On" xml:space="preserve">
+    <value>Включить игровой режим</value>
+  </data>
+  <data name="Tray_GameMode_Off" xml:space="preserve">
+    <value>Выключить игровой режим</value>
+  </data>
+  <data name="Settings_Tray" xml:space="preserve">
+    <value>Значок в трее</value>
+  </data>
+  <data name="Settings_Tray_Hint" xml:space="preserve">
+    <value>Показывает загрузку процессора, память и температуру при наведении, а в меню — переключатель игрового режима.</value>
+  </data>
+  <data name="Settings_ShowTray" xml:space="preserve">
+    <value>Показывать значок в трее</value>
+  </data>
+  <data name="Settings_MinimizeToTray" xml:space="preserve">
+    <value>Закрытие окна оставляет SysTuneX работать в трее</value>
+  </data>
+  <data name="Snapshot_Section" xml:space="preserve">
+    <value>До и после</value>
+  </data>
+  <data name="Snapshot_Hint" xml:space="preserve">
+    <value>Запишите состояние машины до изменения и после, затем сравните. Здесь видно, что реально изменилось в системе — это не измерение производительности: SysTuneX не видит времени кадра. Для этого прогоните один и тот же бенчмарк с обеих сторон.</value>
+  </data>
+  <data name="Snapshot_Capture" xml:space="preserve">
+    <value>Записать сейчас</value>
+  </data>
+  <data name="Snapshot_Capturing" xml:space="preserve">
+    <value>Читаю текущее состояние…</value>
+  </data>
+  <data name="Snapshot_Label" xml:space="preserve">
+    <value>Название, например «до профиля Киберспорт»</value>
+  </data>
+  <data name="Snapshot_Compare" xml:space="preserve">
+    <value>Сравнить</value>
+  </data>
+  <data name="Snapshot_PickTwo" xml:space="preserve">
+    <value>Выберите два разных снимка для сравнения.</value>
+  </data>
+  <data name="Snapshot_NoDifference" xml:space="preserve">
+    <value>Между этими двумя ничего не изменилось.</value>
+  </data>
+  <data name="Snapshot_Differences" xml:space="preserve">
+    <value>Различий: {0}.</value>
+  </data>
+  <data name="Snapshot_Before" xml:space="preserve">
+    <value>До</value>
+  </data>
+  <data name="Snapshot_After" xml:space="preserve">
+    <value>После</value>
+  </data>
+  <data name="Snapshot_Empty" xml:space="preserve">
+    <value>Снимков пока нет.</value>
+  </data>
+  <data name="Snapshot_First" xml:space="preserve">
+    <value>Первый</value>
+  </data>
+  <data name="Snapshot_Second" xml:space="preserve">
+    <value>Второй</value>
+  </data>
+  <data name="Settings_Schedule" xml:space="preserve">
+    <value>Расписание</value>
+  </data>
+  <data name="Settings_Schedule_Hint" xml:space="preserve">
+    <value>Держит игровой режим включённым в заданное окно дня. Проверяется раз в минуту по часам, а не таймером на края окна: машина, проспавшая начало, всё равно догонит. Расписание выключает только то, что само включило — режим, включённый руками, оно не трогает.</value>
+  </data>
+  <data name="Settings_Schedule_On" xml:space="preserve">
+    <value>Включать игровой режим по расписанию</value>
+  </data>
+  <data name="Settings_Schedule_From" xml:space="preserve">
+    <value>С</value>
+  </data>
+  <data name="Settings_Schedule_To" xml:space="preserve">
+    <value>До</value>
+  </data>
+  <data name="Settings_Schedule_Days" xml:space="preserve">
+    <value>Дни (ничего не выбрано — каждый день)</value>
+  </data>
 </root>

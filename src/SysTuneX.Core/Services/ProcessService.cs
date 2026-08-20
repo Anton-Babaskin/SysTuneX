@@ -36,11 +36,11 @@ public sealed class ProcessService : IProcessService
         }
         catch (ArgumentException)
         {
-            return OperationResult.Fail($"Process {processId} is no longer running.");
+            return OperationResult.Fail(CoreMessages.ProcessNotRunning, processId);
         }
         catch (Exception ex)
         {
-            return OperationResult.Fail($"Could not set priority for PID {processId}: {ex.Message}", ex);
+            return OperationResult.Fail(CoreMessages.ProcessSetPriorityFailed, ex, processId, ex.Message);
         }
     }
 
@@ -48,7 +48,7 @@ public sealed class ProcessService : IProcessService
     {
         if (affinityMask == 0)
         {
-            return OperationResult.Fail("An affinity mask of zero would leave the process no cores to run on.");
+            return OperationResult.Fail(CoreMessages.ProcessZeroAffinity);
         }
 
         try
@@ -59,7 +59,7 @@ public sealed class ProcessService : IProcessService
         }
         catch (Exception ex)
         {
-            return OperationResult.Fail($"Could not set affinity for PID {processId}: {ex.Message}", ex);
+            return OperationResult.Fail(CoreMessages.ProcessSetAffinityFailed, ex, processId, ex.Message);
         }
     }
 

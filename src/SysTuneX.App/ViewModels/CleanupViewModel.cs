@@ -211,7 +211,7 @@ public sealed partial class CleanupViewModel : PageViewModel
             }
             else
             {
-                _interaction.ShowError(result.Message ?? _localization["Msg_Error"], app.DisplayName);
+                _interaction.ShowError(result.Describe(_localization), app.DisplayName);
             }
         }
         finally

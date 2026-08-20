@@ -248,7 +248,7 @@ public sealed class BackupService : IBackupService
         }
         catch (Exception ex)
         {
-            return OperationResult.Fail($"Export failed: {ex.Message}", ex);
+            return OperationResult.Fail(CoreMessages.BackupExportFailed, ex, ex.Message);
         }
     }
 

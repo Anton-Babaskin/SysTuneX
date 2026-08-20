@@ -1,9 +1,110 @@
-# SysTuneX 2.0.2
+# Changelog
+
+Every released version, newest first. The release workflow publishes only the section
+for the version being released, so a release page shows that version and nothing else.
+
+## v2.4.0
+
+**A tray icon.** Hover for CPU, memory and whichever temperatures the machine reports; the menu
+opens the window, toggles game mode and quits. Optionally, closing the window leaves SysTuneX
+running there instead of exiting — gated on the icon actually being visible, so the window can
+never vanish with no way back.
+
+**Before and after**, in the change log. Record the machine before a change and again after it,
+then compare: the result lists every tweak that became applied, every service that started or
+stopped, and a changed power scheme.
+
+It is not a performance measurement and does not pretend to be. SysTuneX cannot see frame times;
+for those, run the same benchmark on both sides. Memory and process counts are only reported when
+they move further than they drift on their own — listing a 3 MB difference as the effect of a
+tweak would be a lie dressed as data.
+
+**A schedule.** Hold game mode on during a window of the day, optionally on chosen days. Checked
+once a minute against the clock rather than set as timers on the two edges, because a timer
+misses its moment whenever the machine sleeps through it and a missed edge would leave game mode
+stuck on. A window that ends before it starts runs past midnight and belongs to the day it began:
+Friday 23:00–02:00 is still Friday's window at half past midnight.
+
+Only a session the automation started is ended by it — switching game mode on by hand at 23:05
+outlives a schedule that ended at 23:00.
+
+---
+
+## v2.3.0
+
+Turn on **Automatic game mode** in Settings and SysTuneX watches for a game starting: game mode
+goes on when it appears and off again when it exits. Twenty-five games are recognised out of the
+box — Dota 2, CS2, VALORANT, Apex, Fortnite, WoW, Cyberpunk, iRacing and the rest — and anything
+else is a one-field addition by executable name.
+
+Two rules keep it from being annoying:
+
+* **Only an automatic session is undone automatically.** Switching game mode on by hand and
+  having it turn itself off because a game exited would be rude, so the session records who
+  started it.
+* **Detection is edge-triggered.** The watcher fires on the transition, not on every poll —
+  otherwise game mode would re-enter every few seconds for as long as the game was up, each time
+  recording a fresh session over the previous one's restore data.
+
+It only runs while SysTuneX is open. Doing it with the app closed would mean a Windows service,
+and a background service that stops other services is a much bigger thing to ask someone to
+trust than a window they can see.
+
+The watch list is matched on process name without the extension, so it survives a game moving
+between drives, and typing `dota2.exe` or `dota2` both work.
+
+---
+
+## v2.2.0
+
+The interface was fully translated; the messages underneath it were not. Every failure coming
+out of the registry, service, power, network, hosts and restore-point code was an English string
+literal at the throw site, so a Russian interface would report a problem in English — which is
+what you hit with the System Protection warning.
+
+All 52 of them now live in one catalog with a stable code each. Core still renders English,
+because that is the language the log should be in — one the developer reads, rather than whichever
+one the machine is set to. The interface looks the code up in its own resources and falls back to
+the English text when a translation is missing, so an untranslated message reads a little out of
+place instead of showing a raw key.
+
+Three tests hold it together: every message must be translated in every shipped language, every
+translation must take the same number of arguments as the original — a mismatch would throw in
+front of the user — and no translation may be blank.
+
+---
+
+## v2.1.0
+
+**Game mode** — one switch on the dashboard. It stops the background services the catalog grades
+as safe, switches to a high performance power scheme and frees memory. It is deliberately not
+"apply a profile": everything behind the switch is undoable *immediately*. Services are stopped,
+not disabled, so their start type is untouched and the next boot is exactly as it was; the
+previous power scheme is recorded and put back. Nothing needs a reboot, so turning it off really
+does restore the machine instead of leaving it half-tuned. The session is written to
+`%ProgramData%\SysTuneX\gamemode.json`, so an interrupted session can still be turned off and
+restored rather than stranding stopped services.
+
+**Temperatures on the dashboard** — GPU temperature, load and fan through NVIDIA's NVML, which
+ships with the driver and needs no install; CPU temperature from the ACPI thermal zone where the
+firmware exposes one.
+
+A tile appears only when its sensor actually answered. There is no kernel driver and there will
+not be one: reading a CPU package temperature properly needs a ring-0 helper, and every
+off-the-shelf one is on Microsoft's vulnerable driver blocklist and trips anti-cheat — not a
+trade worth making in a tool aimed at gamers. Where nothing answers, the card says so and why.
+AMD and Intel GPUs report no temperature yet; their vendor libraries are not wired up.
+
+**Power plan picker** in Settings, listing the schemes actually registered on the machine rather
+than assuming the three well-known GUIDs.
+
 
 > Notes for the release currently being published. Update this file before tagging a new version;
 > if it is missing, the release workflow falls back to auto-generated notes.
 
-## 2.0.2 — logs and a diagnostics report
+---
+
+## v2.0.2
 
 2.0.1 starts and works, but when something misbehaves it leaves nothing behind. Every service in
 SysTuneX already logged through `ILogger`; the app only ever registered the debug provider, so on
@@ -22,7 +123,9 @@ a real machine all of it went nowhere.
 **Fixes the crash that stopped 2.0.0 from starting at all.** Do not use 2.0.0 — it fails on every
 machine, not just some.
 
-## 2.0.1 — the app now starts
+---
+
+## v2.0.1
 
 2.0.0 died at launch with:
 
@@ -62,23 +165,11 @@ What changed:
 
 Everything below applies to the 2.0.0 rewrite and is unchanged in 2.0.1.
 
-## Download
-
-`SysTuneX.exe` below is a self-contained single file. No .NET runtime install needed. It requests
-administrator rights on launch, because every change it makes needs a full administrator token.
-
-Verify the download against `SHA256SUMS.txt` if you like:
-
-```powershell
-Get-FileHash .\SysTuneX.exe -Algorithm SHA256
-```
-
-Windows SmartScreen will warn about an unsigned executable — the binary is not code-signed.
-Choose **More info → Run anyway** if you are happy with that.
-
 ---
 
-## What changed
+## v2.0.0
+
+### What changed
 
 This is a full rewrite. The previous build looked complete but did very little on a real machine.
 
@@ -136,7 +227,7 @@ A timer ran WMI queries and `Process.GetProcesses()` on the UI thread every two 
 plus view models were transient, so every navigation created another one and leaked the previous
 timer.
 
-## New in this release
+### New in this release
 
 * **Russian and English**, switchable at runtime without a restart
 * **Light, dark and system theming** — every colour resolves through theme resources, so the app is
@@ -153,12 +244,4 @@ timer.
 * 58 tests covering catalog integrity, the backup journal, registry value comparison and translation
   coverage, run in CI on every push
 
-## Known limitations
-
-* Not code-signed, so SmartScreen will warn.
-* The hosts-file block can be refused by Microsoft Defender tamper protection. The app reports that
-  rather than failing silently.
-* Restore points need System Protection switched on for the system drive; if it is off, the app says
-  so instead of pretending a restore point was created.
-* Ultimate Performance is unavailable on some Windows editions. SysTuneX falls back to High
-  Performance and reports which one it used.
+---

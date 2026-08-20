@@ -45,7 +45,7 @@ public sealed class EnvironmentService : IEnvironmentService
             string? executable = Environment.ProcessPath;
             if (string.IsNullOrEmpty(executable))
             {
-                return OperationResult.Fail("Could not resolve the SysTuneX executable path.");
+                return OperationResult.Fail(CoreMessages.EnvironmentExecutableUnknown);
             }
 
             // UseShellExecute + runas is what raises the UAC prompt.
@@ -63,7 +63,7 @@ public sealed class EnvironmentService : IEnvironmentService
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Elevated restart was refused");
-            return OperationResult.Fail("The elevation prompt was cancelled or blocked by policy.", ex);
+            return OperationResult.Fail(CoreMessages.EnvironmentElevationRefused, ex);
         }
     }
 
@@ -104,7 +104,7 @@ public sealed class EnvironmentService : IEnvironmentService
         }
         catch (Exception ex)
         {
-            return OperationResult.Fail($"Could not restart Explorer: {ex.Message}", ex);
+            return OperationResult.Fail(CoreMessages.EnvironmentExplorerRestartFailed, ex, ex.Message);
         }
     }
 

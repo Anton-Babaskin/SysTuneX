@@ -210,7 +210,7 @@ public sealed class CleanupService : ICleanupService
     {
         if (string.IsNullOrWhiteSpace(packageName) || packageName.Any(c => c is '\'' or '"' or ';' or '|' or '&'))
         {
-            return OperationResult.Fail("Refusing to run with a package name that contains shell metacharacters.");
+            return OperationResult.Fail(CoreMessages.CleanupUnsafePackageName);
         }
 
         string script = $$"""
@@ -224,7 +224,7 @@ public sealed class CleanupService : ICleanupService
 
         if (!result.Success)
         {
-            return OperationResult.Fail($"Could not remove {packageName}: {result.Output.Trim()}");
+            return OperationResult.Fail(CoreMessages.CleanupPackageRemoveFailed, packageName, result.Output.Trim());
         }
 
         _logger.LogInformation("Removed Store package {Package}", packageName);

@@ -13,10 +13,6 @@ on:
           The tag is created at the dispatched commit if it does not exist yet.
         required: false
         default: ''
-      prerelease:
-        description: 'Mark the release as a pre-release'
-        type: boolean
-        default: true
 
 env:
   DOTNET_NOLOGO: true
@@ -102,14 +98,12 @@ jobs:
     name: Publish release
     runs-on: ubuntu-latest
     needs: publish
-    # Actions artifacts need a GitHub login and arrive as a zip; a release asset is a plain
-    # HTTPS download, which is what someone who just wants to run the thing actually needs.
-    #
-    # The version comes from release.version rather than a pushed tag, because the tag is
-    # created here by the workflow token. Publishing is idempotent: if a release for that
-    # version already exists the job only refreshes its assets, so an unchanged version file
-    # never republishes and a re-run never fails.
-    if: github.event_name != 'pull_request'
+
+    # Only from the default branch. A release cut from a feature branch describes code that
+    # nobody has merged yet, and leaves the tag pointing at a commit that may never reach main.
+    # Feature branches still build, test and attach an artifact to the run - they just do not
+    # get to mint a version.
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
 
     permissions:
       contents: write
@@ -128,7 +122,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG_OVERRIDE: ${{ inputs.release_tag }}
-          PRERELEASE: ${{ inputs.prerelease }}
         run: |
           set -euo pipefail
 
@@ -145,24 +138,46 @@ jobs:
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Release $tag already exists; refreshing its assets."
             gh release upload "$tag" publish/SysTuneX.exe publish/SHA256SUMS.txt --clobber
-          else
-            notes_args=(--generate-notes)
-            if [ -f docs/release-notes.md ]; then
-              notes_args=(--notes-file docs/release-notes.md)
-            fi
-
-            prerelease_args=(--prerelease)
-            if [ "${PRERELEASE:-true}" = "false" ]; then
-              prerelease_args=()
-            fi
-
-            gh release create "$tag" \
-              publish/SysTuneX.exe publish/SHA256SUMS.txt \
-              --title "SysTuneX ${tag#v}" \
-              --target "${{ github.sha }}" \
-              "${notes_args[@]}" \
-              "${prerelease_args[@]}"
+            exit 0
           fi
+
+          # Only this version's section. Pasting the whole changelog into every release is what
+          # made v2.4.0's page open with notes for 2.0.1.
+          notes=notes.md
+          awk -v tag="$tag" '
+            $0 == "## " tag { found = 1; next }
+            found && /^## v/ { exit }
+            found { print }
+          ' CHANGELOG.md > "$notes"
+
+          if [ ! -s "$notes" ]; then
+            echo "::warning::CHANGELOG.md has no section for $tag; falling back to generated notes."
+            rm -f "$notes"
+            notes_args=(--generate-notes)
+          else
+            # The parts that are true of every release - download, checksum, SmartScreen,
+            # known limitations - live in one file rather than being restated per version.
+            if [ -f docs/release-footer.md ]; then
+              printf '\n---\n\n' >> "$notes"
+              cat docs/release-footer.md >> "$notes"
+            fi
+            notes_args=(--notes-file "$notes")
+          fi
+
+          # A version with a suffix (v2.5.0-beta, -rc1) is a pre-release; a plain one is not.
+          # That puts the choice in the version string instead of a workflow default that
+          # quietly marked every build as unfinished.
+          case "$tag" in
+            *-*) prerelease_args=(--prerelease) ;;
+            *)   prerelease_args=(--latest) ;;
+          esac
+
+          gh release create "$tag" \
+            publish/SysTuneX.exe publish/SHA256SUMS.txt \
+            --title "SysTuneX ${tag#v}" \
+            --target "${{ github.sha }}" \
+            "${notes_args[@]}" \
+            "${prerelease_args[@]}"
 
           {
             echo "### SysTuneX $tag published"

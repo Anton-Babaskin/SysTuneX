@@ -24,7 +24,12 @@ public sealed partial class DashboardViewModel : PageViewModel
     private readonly IEnvironmentService _environment;
     private readonly IUserInteraction _interaction;
     private readonly ILocalizationService _localization;
+    private readonly ISensorService _sensors;
+    private readonly IGameModeService _gameMode;
     private readonly DispatcherTimer _timer;
+
+    /// <summary>Sensors are read every few ticks; WMI and NVML are far heavier than a counter read.</summary>
+    private int _tickCount;
 
     [ObservableProperty]
     private double _cpuUsage;
@@ -93,6 +98,35 @@ public sealed partial class DashboardViewModel : PageViewModel
     [ObservableProperty]
     private string _powerPlan = string.Empty;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasCpuTemperature))]
+    private int? _cpuTemperature;
+
+    [ObservableProperty]
+    private string _cpuTemperatureSource = string.Empty;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasGpuTemperature))]
+    private int? _gpuTemperature;
+
+    [ObservableProperty]
+    private string _gpuTemperatureSource = string.Empty;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasGpuUsage))]
+    private int? _gpuUsage;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasAnySensor))]
+    private bool _sensorsChecked;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(GameModeCaption))]
+    private bool _isGameModeOn;
+
+    [ObservableProperty]
+    private string _gameModeDetail = string.Empty;
+
     public DashboardViewModel(
         ISystemInfoService systemInfo,
         ITweakEngine tweaks,
@@ -103,7 +137,9 @@ public sealed partial class DashboardViewModel : PageViewModel
         IBackupService backup,
         IEnvironmentService environment,
         IUserInteraction interaction,
-        ILocalizationService localization)
+        ILocalizationService localization,
+        ISensorService sensors,
+        IGameModeService gameMode)
     {
         _systemInfo = systemInfo;
         _tweaks = tweaks;
@@ -115,6 +151,10 @@ public sealed partial class DashboardViewModel : PageViewModel
         _environment = environment;
         _interaction = interaction;
         _localization = localization;
+        _sensors = sensors;
+        _gameMode = gameMode;
+
+        _gameMode.Changed += OnGameModeChanged;
 
         _timer = new DispatcherTimer(DispatcherPriority.Background) { Interval = TimeSpan.FromSeconds(1) };
         _timer.Tick += OnTick;
@@ -127,6 +167,21 @@ public sealed partial class DashboardViewModel : PageViewModel
     public ObservableCollection<double> RamHistory { get; } = [];
 
     public bool IsElevated => _environment.IsElevated;
+
+    public bool HasCpuTemperature => CpuTemperature is not null;
+
+    public bool HasGpuTemperature => GpuTemperature is not null;
+
+    public bool HasGpuUsage => GpuUsage is not null;
+
+    /// <summary>
+    /// False once a sample has come back with nothing. The card then explains why rather than
+    /// showing an empty box - or worse, a zero that reads like a real temperature.
+    /// </summary>
+    public bool HasAnySensor => !SensorsChecked || HasCpuTemperature || HasGpuTemperature;
+
+    public string GameModeCaption =>
+        _localization[IsGameModeOn ? "GameMode_On" : "GameMode_Off"];
 
     public string ScoreCaption => Score switch
     {
@@ -142,8 +197,11 @@ public sealed partial class DashboardViewModel : PageViewModel
         if (!IsInitialized)
         {
             await LoadHardwareAsync().ConfigureAwait(true);
+            await _gameMode.LoadAsync().ConfigureAwait(true);
+            UpdateGameMode();
         }
 
+        await SampleSensorsAsync().ConfigureAwait(true);
         await RefreshCountersAsync().ConfigureAwait(true);
     }
 
@@ -330,8 +388,110 @@ public sealed partial class DashboardViewModel : PageViewModel
         }
     }
 
+    /// <summary>
+    /// One switch that puts the machine into a gaming state and back. Everything it does is
+    /// undoable without a reboot, which is what separates it from applying a profile.
+    /// </summary>
+    [RelayCommand]
+    private async Task ToggleGameModeAsync()
+    {
+        bool turningOn = !_gameMode.IsActive;
+
+        await RunBusyAsync(
+            _localization[turningOn ? "GameMode_Starting" : "GameMode_Stopping"],
+            async token =>
+            {
+                var progress = new Progress<string>(step => BusyMessage = _localization[step switch
+                {
+                    "power" => "GameMode_Step_Power",
+                    "services" => "GameMode_Step_Services",
+                    _ => "GameMode_Step_Memory",
+                }]);
+
+                GameModeResult result = turningOn
+                    ? await _gameMode.EnableAsync(progress, cancellationToken: token).ConfigureAwait(true)
+                    : await _gameMode.DisableAsync(progress, token).ConfigureAwait(true);
+
+                UpdateGameMode();
+
+                if (!result.Result.Success)
+                {
+                    _interaction.ShowError(result.Result.Describe(_localization));
+                    return;
+                }
+
+                _interaction.ShowSuccess(string.Format(
+                    _localization[turningOn ? "GameMode_Enabled" : "GameMode_Disabled"],
+                    result.ServicesAffected,
+                    result.FreedMemoryMb));
+
+                // Anything that refused is named rather than swallowed - a service that would
+                // not stop is exactly the sort of thing worth knowing before blaming the game.
+                if (result.Notes.Count > 0)
+                {
+                    _interaction.ShowWarning(string.Join(Environment.NewLine, result.Notes.Take(4)));
+                }
+
+                await RefreshCountersAsync().ConfigureAwait(true);
+            }).ConfigureAwait(true);
+    }
+
+    private void OnGameModeChanged(object? sender, EventArgs e) => UpdateGameMode();
+
+    private void UpdateGameMode()
+    {
+        IsGameModeOn = _gameMode.IsActive;
+
+        if (_gameMode.Session is not { } session)
+        {
+            GameModeDetail = _localization["GameMode_Hint"];
+            return;
+        }
+
+        string detail = string.Format(
+            _localization["GameMode_Detail"],
+            session.StoppedServices.Count,
+            session.FreedMemoryMb,
+            session.StartedAt.ToLocalTime().ToString("HH:mm"));
+
+        // Worth naming: a switch that moved on its own is confusing unless it says what moved it.
+        if (session is { AutoStarted: true, TriggeredBy.Length: > 0 })
+        {
+            detail += " " + string.Format(_localization["GameMode_TriggeredBy"], session.TriggeredBy);
+        }
+
+        GameModeDetail = detail;
+    }
+
+    private async Task SampleSensorsAsync()
+    {
+        try
+        {
+            SensorReadings readings = await _sensors.ReadAsync().ConfigureAwait(true);
+
+            CpuTemperature = readings.Cpu?.Rounded;
+            CpuTemperatureSource = readings.Cpu?.Source ?? string.Empty;
+            GpuTemperature = readings.Gpu?.Rounded;
+            GpuTemperatureSource = readings.Gpu?.Source ?? string.Empty;
+            GpuUsage = readings.GpuUsagePercent;
+            SensorsChecked = true;
+        }
+        catch (Exception)
+        {
+            // A sensor that will not answer is a missing tile, never a broken dashboard.
+            SensorsChecked = true;
+        }
+    }
+
     private void OnTick(object? sender, EventArgs e)
     {
+        // WMI and NVML cost orders of magnitude more than a counter read, and a temperature
+        // does not move meaningfully inside a second, so they get their own slower cadence.
+        if (_tickCount++ % 5 == 0)
+        {
+            _ = SampleSensorsAsync();
+        }
+
         SystemSnapshot snapshot = _systemInfo.GetSnapshot();
 
         CpuUsage = Math.Round(snapshot.CpuUsagePercent, 1);

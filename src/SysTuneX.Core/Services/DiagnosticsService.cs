@@ -90,7 +90,7 @@ public sealed class DiagnosticsService : IDiagnosticsService
                 path,
                 logLines,
                 journal.Count,
-                OperationResult.Fail($"Could not write the diagnostics report: {ex.Message}", ex));
+                OperationResult.Fail(CoreMessages.DiagnosticsReportFailed, ex, ex.Message));
         }
     }
 

@@ -14,6 +14,7 @@ using SysTuneX.App.Views.Pages;
 using SysTuneX.Core;
 using SysTuneX.Core.Abstractions;
 using SysTuneX.Core.Diagnostics;
+using SysTuneX.Core.Services;
 using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 using Wpf.Ui.Appearance;
@@ -59,6 +60,7 @@ public partial class App : Application
                 services.AddSingleton<ISnackbarService, SnackbarService>();
                 services.AddSingleton<IContentDialogService, ContentDialogService>();
                 services.AddSingleton<IUserInteraction, UserInteraction>();
+                services.AddSingleton<ITrayIconService, TrayIconService>();
 
                 services.AddSingleton<MainWindow>();
                 services.AddSingleton<MainWindowViewModel>();
@@ -107,6 +109,15 @@ public partial class App : Application
             // Load the journal up front so tweak pages can show what is already recorded.
             await _host.Services.GetRequiredService<IBackupService>().LoadAsync();
 
+            await StartGameModeAutomationAsync(settings.Current.AutoGameMode);
+
+            _host.Services.GetRequiredService<GameModeScheduler>().Schedule = settings.Current.Schedule;
+
+            if (settings.Current.ShowTrayIcon)
+            {
+                _host.Services.GetRequiredService<ITrayIconService>().Show();
+            }
+
             MainWindow = _host.Services.GetRequiredService<MainWindow>();
             MainWindow.Show();
         }
@@ -122,6 +133,10 @@ public partial class App : Application
     {
         try
         {
+            // Before the host stops, or the icon outlives the process and sits there until
+            // something hovers over it.
+            _host.Services.GetRequiredService<ITrayIconService>().Dispose();
+
             await _host.Services.GetRequiredService<IAppSettingsService>().SaveAsync();
             await _host.StopAsync(TimeSpan.FromSeconds(3));
             _host.Dispose();
@@ -132,6 +147,24 @@ public partial class App : Application
         }
 
         base.OnExit(e);
+    }
+
+    /// <summary>
+    /// Brings the watcher up with the user's list, and starts the automation only if they asked
+    /// for it. A failure here must not stop the app from opening - automatic game mode is a
+    /// convenience, and losing it is not worth losing the window.
+    /// </summary>
+    private async Task StartGameModeAutomationAsync(bool enabled)
+    {
+        try
+        {
+            await _host.Services.GetRequiredService<IGameWatcher>().LoadAsync();
+            _host.Services.GetRequiredService<GameModeAutomation>().IsEnabled = enabled;
+        }
+        catch (Exception ex)
+        {
+            Log(ex, "game-mode-automation");
+        }
     }
 
     /// <summary>
