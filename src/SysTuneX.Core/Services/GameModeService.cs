@@ -80,7 +80,7 @@ public sealed class GameModeService : IGameModeService
     {
         if (!_environment.IsElevated)
         {
-            return GameModeResult.Failed("Game mode needs administrator rights to stop services and switch the power scheme.");
+            return new GameModeResult(OperationResult.Fail(CoreMessages.GameModeNeedsAdministrator), 0, 0, []);
         }
 
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -88,7 +88,7 @@ public sealed class GameModeService : IGameModeService
         {
             if (IsActive)
             {
-                return new GameModeResult(OperationResult.NoChange("Game mode is already on."), 0, 0, []);
+                return new GameModeResult(OperationResult.NoChange(CoreMessages.GameModeAlreadyOn), 0, 0, []);
             }
 
             var notes = new List<string>();
@@ -143,7 +143,7 @@ public sealed class GameModeService : IGameModeService
         {
             if (Session is not { } session)
             {
-                return new GameModeResult(OperationResult.NoChange("Game mode is not on."), 0, 0, []);
+                return new GameModeResult(OperationResult.NoChange(CoreMessages.GameModeNotOn), 0, 0, []);
             }
 
             var notes = new List<string>();

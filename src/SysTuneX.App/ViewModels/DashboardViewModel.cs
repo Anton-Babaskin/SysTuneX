@@ -416,7 +416,7 @@ public sealed partial class DashboardViewModel : PageViewModel
 
                 if (!result.Result.Success)
                 {
-                    _interaction.ShowError(result.Result.Message ?? _localization["Msg_Error"]);
+                    _interaction.ShowError(result.Result.Describe(_localization));
                     return;
                 }
 

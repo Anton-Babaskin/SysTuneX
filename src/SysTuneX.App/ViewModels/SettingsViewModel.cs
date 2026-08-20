@@ -146,7 +146,7 @@ public sealed partial class SettingsViewModel : PageViewModel
 
         if (!result.Success)
         {
-            _interaction.ShowError(result.Message ?? _localization["Msg_Error"]);
+            _interaction.ShowError(result.Describe(_localization));
             return;
         }
 
@@ -289,7 +289,7 @@ public sealed partial class SettingsViewModel : PageViewModel
 
             if (!report.Result.Success)
             {
-                _interaction.ShowError(report.Result.Message ?? _localization["Msg_Error"]);
+                _interaction.ShowError(report.Result.Describe(_localization));
                 return;
             }
 

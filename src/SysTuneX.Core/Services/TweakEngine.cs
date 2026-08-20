@@ -119,7 +119,7 @@ public sealed class TweakEngine : ITweakEngine
     {
         if (!tweak.AppliesTo(_environment.Windows))
         {
-            return OperationResult.NoChange($"{tweak.Name} does not apply to Windows build {_environment.Windows.Build}.");
+            return OperationResult.NoChange(CoreMessages.TweakBuildGated, tweak.Name, _environment.Windows.Build);
         }
 
         if (tweak.HandlerKey is { } key)
@@ -128,7 +128,7 @@ public sealed class TweakEngine : ITweakEngine
 
             return _handlers.TryGetValue(key, out ISpecialTweakHandler? handler)
                 ? await handler.ApplyAsync(cancellationToken).ConfigureAwait(false)
-                : OperationResult.Fail($"No handler is registered for '{key}'.");
+                : OperationResult.Fail(CoreMessages.TweakNoHandler, key);
         }
 
         var errors = new List<string>();
@@ -181,7 +181,7 @@ public sealed class TweakEngine : ITweakEngine
 
             return _handlers.TryGetValue(key, out ISpecialTweakHandler? handler)
                 ? await handler.RevertAsync(cancellationToken).ConfigureAwait(false)
-                : OperationResult.Fail($"No handler is registered for '{key}'.");
+                : OperationResult.Fail(CoreMessages.TweakNoHandler, key);
         }
 
         var errors = new List<string>();
@@ -300,7 +300,7 @@ public sealed class TweakEngine : ITweakEngine
             }
             catch (Exception ex)
             {
-                result = OperationResult.Fail($"{tweak.Name}: {ex.Message}", ex);
+                result = OperationResult.Fail(CoreMessages.TweakApplyFailed, ex, tweak.Name, ex.Message);
             }
 
             if (result.Success)

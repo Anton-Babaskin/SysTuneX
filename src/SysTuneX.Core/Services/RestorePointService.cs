@@ -53,7 +53,7 @@ public sealed class RestorePointService : IRestorePointService
     {
         if (!_environment.IsElevated)
         {
-            return OperationResult.Fail("Creating a restore point requires administrator rights.");
+            return OperationResult.Fail(CoreMessages.RestorePointNeedsAdministrator);
         }
 
         // Windows silently ignores restore points created within 24 hours of the previous one
@@ -84,12 +84,10 @@ public sealed class RestorePointService : IRestorePointService
             if (error.Contains("disabled", StringComparison.OrdinalIgnoreCase) ||
                 error.Contains("отключен", StringComparison.OrdinalIgnoreCase))
             {
-                return OperationResult.Fail(
-                    "System Protection is switched off for the system drive. Turn it on in " +
-                    "System Properties > System Protection to let SysTuneX create restore points.");
+                return OperationResult.Fail(CoreMessages.RestorePointProtectionOff);
             }
 
-            return OperationResult.Fail($"Windows refused to create a restore point: {error}");
+            return OperationResult.Fail(CoreMessages.RestorePointRefused, error);
         }
         catch (OperationCanceledException)
         {
@@ -97,7 +95,7 @@ public sealed class RestorePointService : IRestorePointService
         }
         catch (Exception ex)
         {
-            return OperationResult.Fail($"Could not create a restore point: {ex.Message}", ex);
+            return OperationResult.Fail(CoreMessages.RestorePointFailed, ex, ex.Message);
         }
         finally
         {

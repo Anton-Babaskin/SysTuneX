@@ -105,18 +105,18 @@ public sealed class NetworkService : INetworkService
         NetworkInterface? nic = FindAdapter(adapterId);
         if (nic is null)
         {
-            return OperationResult.Fail("The selected network adapter is no longer available.");
+            return OperationResult.Fail(CoreMessages.NetworkAdapterGone);
         }
 
         if (!System.Net.IPAddress.TryParse(primary, out _))
         {
-            return OperationResult.Fail($"'{primary}' is not a valid IPv4 address.");
+            return OperationResult.Fail(CoreMessages.NetworkInvalidAddress, primary);
         }
 
         int? index = GetInterfaceIndex(nic);
         if (index is null)
         {
-            return OperationResult.Fail("The adapter does not expose an IPv4 interface index.");
+            return OperationResult.Fail(CoreMessages.NetworkNoIpv4Interface);
         }
 
         await _backup
@@ -133,7 +133,7 @@ public sealed class NetworkService : INetworkService
 
         if (!setPrimary.Success)
         {
-            return OperationResult.Fail($"netsh could not set the primary resolver: {setPrimary.Output.Trim()}");
+            return OperationResult.Fail(CoreMessages.NetworkSetResolverFailed, setPrimary.Output.Trim());
         }
 
         if (!string.IsNullOrWhiteSpace(secondary) && System.Net.IPAddress.TryParse(secondary, out _))
@@ -198,13 +198,13 @@ public sealed class NetworkService : INetworkService
         NetworkInterface? nic = FindAdapter(adapterId);
         if (nic is null)
         {
-            return OperationResult.Fail("The selected network adapter is no longer available.");
+            return OperationResult.Fail(CoreMessages.NetworkAdapterGone);
         }
 
         int? index = GetInterfaceIndex(nic);
         if (index is null)
         {
-            return OperationResult.Fail("The adapter does not expose an IPv4 interface index.");
+            return OperationResult.Fail(CoreMessages.NetworkNoIpv4Interface);
         }
 
         ProcessRunResult result = await ProcessRunner.RunAsync(
@@ -216,7 +216,7 @@ public sealed class NetworkService : INetworkService
 
         if (!result.Success)
         {
-            return OperationResult.Fail($"netsh could not restore DHCP resolvers: {result.Output.Trim()}");
+            return OperationResult.Fail(CoreMessages.NetworkRestoreDhcpFailed, result.Output.Trim());
         }
 
         await FlushDnsCacheAsync(cancellationToken).ConfigureAwait(false);
@@ -231,7 +231,7 @@ public sealed class NetworkService : INetworkService
 
         return result.Success
             ? OperationResult.Ok()
-            : OperationResult.Fail($"Could not flush the resolver cache: {result.Output.Trim()}");
+            : OperationResult.Fail(CoreMessages.NetworkFlushCacheFailed, result.Output.Trim());
     }
 
     public async Task<long?> MeasureLatencyAsync(string host, CancellationToken cancellationToken = default)

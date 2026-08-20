@@ -115,7 +115,7 @@ public sealed partial class PowerService : IPowerService
 
         if (target is null)
         {
-            return OperationResult.Fail("Neither the Ultimate Performance nor the High Performance scheme is available on this edition of Windows.");
+            return OperationResult.Fail(CoreMessages.PowerNoHighPerformanceScheme);
         }
 
         if (active?.Guid == target.Value)
@@ -153,7 +153,7 @@ public sealed partial class PowerService : IPowerService
 
         if (!result.Success)
         {
-            return OperationResult.Fail($"powercfg could not activate the scheme: {result.Output.Trim()}");
+            return OperationResult.Fail(CoreMessages.PowerActivateFailed, result.Output.Trim());
         }
 
         _logger.LogInformation("Active power scheme set to {Guid}", schemeGuid);
@@ -197,7 +197,7 @@ public sealed partial class PowerService : IPowerService
 
         if (errors.Count > 0)
         {
-            return OperationResult.Fail($"powercfg rejected the core parking change: {string.Join("; ", errors)}");
+            return OperationResult.Fail(CoreMessages.PowerCoreParkingRejected, string.Join("; ", errors));
         }
 
         // The scheme has to be re-activated for the new indexes to take effect.
@@ -207,7 +207,7 @@ public sealed partial class PowerService : IPowerService
 
         return reactivate.Success
             ? OperationResult.Ok()
-            : OperationResult.Fail($"Could not re-apply the power scheme: {reactivate.Output.Trim()}");
+            : OperationResult.Fail(CoreMessages.PowerReapplyFailed, reactivate.Output.Trim());
     }
 
     public async Task<bool> IsCoreParkingDisabledAsync(CancellationToken cancellationToken = default)
@@ -256,7 +256,7 @@ public sealed partial class PowerService : IPowerService
 
         return result.Success
             ? OperationResult.Ok()
-            : OperationResult.Fail($"powercfg could not change hibernation: {result.Output.Trim()}");
+            : OperationResult.Fail(CoreMessages.PowerHibernationFailed, result.Output.Trim());
     }
 
     private async Task<Guid?> DuplicateSchemeAsync(Guid source, CancellationToken cancellationToken)

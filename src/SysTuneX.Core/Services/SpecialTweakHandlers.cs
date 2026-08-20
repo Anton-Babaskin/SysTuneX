@@ -76,7 +76,7 @@ public sealed class HypervisorLaunchTweakHandler : ISpecialTweakHandler
     {
         if (!_environment.IsElevated)
         {
-            return OperationResult.Fail("Changing the boot configuration requires administrator rights.");
+            return OperationResult.Fail(CoreMessages.BootNeedsAdministrator);
         }
 
         string? current = await ReadLaunchTypeAsync(cancellationToken).ConfigureAwait(false);
@@ -105,7 +105,7 @@ public sealed class HypervisorLaunchTweakHandler : ISpecialTweakHandler
     {
         if (!_environment.IsElevated)
         {
-            return OperationResult.Fail("Changing the boot configuration requires administrator rights.");
+            return OperationResult.Fail(CoreMessages.BootNeedsAdministrator);
         }
 
         BackupEntry? entry = _backup.FindActive(BackupKind.BootConfiguration, "hypervisorlaunchtype");
@@ -160,7 +160,7 @@ public sealed class HypervisorLaunchTweakHandler : ISpecialTweakHandler
 
         if (!result.Success)
         {
-            return OperationResult.Fail($"bcdedit refused the change: {result.Output.Trim()}");
+            return OperationResult.Fail(CoreMessages.BootBcdeditRefused, result.Output.Trim());
         }
 
         _logger.LogInformation("hypervisorlaunchtype set to {Value}", value);
@@ -217,7 +217,7 @@ public sealed class NagleTweakHandler : ISpecialTweakHandler
         IReadOnlyList<string> adapters = GetAdapterKeys();
         if (adapters.Count == 0)
         {
-            return OperationResult.Fail("No connected network adapter was found to apply the change to.");
+            return OperationResult.Fail(CoreMessages.NetworkNoConnectedAdapter);
         }
 
         var errors = new List<string>();
