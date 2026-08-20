@@ -2,311 +2,484 @@
 
 *[Русская версия](README.ru.md)*
 
-**SysTuneX** is a Windows 10/11 performance and latency tuner built around one rule: every
-change is recorded before it is made, and every recorded change can be put back.
+<div align="center">
 
-The interface is available in **English and Russian** and follows the Windows light/dark setting.
+<img src="src/SysTuneX.App/Assets/SysTuneX.png" width="110" alt="SysTuneX logo">
 
-> No undocumented "magic tweaks". Each optimisation names the registry value it writes, the
-> value Windows shipped, and what you give up by applying it.
+# SysTuneX
+
+### Fast Windows tuning. No guesswork. Fully reversible.
+
+Optimize performance, reduce latency and clean up Windows 10/11 with a few clicks.
+
+SysTuneX shows exactly what it changes, saves your original settings and lets you roll everything back.
+
+[Русская версия](README.ru.md) · [Download](https://github.com/Anton-Babaskin/SysTuneX/releases) · [Build from source](#build-from-source) · [Report an issue](https://github.com/Anton-Babaskin/SysTuneX/issues)
+
+<br>
+
+[![Build](https://github.com/Anton-Babaskin/SysTuneX/actions/workflows/build.yml/badge.svg)](https://github.com/Anton-Babaskin/SysTuneX/actions/workflows/build.yml)
+[![Release](https://img.shields.io/github/v/release/Anton-Babaskin/SysTuneX?include_prereleases\&sort=semver)](https://github.com/Anton-Babaskin/SysTuneX/releases)
+[![Downloads](https://img.shields.io/github/downloads/Anton-Babaskin/SysTuneX/total?label=downloads)](https://github.com/Anton-Babaskin/SysTuneX/releases)
+[![License](https://img.shields.io/github/license/Anton-Babaskin/SysTuneX)](LICENSE)
+
+![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows11\&logoColor=white)
+![.NET 9](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet\&logoColor=white)
+![WPF UI](https://img.shields.io/badge/WPF%20UI-4.3-5C2D91)
+![MVVM Toolkit](https://img.shields.io/badge/MVVM%20Toolkit-8.4-5C2D91)
+![xUnit](https://img.shields.io/badge/xUnit-2.9-512BD4)
+
+</div>
 
 ---
 
-## Download
+## Why SysTuneX?
 
-**[Releases page](https://github.com/Anton-Babaskin/SysTuneX/releases)** — pick the newest version
-and download `SysTuneX.exe` from its Assets list.
+Windows tuning tools usually fall into one of two categories:
 
-A single self-contained file; no .NET runtime install needed. It asks for administrator rights on
-launch, because every change it makes requires a full administrator token. The binary is not
-code-signed, so SmartScreen will warn — **More info → Run anyway** if you are happy with that.
+* one-click optimizers that do not tell you what they changed
+* giant collections of registry tweaks copied from old gaming guides
 
-Each release also ships `SHA256SUMS.txt`:
+SysTuneX takes a different approach.
+
+> **Record before write.**
+
+Before SysTuneX changes a registry value, Windows service, DNS configuration, power scheme or boot option, it records the actual previous state.
+
+Rollback restores **your previous configuration**, not an invented "default".
+
+No undocumented magic tweaks. No silent failures. No pretending that every machine benefits from the same settings.
+
+---
+
+## Quick start
+
+### 1. Download
+
+Go to the:
+
+**[GitHub Releases page](https://github.com/Anton-Babaskin/SysTuneX/releases)**
+
+Download:
+
+```text
+SysTuneX.exe
+```
+
+SysTuneX is published as a **self-contained win-x64 single-file executable**.
+
+You do not need to install .NET.
+
+### 2. Verify the file
+
+Each release includes `SHA256SUMS.txt`.
 
 ```powershell
 Get-FileHash .\SysTuneX.exe -Algorithm SHA256
 ```
 
-Prefer to build it yourself? See [Build](#build).
+Compare the result with the checksum included in the release.
+
+### 3. Run as Administrator
+
+SysTuneX requests elevation automatically because system tuning requires access to the registry, Windows services, networking, power configuration and boot settings.
+
+> The executable is currently not code-signed, so Windows SmartScreen may display a warning.
 
 ---
 
-## What it does
+## Features
 
-### Dashboard
-
-Live CPU and memory graphs, a tuning score, and the two buttons most people want:
-
-* **Quick optimise** — applies every tweak marked *Safe*, switches to a high performance power
-  scheme and trims memory. It never touches anything marked Moderate or Advanced.
-* **Restore everything** — writes back every value recorded in the change log.
-
-### Game mode
-
-One switch. It stops the background services the catalog grades as safe, switches to a high
-performance power scheme and frees memory — and undoes all of it when switched off. Services are
-stopped rather than disabled, so their start type is untouched and the next boot is unchanged;
-the previous power scheme is recorded and restored. Nothing it does needs a reboot, which is what
-separates it from applying a profile.
-
-### Automatic game mode
-
-SysTuneX can watch for a game starting and switch game mode on and off with it. Twenty-five
-games are recognised out of the box and anything else is a one-field addition by executable name.
-Only a session the watcher started is ended by the watcher — turning game mode on by hand and
-having a game exit undo it would be rude.
-
-It runs only while SysTuneX is open; doing it with the app closed would mean a Windows service.
-
-### Temperatures
-
-GPU temperature, load and fan speed through NVIDIA's NVML, which ships with the driver. CPU
-temperature from the ACPI thermal zone where the firmware exposes one — it is a board thermal
-zone rather than the CPU package, and the dashboard says so.
-
-SysTuneX ships no kernel driver. Reading a CPU package temperature properly needs a ring-0
-helper, and the off-the-shelf ones are on Microsoft's vulnerable driver blocklist and trip
-anti-cheat. Where no sensor answers, nothing is shown — a missing reading is not zero degrees.
-
-### Profiles
-
-Preset bundles for different workloads: competitive FPS, battle royale, open world and RPG,
-racing and simulation, streaming, and a maximum-performance profile that includes the advanced
-changes. Each card shows how much of the profile the machine already has applied.
-
-Advanced changes are opt-in per run, and a Windows restore point can be created first.
-
-### Tweaks
-
-Four pages of individually documented changes — gaming, Windows 11, privacy and network — with
-search, risk filters, and per-tweak apply/revert. Each one shows its risk level and whether it
-needs a restart, a sign-out, or an Explorer restart.
-
-The Windows 11 page covers what that release added and what it costs: virtualisation-based
-security, memory integrity, the boot-level hypervisor, Recall, Click To Do, Copilot, widgets and
-search highlights. Everything there is gated on the build number it actually exists in.
-
-### Services
-
-Windows services worth switching off, each with an honest description of what stops working.
-Services are set to Manual rather than Disabled wherever something else may legitimately start
-them, and the original start type is recorded so restore is exact.
-
-### Privacy
-
-Documented Windows policies for telemetry, the advertising ID, activity history, feedback
-prompts, Start menu suggestions, location and clipboard sync — plus an optional hosts-file block
-for known telemetry endpoints. The block is a clearly delimited section, the full host list is
-shown before anything is written, and only that section is ever removed.
-
-### Network
-
-Nagle's algorithm (applied per adapter, which is where the setting actually lives), the network
-throttling index, and a DNS picker with round-trip measurement for Cloudflare, Google, Quad9,
-OpenDNS and AdGuard.
-
-### Cleanup
-
-Temporary files, crash dumps, servicing logs, the Windows Update cache, Delivery Optimization,
-thumbnails and the DirectX / NVIDIA / AMD shader caches. Every target is measured first and the
-exact folders and total size are shown before deletion. Preinstalled Store apps can be removed
-individually.
-
-### Diagnostics
-
-SysTuneX writes what it does to `%ProgramData%\SysTuneX\logs`, one file per day, kept for a
-week. Every message the app shows you is in there too, so the log and the screen never disagree.
-Settings has a **Build a report** button that bundles the machine description, the change journal
-and the log tail into a single text file — that one file is what to attach to a bug report.
-**Verbose logging** adds every registry read and every command line, and takes effect immediately.
-
-### Before and after
-
-Record the machine before a change and again after it, then compare the two. The result names
-every tweak that became applied, every service that started or stopped, and a changed power
-scheme. Memory and process counts are reported only when they move further than they drift on
-their own.
-
-This is not a performance measurement — SysTuneX cannot see frame times. For those, run the same
-benchmark on both sides and compare it yourself.
-
-### Tray icon and schedule
-
-The tray icon shows CPU, memory and temperatures on hover and carries the game mode switch in its
-menu. The schedule holds game mode on during a window of the day; it is evaluated against the
-clock once a minute rather than set as a timer, so a machine that slept through the start still
-catches up.
-
-### Change log
-
-The list of every value SysTuneX recorded before changing it: what it was, who changed it, when,
-and whether it is still in effect. Individual entries or the whole set can be rolled back, and
-the journal can be exported as JSON.
+| Area            | What SysTuneX does                                                                                                       |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Dashboard**   | Live CPU and memory monitoring, tuning status, Quick Optimize and full restore                                           |
+| **Profiles**    | Ready-made tuning profiles for different gaming and workload scenarios                                                   |
+| **Gaming**      | Game Bar, Game DVR, fullscreen optimizations, mouse acceleration, CPU scheduling and more                                |
+| **Windows 11**  | VBS, HVCI, hypervisor, Recall, Copilot, widgets, search features and other build-aware settings                          |
+| **Services**    | Safe service tuning with the original startup configuration recorded before changes                                      |
+| **Privacy**     | Telemetry, advertising ID, activity history, suggestions, location, clipboard sync and optional telemetry hosts blocking |
+| **Network**     | Nagle tuning, network throttling and DNS latency testing                                                                 |
+| **Cleanup**     | Temporary files, update caches, crash dumps, shader caches, thumbnails and other disposable data                         |
+| **Game mode**   | One switch that stops background services, raises the power scheme and frees memory — and undoes all of it              |
+| **Automation**  | Game mode follows the game, or a schedule, without either one undoing what you switched on by hand                      |
+| **Sensors**     | GPU temperature, load and fan through NVML; CPU temperature from the ACPI thermal zone where firmware exposes one       |
+| **Tray**        | Live counters on hover and the game mode switch in the menu                                                            |
+| **Before/after**| Record the machine either side of a change and see exactly what moved                                                   |
+| **Diagnostics** | Persistent logs, verbose logging and a complete diagnostic report                                                        |
+| **Change log**  | Full history of recorded changes with individual or complete rollback                                                    |
 
 ---
 
-## Safety model
+## Tuning profiles
 
-1. **Record before write.** Every registry value, service configuration, power scheme, DNS
-   setting and boot flag is journalled before it is touched.
-2. **Revert restores the recorded value**, not a guessed default. Where nothing was recorded,
-   SysTuneX falls back to the documented Windows value — and where Windows ships without the
-   value at all, reverting deletes it rather than inventing one.
-3. **Advanced changes require an explicit confirmation** that spells out the consequence
-   (anti-cheat, BitLocker recovery, Hyper-V, printing, notifications).
-4. **Nothing is silent.** Failures surface with the actual Win32 error instead of being
-   swallowed, so "access denied" never looks like "done".
-5. **Build gating.** Tweaks that target a Windows 11 feature are hidden on Windows 10 rather
-   than written and silently ignored.
-6. **Cleanup states what it will delete** — resolved paths, file count and total size — before
-   deleting anything.
+SysTuneX includes workload-specific profiles instead of applying the same configuration to every PC.
 
-The journal lives in `%ProgramData%\SysTuneX\backup.json`.
+| Profile                      | Focus                                                             |
+| ---------------------------- | ----------------------------------------------------------------- |
+| 🎯 **Competitive FPS**       | Minimum input and background latency                              |
+| 🏆 **Battle Royale**         | Network latency and asset-streaming workloads                     |
+| 🌍 **Open World & RPG**      | Long sessions, CPU availability and reduced background I/O        |
+| 🏎️ **Racing & Simulation**  | Frame-time consistency and latency                                |
+| 🎥 **Streaming & Recording** | Gaming performance without starving OBS or capture workloads      |
+| 🚀 **Maximum Performance**   | Includes advanced changes for users who understand the trade-offs |
+
+Profiles automatically skip tweaks that do not apply to the current Windows build.
+
+Advanced changes are never silently mixed into normal safe optimization.
+
+---
+
+## Game mode
+
+One switch on the dashboard. It stops the background services the catalog grades as safe, raises the power scheme and frees memory.
+
+It is deliberately **not** "apply a profile under another name". A profile writes registry values that survive a reboot and are undone from the change journal. Game mode only does things that can be undone immediately: services are **stopped, not disabled**, so their start type is untouched and the next boot is exactly as it was, and the previous power scheme is recorded and put back. Nothing it does needs a reboot, so switching it off really restores the machine instead of leaving it half-tuned.
+
+The session is written to disk, so an interrupted one can still be turned off and restored rather than stranding a dozen stopped services.
+
+### It can follow the game
+
+Turn on automatic game mode and SysTuneX watches for a game starting: twenty-five are recognised out of the box, and anything else is a one-field addition by executable name.
+
+### Or the clock
+
+A schedule holds game mode on during a window of the day, optionally on chosen days. It is evaluated against the clock once a minute rather than set as timers on the two edges — a timer misses its moment whenever the machine sleeps through it, and a missed edge would leave game mode stuck on. A window that ends before it starts runs past midnight and belongs to the day it began.
+
+**Neither undoes what you switched on by hand.** Turning game mode on yourself at 23:05 outlives a schedule that ended at 23:00, and a game exiting does not end a session you started.
+
+Automation runs only while SysTuneX is open. Doing it with the app closed would mean a Windows service, and a background service that stops other services is a much bigger thing to ask someone to trust.
+
+---
+
+## Temperatures
+
+GPU temperature, load and fan speed come from **NVIDIA's NVML**, which ships with the driver and needs no install. CPU temperature comes from the **ACPI thermal zone** where firmware exposes one — that is a board thermal zone rather than the CPU package, and the dashboard says so.
+
+**SysTuneX ships no kernel driver, and will not.** Reading a CPU package temperature properly needs a ring-0 helper, and the off-the-shelf ones are on Microsoft's vulnerable driver blocklist and trip anti-cheat. That is not a trade worth making in a tool people install to play games.
+
+So a reading appears only when a sensor actually answered. Where none does, the card says so and why — a missing reading is not zero degrees. AMD and Intel GPUs report no temperature yet; their vendor libraries are not wired up, and saying so beats inventing a figure.
+
+---
+
+## Before and after
+
+Record the machine before a change and again after it, then compare the two. The result names every tweak that became applied, every service that started or stopped, and a changed power scheme.
+
+**It is not a performance measurement and does not pretend to be.** SysTuneX cannot see frame times; for those, run the same benchmark on both sides and compare it yourself. Memory and process counts are reported only when they move further than they drift on their own — listing a 3 MB difference as the effect of a tweak would be a lie dressed as data.
+
+---
+
+## Safety by design
+
+SysTuneX is built around reversibility and visibility.
+
+### Record before write
+
+The previous state is journaled before the system is modified.
+
+### Exact rollback
+
+If a registry value existed before SysTuneX changed it, its original value is restored.
+
+If the value did not exist before, rollback removes it instead of inventing one.
+
+### Risk levels
+
+Tweaks are classified by risk.
+
+Advanced changes require explicit confirmation and explain the possible consequences before being applied.
+
+### Windows build awareness
+
+Windows 11-specific settings are only offered where the corresponding feature actually exists.
+
+### Real errors
+
+Failed registry writes, service operations and system commands surface their real error instead of being reported as successful.
+
+### Transparent cleanup
+
+SysTuneX calculates the target paths, file count and total size before cleanup.
+
+---
+
+## Change journal
+
+The rollback journal is stored at:
+
+```text
+%ProgramData%\SysTuneX\backup.json
+```
+
+It records the state required to restore supported changes, including:
+
+* registry values
+* Windows service configuration
+* DNS settings
+* power configuration
+* boot-related options
+
+The Change Log page can restore individual entries or roll back the recorded configuration.
+
+The journal can also be exported as JSON.
+
+---
+
+## Logging & diagnostics
+
+Application logs are stored in:
+
+```text
+%ProgramData%\SysTuneX\logs
+```
+
+SysTuneX keeps one log file per day and retains logs for seven days.
+
+Messages shown in the UI are logged as well, so the interface and diagnostic log describe the same event.
+
+Enable **Verbose logging** to additionally record registry reads and executed system commands.
+
+The **Build a report** function collects useful troubleshooting information such as:
+
+* Windows build and edition
+* hardware information
+* elevation state
+* recorded changes
+* recent application logs
+
+Startup failures are additionally written to:
+
+```text
+%ProgramData%\SysTuneX\errors.log
+```
+
+---
+
+## Network tools
+
+SysTuneX includes several network-oriented tuning functions.
+
+### DNS latency test
+
+Available providers include:
+
+* Cloudflare
+* Google
+* Quad9
+* OpenDNS
+* AdGuard
+
+SysTuneX measures response latency before you choose a resolver.
+
+### Adapter-aware tweaks
+
+Settings such as Nagle's algorithm are applied where Windows actually stores them - per network adapter.
 
 ---
 
 ## Requirements
 
-* Windows 10 version 1809 (build 17763) or newer, or Windows 11
+* Windows 10 version 1809 / build 17763 or newer
+* Windows 11
 * x64
-* Administrator rights — the app requests them through its manifest, because registry, service,
-  power, network and hosts changes all need a full administrator token
+* Administrator rights
 
-Some tweaks depend on the Windows edition, build number, hardware or driver support. Those are
-filtered out rather than applied blindly.
+Availability of individual tweaks may depend on:
 
----
+* Windows version
+* Windows edition
+* build number
+* hardware
+* installed drivers
 
-## Build
-
-```powershell
-dotnet restore
-dotnet build
-dotnet test tests/SysTuneX.Core.Tests/SysTuneX.Core.Tests.csproj
-```
-
-Self-contained single-file release:
-
-```powershell
-dotnet publish src/SysTuneX.App/SysTuneX.App.csproj `
-  -c Release -r win-x64 --self-contained true `
-  -p:PublishSingleFile=true -p:PublishReadyToRun=true
-```
-
-CI builds the same executable on every push and attaches it to the run as an artifact.
-
-`SysTuneX.App.Tests` needs a real WPF stack, so it only does anything on Windows; on any other
-host it reports as passed without running. It builds the actual `Application`, forces every
-resource in every merged dictionary to materialise, and constructs the main window and all ten
-pages through the container — which is the only way to catch a XAML fault, since XAML is parsed
-at run time and a green build proves nothing about whether the app starts.
-
-### Cutting a release
-
-Bump `release.version` (for example to `v2.1.0`) and update `docs/release-notes.md`, then
-push. CI publishes a GitHub Release at that version with `SysTuneX.exe` and
-`SHA256SUMS.txt` attached. Publishing is idempotent: an unchanged version file never
-republishes, and re-running the job only refreshes the assets.
+Unsupported tweaks are filtered instead of being blindly written.
 
 ---
 
-## Project layout
+## Core stack
+
+| Component            | Technology                         |
+| -------------------- | ---------------------------------- |
+| Language / Runtime   | C# / .NET 9                        |
+| Desktop UI           | WPF                                |
+| UI framework         | WPF UI 4.3                         |
+| Architecture         | MVVM                               |
+| MVVM toolkit         | CommunityToolkit.Mvvm 8.4          |
+| Dependency injection | Microsoft.Extensions.Hosting       |
+| Windows integration  | Win32 API, Registry, WMI           |
+| System tooling       | powercfg, netsh, bcdedit, ipconfig |
+| Testing              | xUnit                              |
+| CI/CD                | GitHub Actions                     |
+
+---
+
+## Architecture
+
+SysTuneX separates operating-system logic from the desktop interface.
 
 ```text
 SysTuneX/
 ├── src/
-│   ├── SysTuneX.Core/            System logic. No UI dependency.
-│   │   ├── Abstractions/         Service interfaces
-│   │   ├── Models/               Tweak, service, backup and snapshot types
-│   │   ├── Native/               P/Invoke and thin wrappers around it
-│   │   ├── Services/             Registry, services, power, network, cleanup, backup, engine
-│   │   └── Tweaks/               The catalogs: tweaks, services, profiles, cleanup targets
-│   └── SysTuneX.App/             WPF UI (MVVM)
-│       ├── Controls/             Sparkline
+│   ├── SysTuneX.Core/
+│   │   ├── Abstractions/
+│   │   ├── Models/
+│   │   ├── Native/
+│   │   ├── Services/
+│   │   └── Tweaks/
+│   │
+│   └── SysTuneX.App/
+│       ├── Controls/
 │       ├── Converters/
-│       ├── Localization/         Resource lookup and the {loc:Loc} markup extension
-│       ├── Resources/            Design tokens, shared templates, en/ru strings
+│       ├── Localization/
+│       ├── Resources/
 │       ├── ViewModels/
-│       └── Views/Pages/
-└── tests/
-    ├── SysTuneX.Core.Tests/      Catalog, journal and localization coverage
-    └── SysTuneX.App.Tests/       Startup smoke tests: real WPF, every page constructed
+│       └── Views/
+│
+├── tests/
+│   ├── SysTuneX.Core.Tests/
+│   └── SysTuneX.App.Tests/
+│
+└── .github/workflows/
 ```
 
-### SysTuneX.Core
+### `SysTuneX.Core`
 
-Holds all system logic and must not reference the UI. Registry access goes through the 64-bit
-view; console tools (`powercfg`, `netsh`, `bcdedit`, `ipconfig`) are run with their output
-captured so failures can be reported; service start types are written through the service
-control manager rather than `sc.exe`.
+Contains system operations and tuning logic without a dependency on the WPF UI.
 
-The catalog is data: a tweak declares its registry changes, the Windows default for each, the
-build range it applies to, and its risk level. Tweaks that are not a plain registry write —
-core parking, the hypervisor boot flag, Nagle across adapters — are handled by a registered
-handler instead.
+### `SysTuneX.App`
 
-### SysTuneX.App
+Contains the WPF interface, navigation, resources, localization and view models.
 
-WPF with [WPF UI](https://github.com/lepoco/wpfui) for the Fluent look: Mica backdrop, rounded
-corners, and light/dark that follows Windows. Pages are resolved through the container, so a
-page can take its view model as a constructor argument, and are cached by the navigation view.
-
-All colours resolve through theme resources, so the whole app works in both light and dark mode.
+System changes are performed through the Core services instead of directly from the UI layer.
 
 ---
 
-## Technology
+## CI
 
-| Component            | Technology                                    |
-| -------------------- | --------------------------------------------- |
-| Runtime              | .NET 9                                        |
-| UI                   | WPF + WPF UI 4                                |
-| Architecture         | MVVM (CommunityToolkit.Mvvm)                  |
-| Dependency injection | Microsoft.Extensions.Hosting                  |
-| System integration   | Win32 API, registry, WMI, PowerShell          |
-| Tests                | xUnit                                         |
+Every push and pull request is validated on a Windows GitHub Actions runner.
+
+The pipeline performs:
+
+```text
+Restore
+   ↓
+Build
+   ↓
+Core tests
+   ↓
+WPF startup tests
+   ↓
+Publish win-x64
+   ↓
+SHA256 checksum
+   ↓
+Release artifact
+```
+
+The WPF startup suite creates the real application, loads its resources and constructs the main window and pages.
+
+This catches runtime XAML failures that a successful compilation alone cannot detect.
 
 ---
 
-## Measuring the result
+## Build from source
 
-SysTuneX changes settings; it does not promise frames. If you want to know whether a profile
-helped on your machine, compare the same workload before and after:
+Requirements:
 
-* average FPS, 1% low and 0.1% low
-* frame time consistency
+* .NET 9 SDK
+* Windows for the complete WPF test suite
+
+Clone the repository:
+
+```powershell
+git clone https://github.com/Anton-Babaskin/SysTuneX.git
+cd SysTuneX
+```
+
+Restore and build:
+
+```powershell
+dotnet restore
+dotnet build
+```
+
+Run the Core tests:
+
+```powershell
+dotnet test tests/SysTuneX.Core.Tests/SysTuneX.Core.Tests.csproj
+```
+
+Run the startup tests. These need a real WPF stack, so they only do anything on Windows:
+
+```powershell
+dotnet test tests/SysTuneX.App.Tests/SysTuneX.App.Tests.csproj
+```
+
+Publish a self-contained executable:
+
+```powershell
+dotnet publish src/SysTuneX.App/SysTuneX.App.csproj `
+  -c Release `
+  -r win-x64 `
+  --self-contained true `
+  -p:PublishSingleFile=true `
+  -p:PublishReadyToRun=true
+```
+
+---
+
+## Performance testing
+
+SysTuneX changes system configuration. It does **not** promise a specific FPS increase.
+
+If you want to measure whether a configuration improves your system, compare the same workload before and after using metrics such as:
+
+* average FPS
+* 1% and 0.1% lows
+* frame-time consistency
 * input latency
-* DPC and ISR latency
-* CPU and memory utilisation
+* DPC / ISR latency
+* CPU and memory utilization
 * network latency and packet loss
 
-Run the same scene, the same settings and the same duration on both sides.
+Use the same game scene, graphics settings and test duration for both runs.
 
 ---
 
-## Development notes
+## Contributing
 
-* Keep system operations out of the UI layer.
-* Never write the registry from a view model — go through `ITweakEngine`.
-* Record the original value before changing anything.
-* Treat "value absent" as different from "value is zero".
-* Validate the Windows build before offering a tweak that needs it.
-* Prefer documented Windows APIs and policies over undocumented behaviour.
-* Add a catalog test whenever you add a catalog entry.
+Issues and pull requests are welcome.
+
+When adding or changing a tweak:
+
+* keep system operations out of the UI layer
+* record the original state before modifying it
+* distinguish between an absent registry value and a value set to `0`
+* validate Windows build requirements
+* prefer documented Windows APIs and policies
+* add or update catalog tests
 
 ---
 
 ## Disclaimer
 
-SysTuneX changes operating system settings that affect performance, stability, networking,
-power consumption, privacy and application compatibility. Every change is recorded and can be
-rolled back from the change log, but no tool can guarantee a given result on every machine.
+SysTuneX modifies Windows settings related to performance, networking, privacy, services, power management and system behavior.
 
-Review advanced changes before applying them, and keep a system restore point when testing
-development builds.
+Although supported changes are recorded for rollback, no tuning tool can guarantee identical results across every Windows installation, hardware configuration or software stack.
+
+Review advanced changes before applying them and consider creating a Windows restore point when testing development builds.
 
 ---
 
 ## License
 
-MIT.
+SysTuneX is released under the [MIT License](LICENSE).
+
+<div align="center">
+
+**Built for people who want to know what their optimizer actually changed.**
+
+[Download SysTuneX](https://github.com/Anton-Babaskin/SysTuneX/releases) · [Report a bug](https://github.com/Anton-Babaskin/SysTuneX/issues) · [View source](https://github.com/Anton-Babaskin/SysTuneX)
+
+</div>
+
