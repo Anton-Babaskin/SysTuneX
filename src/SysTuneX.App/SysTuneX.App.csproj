@@ -4,6 +4,20 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net9.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <!--
+        For the tray icon only. WPF UI 4 dropped its NotifyIcon, and hand-rolling Shell_NotifyIcon
+        means owning a message window and re-registering on WM_TASKBARCREATED - which matters here
+        more than usual, because restarting Explorer is one of SysTuneX's own features and would
+        otherwise silently drop the icon. WinForms already handles all of it.
+    -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <!--
+        WFO0003 tells WinForms apps to move DPI settings out of the manifest. This is a WPF app:
+        WPF reads per-monitor awareness from the manifest and has no SetHighDpiMode equivalent,
+        so following the advice would break DPI handling to satisfy an analyser for a framework
+        that is only here for the tray icon.
+    -->
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
     <RootNamespace>SysTuneX.App</RootNamespace>
     <AssemblyName>SysTuneX</AssemblyName>
     <Description>SysTuneX — Windows 11 performance and latency tuner</Description>
@@ -23,6 +37,16 @@
 
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" SubType="Designer" Generator="MSBuild:Compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+        UseWindowsForms adds these as implicit usings, and every one of them collides with a WPF
+        type of the same name - Application, Control, Brush. The tray service asks for them by
+        alias instead, so the rest of the app stays unambiguously WPF.
+    -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
   </ItemGroup>
 
   <ItemGroup>

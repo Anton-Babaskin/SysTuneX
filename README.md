@@ -10,7 +10,7 @@
 
 ### Fast Windows tuning. No guesswork. Fully reversible.
 
-Optimize performance, reduce latency and clean up Windows 10/11 with a few clicks.**.
+Optimize performance, reduce latency and clean up Windows 10/11 with a few clicks.
 
 SysTuneX shows exactly what it changes, saves your original settings and lets you roll everything back.
 
@@ -100,6 +100,11 @@ SysTuneX requests elevation automatically because system tuning requires access 
 | **Privacy**     | Telemetry, advertising ID, activity history, suggestions, location, clipboard sync and optional telemetry hosts blocking |
 | **Network**     | Nagle tuning, network throttling and DNS latency testing                                                                 |
 | **Cleanup**     | Temporary files, update caches, crash dumps, shader caches, thumbnails and other disposable data                         |
+| **Game mode**   | One switch that stops background services, raises the power scheme and frees memory — and undoes all of it              |
+| **Automation**  | Game mode follows the game, or a schedule, without either one undoing what you switched on by hand                      |
+| **Sensors**     | GPU temperature, load and fan through NVML; CPU temperature from the ACPI thermal zone where firmware exposes one       |
+| **Tray**        | Live counters on hover and the game mode switch in the menu                                                            |
+| **Before/after**| Record the machine either side of a change and see exactly what moved                                                   |
 | **Diagnostics** | Persistent logs, verbose logging and a complete diagnostic report                                                        |
 | **Change log**  | Full history of recorded changes with individual or complete rollback                                                    |
 
@@ -121,6 +126,46 @@ SysTuneX includes workload-specific profiles instead of applying the same config
 Profiles automatically skip tweaks that do not apply to the current Windows build.
 
 Advanced changes are never silently mixed into normal safe optimization.
+
+---
+
+## Game mode
+
+One switch on the dashboard. It stops the background services the catalog grades as safe, raises the power scheme and frees memory.
+
+It is deliberately **not** "apply a profile under another name". A profile writes registry values that survive a reboot and are undone from the change journal. Game mode only does things that can be undone immediately: services are **stopped, not disabled**, so their start type is untouched and the next boot is exactly as it was, and the previous power scheme is recorded and put back. Nothing it does needs a reboot, so switching it off really restores the machine instead of leaving it half-tuned.
+
+The session is written to disk, so an interrupted one can still be turned off and restored rather than stranding a dozen stopped services.
+
+### It can follow the game
+
+Turn on automatic game mode and SysTuneX watches for a game starting: twenty-five are recognised out of the box, and anything else is a one-field addition by executable name.
+
+### Or the clock
+
+A schedule holds game mode on during a window of the day, optionally on chosen days. It is evaluated against the clock once a minute rather than set as timers on the two edges — a timer misses its moment whenever the machine sleeps through it, and a missed edge would leave game mode stuck on. A window that ends before it starts runs past midnight and belongs to the day it began.
+
+**Neither undoes what you switched on by hand.** Turning game mode on yourself at 23:05 outlives a schedule that ended at 23:00, and a game exiting does not end a session you started.
+
+Automation runs only while SysTuneX is open. Doing it with the app closed would mean a Windows service, and a background service that stops other services is a much bigger thing to ask someone to trust.
+
+---
+
+## Temperatures
+
+GPU temperature, load and fan speed come from **NVIDIA's NVML**, which ships with the driver and needs no install. CPU temperature comes from the **ACPI thermal zone** where firmware exposes one — that is a board thermal zone rather than the CPU package, and the dashboard says so.
+
+**SysTuneX ships no kernel driver, and will not.** Reading a CPU package temperature properly needs a ring-0 helper, and the off-the-shelf ones are on Microsoft's vulnerable driver blocklist and trip anti-cheat. That is not a trade worth making in a tool people install to play games.
+
+So a reading appears only when a sensor actually answered. Where none does, the card says so and why — a missing reading is not zero degrees. AMD and Intel GPUs report no temperature yet; their vendor libraries are not wired up, and saying so beats inventing a figure.
+
+---
+
+## Before and after
+
+Record the machine before a change and again after it, then compare the two. The result names every tweak that became applied, every service that started or stopped, and a changed power scheme.
+
+**It is not a performance measurement and does not pretend to be.** SysTuneX cannot see frame times; for those, run the same benchmark on both sides and compare it yourself. Memory and process counts are reported only when they move further than they drift on their own — listing a 3 MB difference as the effect of a tweak would be a lie dressed as data.
 
 ---
 
@@ -337,6 +382,23 @@ This catches runtime XAML failures that a successful compilation alone cannot de
 
 ---
 
+### Cutting a release
+
+Releases are published from the default branch only. A release cut from a feature branch would
+describe code nobody has merged, and would leave its tag on a commit that may never reach `main`.
+
+1. Add a `## vX.Y.Z` section at the top of [`CHANGELOG.md`](CHANGELOG.md).
+2. Put the same version in `release.version`.
+3. Merge to `main`.
+
+CI then builds, tests, publishes `SysTuneX.exe` and `SHA256SUMS.txt`, and creates the release
+with **only that version's changelog section** plus the shared footer.
+
+A version with a suffix — `v2.5.0-rc1` — is marked as a pre-release; a plain `v2.5.0` is not.
+Re-running the job on an unchanged version only refreshes the assets, so it is safe to repeat.
+
+---
+
 ## Build from source
 
 Requirements:
@@ -362,6 +424,12 @@ Run the Core tests:
 
 ```powershell
 dotnet test tests/SysTuneX.Core.Tests/SysTuneX.Core.Tests.csproj
+```
+
+Run the startup tests. These need a real WPF stack, so they only do anything on Windows:
+
+```powershell
+dotnet test tests/SysTuneX.App.Tests/SysTuneX.App.Tests.csproj
 ```
 
 Publish a self-contained executable:

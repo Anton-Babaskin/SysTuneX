@@ -1,10 +1,14 @@
+using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SysTuneX.App.Localization;
 using SysTuneX.App.Services;
 using SysTuneX.Core.Abstractions;
+using SysTuneX.Core.Models;
+using SysTuneX.Core.Services;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 
@@ -19,6 +23,11 @@ public sealed partial class SettingsViewModel : PageViewModel
     private readonly IEnvironmentService _environment;
     private readonly IUserInteraction _interaction;
     private readonly IDiagnosticsService _diagnostics;
+    private readonly IPowerService _power;
+    private readonly IGameWatcher _watcher;
+    private readonly GameModeAutomation _automation;
+    private readonly ITrayIconService _tray;
+    private readonly GameModeScheduler _scheduler;
 
     private bool _isLoading = true;
 
@@ -46,23 +55,62 @@ public sealed partial class SettingsViewModel : PageViewModel
     [ObservableProperty]
     private bool _isBuildingReport;
 
+    [ObservableProperty]
+    private PowerScheme? _selectedPowerScheme;
+
+    [ObservableProperty]
+    private bool _autoGameMode;
+
+    [ObservableProperty]
+    private string _newGameName = string.Empty;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanMinimizeToTray))]
+    private bool _showTrayIcon = true;
+
+    [ObservableProperty]
+    private bool _minimizeToTray;
+
+    [ObservableProperty]
+    private bool _scheduleEnabled;
+
+    [ObservableProperty]
+    private string _scheduleStart = "19:00";
+
+    [ObservableProperty]
+    private string _scheduleEnd = "23:00";
+
     public SettingsViewModel(
         IAppSettingsService settings,
         ILocalizationService localization,
         IEnvironmentService environment,
         IUserInteraction interaction,
-        IDiagnosticsService diagnostics)
+        IDiagnosticsService diagnostics,
+        IPowerService power,
+        IGameWatcher watcher,
+        GameModeAutomation automation,
+        ITrayIconService tray,
+        GameModeScheduler scheduler)
     {
         _settings = settings;
         _localization = localization;
         _environment = environment;
         _interaction = interaction;
         _diagnostics = diagnostics;
+        _power = power;
+        _watcher = watcher;
+        _automation = automation;
+        _tray = tray;
+        _scheduler = scheduler;
 
         Languages = localization.AvailableLanguages;
     }
 
     public IReadOnlyList<LanguageOption> Languages { get; }
+
+    public ObservableCollection<PowerScheme> PowerSchemes { get; } = [];
+
+    public ObservableCollection<WatchedGame> WatchedGames { get; } = [];
 
     public string Version => typeof(SettingsViewModel).Assembly.GetName().Version?.ToString(3) ?? "2.0.0";
 
@@ -93,9 +141,69 @@ public sealed partial class SettingsViewModel : PageViewModel
         CreateRestorePoint = current.CreateRestorePointBeforeProfiles;
         ConfirmAdvanced = current.ConfirmAdvancedChanges;
         VerboseLogging = current.VerboseLogging;
+        AutoGameMode = current.AutoGameMode;
+        ShowTrayIcon = current.ShowTrayIcon;
+        MinimizeToTray = current.MinimizeToTray;
+        ScheduleEnabled = current.Schedule.Enabled;
+        ScheduleStart = current.Schedule.StartsAt.ToString("HH:mm");
+        ScheduleEnd = current.Schedule.EndsAt.ToString("HH:mm");
+        ScheduleDays = [.. ScheduleDayNames.Select((name, index) => new ScheduleDay(
+            (DayOfWeek)(((int)DayOfWeek.Monday + index) % 7),
+            name,
+            current.Schedule.Days.Contains((DayOfWeek)(((int)DayOfWeek.Monday + index) % 7))))];
+        OnPropertyChanged(nameof(ScheduleDays));
 
         _isLoading = false;
-        return Task.CompletedTask;
+
+        RefreshWatchedGames();
+        return LoadPowerSchemesAsync();
+    }
+
+    /// <summary>
+    /// Reads the schemes registered on this machine rather than assuming the three well-known
+    /// GUIDs: OEMs ship their own, and Ultimate Performance only exists once something has
+    /// duplicated it.
+    /// </summary>
+    private async Task LoadPowerSchemesAsync()
+    {
+        try
+        {
+            IReadOnlyList<PowerScheme> schemes = await _power.GetSchemesAsync().ConfigureAwait(true);
+
+            PowerSchemes.Clear();
+            foreach (PowerScheme scheme in schemes)
+            {
+                PowerSchemes.Add(scheme);
+            }
+
+            SelectedPowerScheme = schemes.FirstOrDefault(s => s.IsActive);
+        }
+        catch (Exception ex)
+        {
+            _interaction.ShowError(ex.Message);
+        }
+    }
+
+    [RelayCommand]
+    private async Task ApplyPowerSchemeAsync()
+    {
+        if (SelectedPowerScheme is not { } scheme || scheme.IsActive)
+        {
+            return;
+        }
+
+        OperationResult result = await _power.SetActiveSchemeAsync(scheme.Guid).ConfigureAwait(true);
+
+        if (!result.Success)
+        {
+            _interaction.ShowError(result.Describe(_localization));
+            return;
+        }
+
+        _interaction.ShowSuccess(string.Format(_localization["Settings_PowerPlan_Done"], scheme.Name));
+
+        // Re-read rather than assume: the scheme that ends up active is the one powercfg says is.
+        await LoadPowerSchemesAsync().ConfigureAwait(true);
     }
 
     partial void OnSelectedThemeChanged(string value)
@@ -183,6 +291,169 @@ public sealed partial class SettingsViewModel : PageViewModel
         Save();
     }
 
+    /// <summary>Closing to the tray only makes sense while there is a tray icon to come back from.</summary>
+    public bool CanMinimizeToTray => ShowTrayIcon;
+
+    /// <summary>Monday first, which is what a week looks like to most of the people using this.</summary>
+    private static readonly string[] ScheduleDayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+    public IReadOnlyList<ScheduleDay> ScheduleDays { get; private set; } = [];
+
+    partial void OnScheduleEnabledChanged(bool value) => ApplySchedule();
+
+    partial void OnScheduleStartChanged(string value) => ApplySchedule();
+
+    partial void OnScheduleEndChanged(string value) => ApplySchedule();
+
+    [RelayCommand]
+    private void ToggleScheduleDay(ScheduleDay? day)
+    {
+        if (day is null)
+        {
+            return;
+        }
+
+        day.Selected = !day.Selected;
+        ApplySchedule();
+    }
+
+    /// <summary>
+    /// Rebuilds the schedule from what is on screen. A time that will not parse leaves the
+    /// stored one alone rather than resetting it to midnight while someone is mid-edit.
+    /// </summary>
+    private void ApplySchedule()
+    {
+        if (_isLoading)
+        {
+            return;
+        }
+
+        GameModeSchedule current = _settings.Current.Schedule;
+
+        var schedule = new GameModeSchedule
+        {
+            Enabled = ScheduleEnabled,
+            StartsAt = ParseTime(ScheduleStart, current.StartsAt),
+            EndsAt = ParseTime(ScheduleEnd, current.EndsAt),
+            Days = [.. ScheduleDays.Where(d => d.Selected).Select(d => d.Day)],
+        };
+
+        _settings.Current.Schedule = schedule;
+        _scheduler.Schedule = schedule;
+        Save();
+    }
+
+    private static TimeOnly ParseTime(string text, TimeOnly fallback) =>
+        TimeOnly.TryParse(text, CultureInfo.CurrentCulture, out TimeOnly parsed) ||
+        TimeOnly.TryParse(text, CultureInfo.InvariantCulture, out parsed)
+            ? parsed
+            : fallback;
+
+    partial void OnShowTrayIconChanged(bool value)
+    {
+        if (value)
+        {
+            _tray.Show();
+        }
+        else
+        {
+            _tray.Hide();
+
+            // Otherwise closing the window would hide it with no way to get it back.
+            MinimizeToTray = false;
+        }
+
+        if (_isLoading)
+        {
+            return;
+        }
+
+        _settings.Current.ShowTrayIcon = value;
+        Save();
+    }
+
+    partial void OnMinimizeToTrayChanged(bool value)
+    {
+        if (_isLoading)
+        {
+            return;
+        }
+
+        _settings.Current.MinimizeToTray = value;
+        Save();
+    }
+
+    partial void OnAutoGameModeChanged(bool value)
+    {
+        // Applied straight away rather than on next launch, so the effect of the switch is
+        // something the user can see before they close the page.
+        _automation.IsEnabled = value;
+
+        if (_isLoading)
+        {
+            return;
+        }
+
+        _settings.Current.AutoGameMode = value;
+        Save();
+    }
+
+    [RelayCommand]
+    private async Task AddGameAsync()
+    {
+        OperationResult result = await _watcher
+            .AddAsync(NewGameName, NewGameName)
+            .ConfigureAwait(true);
+
+        if (!result.Success)
+        {
+            _interaction.ShowError(result.Describe(_localization));
+            return;
+        }
+
+        if (!result.Changed)
+        {
+            _interaction.ShowInfo(result.Describe(_localization));
+            return;
+        }
+
+        NewGameName = string.Empty;
+        RefreshWatchedGames();
+    }
+
+    [RelayCommand]
+    private async Task RemoveGameAsync(WatchedGame? game)
+    {
+        if (game is null)
+        {
+            return;
+        }
+
+        await _watcher.RemoveAsync(game.ProcessName).ConfigureAwait(true);
+        RefreshWatchedGames();
+    }
+
+    [RelayCommand]
+    private async Task ToggleGameAsync(WatchedGame? game)
+    {
+        if (game is null)
+        {
+            return;
+        }
+
+        await _watcher.SetEnabledAsync(game.ProcessName, !game.Enabled).ConfigureAwait(true);
+        RefreshWatchedGames();
+    }
+
+    private void RefreshWatchedGames()
+    {
+        WatchedGames.Clear();
+        foreach (WatchedGame game in _watcher.Games.OrderBy(g => g.DisplayName, StringComparer.CurrentCulture))
+        {
+            WatchedGames.Add(game);
+        }
+    }
+
     partial void OnVerboseLoggingChanged(bool value)
     {
         // Applied immediately rather than on next launch: the reason to turn it on is that
@@ -231,7 +502,7 @@ public sealed partial class SettingsViewModel : PageViewModel
 
             if (!report.Result.Success)
             {
-                _interaction.ShowError(report.Result.Message ?? _localization["Msg_Error"]);
+                _interaction.ShowError(report.Result.Describe(_localization));
                 return;
             }
 

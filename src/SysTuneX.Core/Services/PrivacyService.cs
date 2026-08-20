@@ -51,7 +51,7 @@ public sealed class PrivacyService : IPrivacyService
     {
         if (!_environment.IsElevated)
         {
-            return OperationResult.Fail("Editing the hosts file requires administrator rights.");
+            return OperationResult.Fail(CoreMessages.HostsNeedsAdministrator);
         }
 
         try
@@ -90,15 +90,12 @@ public sealed class PrivacyService : IPrivacyService
         }
         catch (UnauthorizedAccessException ex)
         {
-            return OperationResult.Fail(
-                "The hosts file is locked. Real-time protection in Microsoft Defender blocks edits to it - " +
-                "add an exclusion or turn tamper protection off temporarily.",
-                ex);
+            return OperationResult.Fail(CoreMessages.HostsLocked, ex);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Could not block telemetry hosts");
-            return OperationResult.Fail($"Could not update the hosts file: {ex.Message}", ex);
+            return OperationResult.Fail(CoreMessages.HostsUpdateFailed, ex, ex.Message);
         }
     }
 
@@ -106,7 +103,7 @@ public sealed class PrivacyService : IPrivacyService
     {
         if (!_environment.IsElevated)
         {
-            return OperationResult.Fail("Editing the hosts file requires administrator rights.");
+            return OperationResult.Fail(CoreMessages.HostsNeedsAdministrator);
         }
 
         try
@@ -152,7 +149,7 @@ public sealed class PrivacyService : IPrivacyService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Could not unblock telemetry hosts");
-            return OperationResult.Fail($"Could not update the hosts file: {ex.Message}", ex);
+            return OperationResult.Fail(CoreMessages.HostsUpdateFailed, ex, ex.Message);
         }
     }
 

@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using SysTuneX.Core.Abstractions;
+using SysTuneX.Core.Models;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 
@@ -25,6 +26,18 @@ public sealed class AppSettings
 
     /// <summary>Records every registry read and command line, not just outcomes. Off by default.</summary>
     public bool VerboseLogging { get; set; }
+
+    /// <summary>Turn game mode on and off automatically as a watched game starts and exits.</summary>
+    public bool AutoGameMode { get; set; }
+
+    /// <summary>Show the tray icon with live counters and the game mode switch.</summary>
+    public bool ShowTrayIcon { get; set; } = true;
+
+    /// <summary>Closing the window leaves SysTuneX in the tray instead of exiting.</summary>
+    public bool MinimizeToTray { get; set; }
+
+    /// <summary>Window of the day during which game mode is held on.</summary>
+    public GameModeSchedule Schedule { get; set; } = new();
 
     public double WindowWidth { get; set; } = 1240;
 

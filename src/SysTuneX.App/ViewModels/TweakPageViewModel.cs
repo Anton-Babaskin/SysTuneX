@@ -156,8 +156,8 @@ public abstract partial class TweakPageViewModel : PageViewModel
             }
             else
             {
-                item.LastError = result.Message;
-                Interaction.ShowError(result.Message ?? Localization["Msg_Error"], item.Name);
+                item.LastError = result.Detail(Localization);
+                Interaction.ShowError(result.Describe(Localization), item.Name);
             }
         }
         catch (OperationCanceledException)
@@ -223,7 +223,7 @@ public abstract partial class TweakPageViewModel : PageViewModel
                 }
                 else
                 {
-                    Interaction.ShowError(result.Message ?? Localization["Msg_Error"]);
+                    Interaction.ShowError(result.Describe(Localization));
                 }
             }).ConfigureAwait(true);
     }

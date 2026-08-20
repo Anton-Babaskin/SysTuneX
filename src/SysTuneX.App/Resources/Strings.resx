@@ -778,4 +778,334 @@
   <data name="Settings_Report_Done" xml:space="preserve">
     <value>Report {0} written — {1} log lines, {2} journal entries.</value>
   </data>
+  <data name="Dashboard_Temperatures" xml:space="preserve">
+    <value>Temperatures</value>
+  </data>
+  <data name="Dashboard_CpuTemp" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="Dashboard_GpuTemp" xml:space="preserve">
+    <value>GPU</value>
+  </data>
+  <data name="Dashboard_GpuLoad" xml:space="preserve">
+    <value>GPU load</value>
+  </data>
+  <data name="Dashboard_NoSensors" xml:space="preserve">
+    <value>No temperature sensor answered on this machine. Reading the CPU package properly needs a kernel driver, and the ones available are blocked by Windows and flagged by anti-cheat — so SysTuneX shows nothing rather than a made-up number.</value>
+  </data>
+  <data name="GameMode_Title" xml:space="preserve">
+    <value>Game mode</value>
+  </data>
+  <data name="GameMode_On" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="GameMode_Off" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="GameMode_Hint" xml:space="preserve">
+    <value>Stops background services, switches to a high performance power scheme and frees memory. Everything it does is undone when you switch it off — no reboot, no registry changes left behind.</value>
+  </data>
+  <data name="GameMode_Detail" xml:space="preserve">
+    <value>{0} services stopped, {1} MB freed, on since {2}.</value>
+  </data>
+  <data name="GameMode_Starting" xml:space="preserve">
+    <value>Turning game mode on…</value>
+  </data>
+  <data name="GameMode_Stopping" xml:space="preserve">
+    <value>Turning game mode off…</value>
+  </data>
+  <data name="GameMode_Step_Power" xml:space="preserve">
+    <value>Switching the power scheme…</value>
+  </data>
+  <data name="GameMode_Step_Services" xml:space="preserve">
+    <value>Stopping background services…</value>
+  </data>
+  <data name="GameMode_Step_Memory" xml:space="preserve">
+    <value>Freeing memory…</value>
+  </data>
+  <data name="GameMode_Enabled" xml:space="preserve">
+    <value>Game mode on — {0} services stopped, {1} MB freed.</value>
+  </data>
+  <data name="GameMode_Disabled" xml:space="preserve">
+    <value>Game mode off — {0} services started again.</value>
+  </data>
+  <data name="Settings_PowerPlan" xml:space="preserve">
+    <value>Power plan</value>
+  </data>
+  <data name="Settings_PowerPlan_Hint" xml:space="preserve">
+    <value>The scheme Windows is using now. Switching here is recorded, so it can be put back from the change log like anything else.</value>
+  </data>
+  <data name="Settings_PowerPlan_Apply" xml:space="preserve">
+    <value>Switch to this plan</value>
+  </data>
+  <data name="Settings_PowerPlan_Done" xml:space="preserve">
+    <value>Power plan switched to {0}.</value>
+  </data>
+  <data name="Core_Registry_OpenFailed" xml:space="preserve">
+    <value>Could not open or create {0}.</value>
+  </data>
+  <data name="Core_Registry_ValueNotKept" xml:space="preserve">
+    <value>{0}\{1} did not keep the written value.</value>
+  </data>
+  <data name="Core_Registry_AccessDeniedWrite" xml:space="preserve">
+    <value>Access denied writing {0}\{1}. Run SysTuneX as administrator.</value>
+  </data>
+  <data name="Core_Registry_WriteFailed" xml:space="preserve">
+    <value>Failed to write {0}\{1}: {2}</value>
+  </data>
+  <data name="Core_Registry_AccessDeniedDelete" xml:space="preserve">
+    <value>Access denied deleting {0}\{1}.</value>
+  </data>
+  <data name="Core_Registry_DeleteFailed" xml:space="preserve">
+    <value>Failed to delete {0}\{1}: {2}</value>
+  </data>
+  <data name="Core_Service_NotInstalled" xml:space="preserve">
+    <value>{0} is not installed on this machine.</value>
+  </data>
+  <data name="Core_Service_StartTimedOut" xml:space="preserve">
+    <value>{0} did not reach the running state in time.</value>
+  </data>
+  <data name="Core_Service_StartFailed" xml:space="preserve">
+    <value>Could not start {0}: {1}</value>
+  </data>
+  <data name="Core_Service_CannotBeStopped" xml:space="preserve">
+    <value>Windows does not allow {0} to be stopped while it is running.</value>
+  </data>
+  <data name="Core_Service_StopTimedOut" xml:space="preserve">
+    <value>{0} did not stop in time.</value>
+  </data>
+  <data name="Core_Service_StopFailed" xml:space="preserve">
+    <value>Could not stop {0}: {1}</value>
+  </data>
+  <data name="Core_Service_UnknownStartType" xml:space="preserve">
+    <value>Refusing to write an unknown start type.</value>
+  </data>
+  <data name="Core_Service_SetStartTypeFailed" xml:space="preserve">
+    <value>Could not set the start type of {0}: {1}</value>
+  </data>
+  <data name="Core_Power_NoHighPerformanceScheme" xml:space="preserve">
+    <value>Neither the Ultimate Performance nor the High Performance scheme is available on this edition of Windows.</value>
+  </data>
+  <data name="Core_Power_ActivateFailed" xml:space="preserve">
+    <value>powercfg could not activate the scheme: {0}</value>
+  </data>
+  <data name="Core_Power_CoreParkingRejected" xml:space="preserve">
+    <value>powercfg rejected the core parking change: {0}</value>
+  </data>
+  <data name="Core_Power_ReapplyFailed" xml:space="preserve">
+    <value>Could not re-apply the power scheme: {0}</value>
+  </data>
+  <data name="Core_Power_HibernationFailed" xml:space="preserve">
+    <value>powercfg could not change hibernation: {0}</value>
+  </data>
+  <data name="Core_Network_AdapterGone" xml:space="preserve">
+    <value>The selected network adapter is no longer available.</value>
+  </data>
+  <data name="Core_Network_InvalidAddress" xml:space="preserve">
+    <value>'{0}' is not a valid IPv4 address.</value>
+  </data>
+  <data name="Core_Network_NoIpv4Interface" xml:space="preserve">
+    <value>The adapter does not expose an IPv4 interface index.</value>
+  </data>
+  <data name="Core_Network_SetResolverFailed" xml:space="preserve">
+    <value>netsh could not set the primary resolver: {0}</value>
+  </data>
+  <data name="Core_Network_RestoreDhcpFailed" xml:space="preserve">
+    <value>netsh could not restore DHCP resolvers: {0}</value>
+  </data>
+  <data name="Core_Network_FlushCacheFailed" xml:space="preserve">
+    <value>Could not flush the resolver cache: {0}</value>
+  </data>
+  <data name="Core_Network_NoConnectedAdapter" xml:space="preserve">
+    <value>No connected network adapter was found to apply the change to.</value>
+  </data>
+  <data name="Core_Hosts_NeedsAdministrator" xml:space="preserve">
+    <value>Editing the hosts file requires administrator rights.</value>
+  </data>
+  <data name="Core_Hosts_Locked" xml:space="preserve">
+    <value>The hosts file is locked. Real-time protection in Microsoft Defender blocks edits to it - add an exclusion or turn tamper protection off temporarily.</value>
+  </data>
+  <data name="Core_Hosts_UpdateFailed" xml:space="preserve">
+    <value>Could not update the hosts file: {0}</value>
+  </data>
+  <data name="Core_RestorePoint_NeedsAdministrator" xml:space="preserve">
+    <value>Creating a restore point requires administrator rights.</value>
+  </data>
+  <data name="Core_RestorePoint_ProtectionOff" xml:space="preserve">
+    <value>System Protection is switched off for the system drive. Turn it on in System Properties &gt; System Protection to let SysTuneX create restore points.</value>
+  </data>
+  <data name="Core_RestorePoint_Refused" xml:space="preserve">
+    <value>Windows refused to create a restore point: {0}</value>
+  </data>
+  <data name="Core_RestorePoint_Failed" xml:space="preserve">
+    <value>Could not create a restore point: {0}</value>
+  </data>
+  <data name="Core_Process_NotRunning" xml:space="preserve">
+    <value>Process {0} is no longer running.</value>
+  </data>
+  <data name="Core_Process_SetPriorityFailed" xml:space="preserve">
+    <value>Could not set priority for PID {0}: {1}</value>
+  </data>
+  <data name="Core_Process_ZeroAffinity" xml:space="preserve">
+    <value>An affinity mask of zero would leave the process no cores to run on.</value>
+  </data>
+  <data name="Core_Process_SetAffinityFailed" xml:space="preserve">
+    <value>Could not set affinity for PID {0}: {1}</value>
+  </data>
+  <data name="Core_Boot_NeedsAdministrator" xml:space="preserve">
+    <value>Changing the boot configuration requires administrator rights.</value>
+  </data>
+  <data name="Core_Boot_BcdeditRefused" xml:space="preserve">
+    <value>bcdedit refused the change: {0}</value>
+  </data>
+  <data name="Core_Tweak_BuildGated" xml:space="preserve">
+    <value>{0} does not apply to Windows build {1}.</value>
+  </data>
+  <data name="Core_Tweak_NoHandler" xml:space="preserve">
+    <value>No handler is registered for '{0}'.</value>
+  </data>
+  <data name="Core_Tweak_ApplyFailed" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Core_Cleanup_UnsafePackageName" xml:space="preserve">
+    <value>Refusing to run with a package name that contains shell metacharacters.</value>
+  </data>
+  <data name="Core_Cleanup_PackageRemoveFailed" xml:space="preserve">
+    <value>Could not remove {0}: {1}</value>
+  </data>
+  <data name="Core_Environment_ExecutableUnknown" xml:space="preserve">
+    <value>Could not resolve the SysTuneX executable path.</value>
+  </data>
+  <data name="Core_Environment_ElevationRefused" xml:space="preserve">
+    <value>The elevation prompt was cancelled or blocked by policy.</value>
+  </data>
+  <data name="Core_Environment_ExplorerRestartFailed" xml:space="preserve">
+    <value>Could not restart Explorer: {0}</value>
+  </data>
+  <data name="Core_GameMode_NeedsAdministrator" xml:space="preserve">
+    <value>Game mode needs administrator rights to stop services and switch the power scheme.</value>
+  </data>
+  <data name="Core_GameMode_AlreadyOn" xml:space="preserve">
+    <value>Game mode is already on.</value>
+  </data>
+  <data name="Core_GameMode_NotOn" xml:space="preserve">
+    <value>Game mode is not on.</value>
+  </data>
+  <data name="Core_Backup_ExportFailed" xml:space="preserve">
+    <value>Export failed: {0}</value>
+  </data>
+  <data name="Core_Diagnostics_ReportFailed" xml:space="preserve">
+    <value>Could not write the diagnostics report: {0}</value>
+  </data>
+  <data name="Core_Game_NameEmpty" xml:space="preserve">
+    <value>Enter the executable name of the game, for example dota2.exe.</value>
+  </data>
+  <data name="Core_Game_AlreadyWatched" xml:space="preserve">
+    <value>{0} is already on the watch list.</value>
+  </data>
+  <data name="Settings_AutoGameMode" xml:space="preserve">
+    <value>Automatic game mode</value>
+  </data>
+  <data name="Settings_AutoGameMode_Hint" xml:space="preserve">
+    <value>Turns game mode on when one of the games below starts, and off again when it exits. Only while SysTuneX is running — doing it with the app closed would mean a Windows service, and a background service that stops other services is a much bigger thing to trust.</value>
+  </data>
+  <data name="Settings_WatchedGames" xml:space="preserve">
+    <value>Watched games</value>
+  </data>
+  <data name="Settings_AddGame" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="Settings_AddGame_Placeholder" xml:space="preserve">
+    <value>Executable name, e.g. dota2.exe</value>
+  </data>
+  <data name="Settings_RemoveGame" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="GameMode_TriggeredBy" xml:space="preserve">
+    <value>Started automatically for {0}.</value>
+  </data>
+  <data name="Tray_Open" xml:space="preserve">
+    <value>Open SysTuneX</value>
+  </data>
+  <data name="Tray_Quit" xml:space="preserve">
+    <value>Quit</value>
+  </data>
+  <data name="Tray_GameMode_On" xml:space="preserve">
+    <value>Turn game mode on</value>
+  </data>
+  <data name="Tray_GameMode_Off" xml:space="preserve">
+    <value>Turn game mode off</value>
+  </data>
+  <data name="Settings_Tray" xml:space="preserve">
+    <value>Tray icon</value>
+  </data>
+  <data name="Settings_Tray_Hint" xml:space="preserve">
+    <value>Shows CPU, memory and temperature on hover, with the game mode switch in its menu.</value>
+  </data>
+  <data name="Settings_ShowTray" xml:space="preserve">
+    <value>Show the tray icon</value>
+  </data>
+  <data name="Settings_MinimizeToTray" xml:space="preserve">
+    <value>Closing the window leaves SysTuneX running in the tray</value>
+  </data>
+  <data name="Snapshot_Section" xml:space="preserve">
+    <value>Before and after</value>
+  </data>
+  <data name="Snapshot_Hint" xml:space="preserve">
+    <value>Record the machine before a change and again after it, then compare the two. This lists what actually changed on the system — it is not a performance measurement, because SysTuneX cannot see frame times. For those, run the same benchmark on both sides.</value>
+  </data>
+  <data name="Snapshot_Capture" xml:space="preserve">
+    <value>Record now</value>
+  </data>
+  <data name="Snapshot_Capturing" xml:space="preserve">
+    <value>Reading the current state…</value>
+  </data>
+  <data name="Snapshot_Label" xml:space="preserve">
+    <value>Name, e.g. before Competitive FPS</value>
+  </data>
+  <data name="Snapshot_Compare" xml:space="preserve">
+    <value>Compare</value>
+  </data>
+  <data name="Snapshot_PickTwo" xml:space="preserve">
+    <value>Pick two different snapshots to compare.</value>
+  </data>
+  <data name="Snapshot_NoDifference" xml:space="preserve">
+    <value>Nothing changed between these two.</value>
+  </data>
+  <data name="Snapshot_Differences" xml:space="preserve">
+    <value>{0} differences.</value>
+  </data>
+  <data name="Snapshot_Before" xml:space="preserve">
+    <value>Before</value>
+  </data>
+  <data name="Snapshot_After" xml:space="preserve">
+    <value>After</value>
+  </data>
+  <data name="Snapshot_Empty" xml:space="preserve">
+    <value>No snapshots yet.</value>
+  </data>
+  <data name="Snapshot_First" xml:space="preserve">
+    <value>First</value>
+  </data>
+  <data name="Snapshot_Second" xml:space="preserve">
+    <value>Second</value>
+  </data>
+  <data name="Settings_Schedule" xml:space="preserve">
+    <value>Schedule</value>
+  </data>
+  <data name="Settings_Schedule_Hint" xml:space="preserve">
+    <value>Holds game mode on during a window of the day. Checked once a minute against the clock rather than set as a timer, so a machine that slept through the start still catches up. Only a scheduled session is ended by the schedule — switching game mode on by hand outlives it.</value>
+  </data>
+  <data name="Settings_Schedule_On" xml:space="preserve">
+    <value>Turn game mode on by schedule</value>
+  </data>
+  <data name="Settings_Schedule_From" xml:space="preserve">
+    <value>From</value>
+  </data>
+  <data name="Settings_Schedule_To" xml:space="preserve">
+    <value>To</value>
+  </data>
+  <data name="Settings_Schedule_Days" xml:space="preserve">
+    <value>Days (none selected means every day)</value>
+  </data>
 </root>

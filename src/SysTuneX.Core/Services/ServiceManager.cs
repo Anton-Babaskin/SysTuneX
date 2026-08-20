@@ -100,7 +100,7 @@ public sealed class ServiceManager : IServiceManager
         string? resolved = ResolveServiceName(definition.ServiceName);
         if (resolved is null)
         {
-            return OperationResult.NoChange($"{definition.ServiceName} is not installed on this machine.");
+            return OperationResult.NoChange(CoreMessages.ServiceNotInstalled, definition.ServiceName);
         }
 
         ServiceSnapshot before = GetState(resolved);
@@ -144,7 +144,7 @@ public sealed class ServiceManager : IServiceManager
         string? resolved = ResolveServiceName(serviceName);
         if (resolved is null)
         {
-            return OperationResult.NoChange($"{serviceName} is not installed on this machine.");
+            return OperationResult.NoChange(CoreMessages.ServiceNotInstalled, serviceName);
         }
 
         BackupEntry? entry = _backup.FindActive(BackupKind.ServiceConfiguration, resolved)
@@ -194,7 +194,7 @@ public sealed class ServiceManager : IServiceManager
                 string? resolved = ResolveServiceName(serviceName);
                 if (resolved is null)
                 {
-                    return OperationResult.NoChange($"{serviceName} is not installed.");
+                    return OperationResult.NoChange(CoreMessages.ServiceNotInstalled, serviceName);
                 }
 
                 try
@@ -222,11 +222,11 @@ public sealed class ServiceManager : IServiceManager
                 }
                 catch (System.ServiceProcess.TimeoutException)
                 {
-                    return OperationResult.Fail($"{resolved} did not reach the running state in time.");
+                    return OperationResult.Fail(CoreMessages.ServiceStartTimedOut, resolved);
                 }
                 catch (Exception ex)
                 {
-                    return OperationResult.Fail($"Could not start {resolved}: {Describe(ex)}", ex);
+                    return OperationResult.Fail(CoreMessages.ServiceStartFailed, ex, resolved, Describe(ex));
                 }
             },
             cancellationToken);
@@ -240,7 +240,7 @@ public sealed class ServiceManager : IServiceManager
                 string? resolved = ResolveServiceName(serviceName);
                 if (resolved is null)
                 {
-                    return OperationResult.NoChange($"{serviceName} is not installed.");
+                    return OperationResult.NoChange(CoreMessages.ServiceNotInstalled, serviceName);
                 }
 
                 try
@@ -253,7 +253,7 @@ public sealed class ServiceManager : IServiceManager
 
                     if (!controller.CanStop)
                     {
-                        return OperationResult.Fail($"Windows does not allow {resolved} to be stopped while it is running.");
+                        return OperationResult.Fail(CoreMessages.ServiceCannotBeStopped, resolved);
                     }
 
                     // Dependents hold the service open, so they have to go down first.
@@ -283,11 +283,11 @@ public sealed class ServiceManager : IServiceManager
                 }
                 catch (System.ServiceProcess.TimeoutException)
                 {
-                    return OperationResult.Fail($"{resolved} did not stop in time.");
+                    return OperationResult.Fail(CoreMessages.ServiceStopTimedOut, resolved);
                 }
                 catch (Exception ex)
                 {
-                    return OperationResult.Fail($"Could not stop {resolved}: {Describe(ex)}", ex);
+                    return OperationResult.Fail(CoreMessages.ServiceStopFailed, ex, resolved, Describe(ex));
                 }
             },
             cancellationToken);
@@ -304,12 +304,12 @@ public sealed class ServiceManager : IServiceManager
         string? resolved = ResolveServiceName(serviceName);
         if (resolved is null)
         {
-            return OperationResult.NoChange($"{serviceName} is not installed.");
+            return OperationResult.NoChange(CoreMessages.ServiceNotInstalled, serviceName);
         }
 
         if (startMode == ServiceStartMode.Unknown)
         {
-            return OperationResult.Fail("Refusing to write an unknown start type.");
+            return OperationResult.Fail(CoreMessages.ServiceUnknownStartType);
         }
 
         IntPtr manager = IntPtr.Zero;
@@ -350,7 +350,7 @@ public sealed class ServiceManager : IServiceManager
         }
         catch (Exception ex)
         {
-            return OperationResult.Fail($"Could not set the start type of {resolved}: {ex.Message}", ex);
+            return OperationResult.Fail(CoreMessages.ServiceSetStartTypeFailed, ex, resolved, ex.Message);
         }
         finally
         {

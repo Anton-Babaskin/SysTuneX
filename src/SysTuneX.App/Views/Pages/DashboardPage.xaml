@@ -134,6 +134,53 @@
                         </Grid>
                     </Border>
 
+                    <!--
+                        Game mode. Everything behind this switch is reversible without a reboot -
+                        services stopped rather than disabled, power scheme, memory trim - which is
+                        what separates it from applying a profile.
+                    -->
+                    <Border Style="{StaticResource Card}" Margin="{StaticResource StackGap}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0"
+                                    Width="44" Height="44"
+                                    CornerRadius="10"
+                                    Margin="0,0,14,0"
+                                    VerticalAlignment="Top"
+                                    Background="{StaticResource BrandGradientBrush}">
+                                <ui:SymbolIcon Symbol="Flash24" Foreground="White" />
+                            </Border>
+
+                            <StackPanel Grid.Column="1">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{loc:Loc GameMode_Title}" Style="{StaticResource SectionTitle}" />
+                                    <Border Style="{StaticResource Pill}"
+                                            Margin="10,0,0,0"
+                                            Background="{StaticResource RiskSafeBackgroundBrush}"
+                                            Visibility="{Binding IsGameModeOn, Converter={StaticResource BoolToVisibility}}">
+                                        <TextBlock Text="{Binding GameModeCaption}"
+                                                   Style="{StaticResource PillText}"
+                                                   Foreground="{StaticResource RiskSafeBrush}" />
+                                    </Border>
+                                </StackPanel>
+                                <TextBlock Text="{Binding GameModeDetail}"
+                                           Style="{StaticResource BodyText}"
+                                           Margin="0,6,12,0" />
+                            </StackPanel>
+
+                            <ui:ToggleSwitch Grid.Column="2"
+                                             VerticalAlignment="Center"
+                                             IsChecked="{Binding IsGameModeOn, Mode=OneWay}"
+                                             IsEnabled="{Binding IsElevated}"
+                                             Command="{Binding ToggleGameModeCommand}" />
+                        </Grid>
+                    </Border>
+
                     <!-- Live counters -->
                     <UniformGrid Columns="4" Margin="{StaticResource StackGap}">
                         <Border Style="{StaticResource Card}" Margin="0,0,6,0">
@@ -211,6 +258,58 @@
                             </StackPanel>
                         </Border>
                     </UniformGrid>
+
+                    <!--
+                        Temperatures. Every tile here is hidden when its sensor did not answer -
+                        a missing reading is not zero degrees, and pretending otherwise is worse
+                        than showing nothing.
+                    -->
+                    <Border Style="{StaticResource Card}" Margin="{StaticResource StackGap}">
+                        <StackPanel>
+                            <TextBlock Text="{loc:Loc Dashboard_Temperatures}"
+                                       Style="{StaticResource SectionTitle}"
+                                       Margin="0,0,0,12" />
+
+                            <UniformGrid Columns="3"
+                                         Visibility="{Binding HasAnySensor, Converter={StaticResource BoolToVisibility}}">
+                                <StackPanel Margin="0,0,12,0"
+                                            Visibility="{Binding HasCpuTemperature, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Text="{loc:Loc Dashboard_CpuTemp}" Style="{StaticResource CaptionText}" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding CpuTemperature}" Style="{StaticResource MetricValue}" />
+                                        <TextBlock Text="°C" Style="{StaticResource MetricUnit}" />
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding CpuTemperatureSource}"
+                                               Style="{StaticResource CaptionText}"
+                                               TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+
+                                <StackPanel Margin="0,0,12,0"
+                                            Visibility="{Binding HasGpuTemperature, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Text="{loc:Loc Dashboard_GpuTemp}" Style="{StaticResource CaptionText}" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding GpuTemperature}" Style="{StaticResource MetricValue}" />
+                                        <TextBlock Text="°C" Style="{StaticResource MetricUnit}" />
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding GpuTemperatureSource}"
+                                               Style="{StaticResource CaptionText}"
+                                               TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+
+                                <StackPanel Visibility="{Binding HasGpuUsage, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Text="{loc:Loc Dashboard_GpuLoad}" Style="{StaticResource CaptionText}" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding GpuUsage}" Style="{StaticResource MetricValue}" />
+                                        <TextBlock Text="%" Style="{StaticResource MetricUnit}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </UniformGrid>
+
+                            <TextBlock Text="{loc:Loc Dashboard_NoSensors}"
+                                       Style="{StaticResource BodyText}"
+                                       Visibility="{Binding HasAnySensor, Converter={StaticResource InverseBoolToVisibility}}" />
+                        </StackPanel>
+                    </Border>
 
                     <!-- Machine details -->
                     <Border Style="{StaticResource Card}">
