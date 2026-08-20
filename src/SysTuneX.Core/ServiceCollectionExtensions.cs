@@ -38,6 +38,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ITweakEngine, TweakEngine>();
         services.AddSingleton<IProfileService, ProfileService>();
         services.AddSingleton<IDiagnosticsService, DiagnosticsService>();
+        services.AddSingleton<ISensorService, SensorService>();
+        services.AddSingleton<IGameModeService, GameModeService>();
 
         return services;
     }
