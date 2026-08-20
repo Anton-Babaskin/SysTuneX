@@ -25,6 +25,7 @@ public sealed partial class SettingsViewModel : PageViewModel
     private readonly IPowerService _power;
     private readonly IGameWatcher _watcher;
     private readonly GameModeAutomation _automation;
+    private readonly ITrayIconService _tray;
 
     private bool _isLoading = true;
 
@@ -61,6 +62,13 @@ public sealed partial class SettingsViewModel : PageViewModel
     [ObservableProperty]
     private string _newGameName = string.Empty;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanMinimizeToTray))]
+    private bool _showTrayIcon = true;
+
+    [ObservableProperty]
+    private bool _minimizeToTray;
+
     public SettingsViewModel(
         IAppSettingsService settings,
         ILocalizationService localization,
@@ -69,7 +77,8 @@ public sealed partial class SettingsViewModel : PageViewModel
         IDiagnosticsService diagnostics,
         IPowerService power,
         IGameWatcher watcher,
-        GameModeAutomation automation)
+        GameModeAutomation automation,
+        ITrayIconService tray)
     {
         _settings = settings;
         _localization = localization;
@@ -79,6 +88,7 @@ public sealed partial class SettingsViewModel : PageViewModel
         _power = power;
         _watcher = watcher;
         _automation = automation;
+        _tray = tray;
 
         Languages = localization.AvailableLanguages;
     }
@@ -119,6 +129,8 @@ public sealed partial class SettingsViewModel : PageViewModel
         ConfirmAdvanced = current.ConfirmAdvancedChanges;
         VerboseLogging = current.VerboseLogging;
         AutoGameMode = current.AutoGameMode;
+        ShowTrayIcon = current.ShowTrayIcon;
+        MinimizeToTray = current.MinimizeToTray;
 
         _isLoading = false;
 
@@ -255,6 +267,43 @@ public sealed partial class SettingsViewModel : PageViewModel
         }
 
         _settings.Current.ConfirmAdvancedChanges = value;
+        Save();
+    }
+
+    /// <summary>Closing to the tray only makes sense while there is a tray icon to come back from.</summary>
+    public bool CanMinimizeToTray => ShowTrayIcon;
+
+    partial void OnShowTrayIconChanged(bool value)
+    {
+        if (value)
+        {
+            _tray.Show();
+        }
+        else
+        {
+            _tray.Hide();
+
+            // Otherwise closing the window would hide it with no way to get it back.
+            MinimizeToTray = false;
+        }
+
+        if (_isLoading)
+        {
+            return;
+        }
+
+        _settings.Current.ShowTrayIcon = value;
+        Save();
+    }
+
+    partial void OnMinimizeToTrayChanged(bool value)
+    {
+        if (_isLoading)
+        {
+            return;
+        }
+
+        _settings.Current.MinimizeToTray = value;
         Save();
     }
 

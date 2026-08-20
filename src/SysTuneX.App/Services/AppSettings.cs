@@ -29,6 +29,12 @@ public sealed class AppSettings
     /// <summary>Turn game mode on and off automatically as a watched game starts and exits.</summary>
     public bool AutoGameMode { get; set; }
 
+    /// <summary>Show the tray icon with live counters and the game mode switch.</summary>
+    public bool ShowTrayIcon { get; set; } = true;
+
+    /// <summary>Closing the window leaves SysTuneX in the tray instead of exiting.</summary>
+    public bool MinimizeToTray { get; set; }
+
     public double WindowWidth { get; set; } = 1240;
 
     public double WindowHeight { get; set; } = 800;

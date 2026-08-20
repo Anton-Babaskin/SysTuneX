@@ -15,6 +15,7 @@ public partial class MainWindow : FluentWindow
 {
     private readonly IAppSettingsService _settings;
     private readonly ILocalizationService _localization;
+    private readonly ITrayIconService _tray;
 
     public MainWindow(
         MainWindowViewModel viewModel,
@@ -23,11 +24,13 @@ public partial class MainWindow : FluentWindow
         ISnackbarService snackbarService,
         IContentDialogService dialogService,
         IAppSettingsService settings,
-        ILocalizationService localization)
+        ILocalizationService localization,
+        ITrayIconService tray)
     {
         ViewModel = viewModel;
         _settings = settings;
         _localization = localization;
+        _tray = tray;
 
         DataContext = viewModel;
         InitializeComponent();
@@ -70,6 +73,14 @@ public partial class MainWindow : FluentWindow
         {
             _settings.Current.WindowWidth = Width;
             _settings.Current.WindowHeight = Height;
+        }
+
+        // Hiding rather than exiting is only honest while there is a tray icon to get back
+        // from. Without one the window would vanish with no way to reopen it.
+        if (_settings.Current.MinimizeToTray && _tray.IsVisible)
+        {
+            e.Cancel = true;
+            Hide();
         }
     }
 

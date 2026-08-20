@@ -1612,4 +1612,28 @@
   <data name="GameMode_TriggeredBy" xml:space="preserve">
     <value>Включён автоматически для «{0}».</value>
   </data>
+  <data name="Tray_Open" xml:space="preserve">
+    <value>Открыть SysTuneX</value>
+  </data>
+  <data name="Tray_Quit" xml:space="preserve">
+    <value>Выход</value>
+  </data>
+  <data name="Tray_GameMode_On" xml:space="preserve">
+    <value>Включить игровой режим</value>
+  </data>
+  <data name="Tray_GameMode_Off" xml:space="preserve">
+    <value>Выключить игровой режим</value>
+  </data>
+  <data name="Settings_Tray" xml:space="preserve">
+    <value>Значок в трее</value>
+  </data>
+  <data name="Settings_Tray_Hint" xml:space="preserve">
+    <value>Показывает загрузку процессора, память и температуру при наведении, а в меню — переключатель игрового режима.</value>
+  </data>
+  <data name="Settings_ShowTray" xml:space="preserve">
+    <value>Показывать значок в трее</value>
+  </data>
+  <data name="Settings_MinimizeToTray" xml:space="preserve">
+    <value>Закрытие окна оставляет SysTuneX работать в трее</value>
+  </data>
 </root>
