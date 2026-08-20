@@ -7,6 +7,7 @@ using SysTuneX.App.Localization;
 using SysTuneX.App.Services;
 using SysTuneX.Core.Abstractions;
 using SysTuneX.Core.Models;
+using SysTuneX.Core.Services;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 
@@ -22,6 +23,8 @@ public sealed partial class SettingsViewModel : PageViewModel
     private readonly IUserInteraction _interaction;
     private readonly IDiagnosticsService _diagnostics;
     private readonly IPowerService _power;
+    private readonly IGameWatcher _watcher;
+    private readonly GameModeAutomation _automation;
 
     private bool _isLoading = true;
 
@@ -52,13 +55,21 @@ public sealed partial class SettingsViewModel : PageViewModel
     [ObservableProperty]
     private PowerScheme? _selectedPowerScheme;
 
+    [ObservableProperty]
+    private bool _autoGameMode;
+
+    [ObservableProperty]
+    private string _newGameName = string.Empty;
+
     public SettingsViewModel(
         IAppSettingsService settings,
         ILocalizationService localization,
         IEnvironmentService environment,
         IUserInteraction interaction,
         IDiagnosticsService diagnostics,
-        IPowerService power)
+        IPowerService power,
+        IGameWatcher watcher,
+        GameModeAutomation automation)
     {
         _settings = settings;
         _localization = localization;
@@ -66,6 +77,8 @@ public sealed partial class SettingsViewModel : PageViewModel
         _interaction = interaction;
         _diagnostics = diagnostics;
         _power = power;
+        _watcher = watcher;
+        _automation = automation;
 
         Languages = localization.AvailableLanguages;
     }
@@ -73,6 +86,8 @@ public sealed partial class SettingsViewModel : PageViewModel
     public IReadOnlyList<LanguageOption> Languages { get; }
 
     public ObservableCollection<PowerScheme> PowerSchemes { get; } = [];
+
+    public ObservableCollection<WatchedGame> WatchedGames { get; } = [];
 
     public string Version => typeof(SettingsViewModel).Assembly.GetName().Version?.ToString(3) ?? "2.0.0";
 
@@ -103,9 +118,11 @@ public sealed partial class SettingsViewModel : PageViewModel
         CreateRestorePoint = current.CreateRestorePointBeforeProfiles;
         ConfirmAdvanced = current.ConfirmAdvancedChanges;
         VerboseLogging = current.VerboseLogging;
+        AutoGameMode = current.AutoGameMode;
 
         _isLoading = false;
 
+        RefreshWatchedGames();
         return LoadPowerSchemesAsync();
     }
 
@@ -239,6 +256,77 @@ public sealed partial class SettingsViewModel : PageViewModel
 
         _settings.Current.ConfirmAdvancedChanges = value;
         Save();
+    }
+
+    partial void OnAutoGameModeChanged(bool value)
+    {
+        // Applied straight away rather than on next launch, so the effect of the switch is
+        // something the user can see before they close the page.
+        _automation.IsEnabled = value;
+
+        if (_isLoading)
+        {
+            return;
+        }
+
+        _settings.Current.AutoGameMode = value;
+        Save();
+    }
+
+    [RelayCommand]
+    private async Task AddGameAsync()
+    {
+        OperationResult result = await _watcher
+            .AddAsync(NewGameName, NewGameName)
+            .ConfigureAwait(true);
+
+        if (!result.Success)
+        {
+            _interaction.ShowError(result.Describe(_localization));
+            return;
+        }
+
+        if (!result.Changed)
+        {
+            _interaction.ShowInfo(result.Describe(_localization));
+            return;
+        }
+
+        NewGameName = string.Empty;
+        RefreshWatchedGames();
+    }
+
+    [RelayCommand]
+    private async Task RemoveGameAsync(WatchedGame? game)
+    {
+        if (game is null)
+        {
+            return;
+        }
+
+        await _watcher.RemoveAsync(game.ProcessName).ConfigureAwait(true);
+        RefreshWatchedGames();
+    }
+
+    [RelayCommand]
+    private async Task ToggleGameAsync(WatchedGame? game)
+    {
+        if (game is null)
+        {
+            return;
+        }
+
+        await _watcher.SetEnabledAsync(game.ProcessName, !game.Enabled).ConfigureAwait(true);
+        RefreshWatchedGames();
+    }
+
+    private void RefreshWatchedGames()
+    {
+        WatchedGames.Clear();
+        foreach (WatchedGame game in _watcher.Games.OrderBy(g => g.DisplayName, StringComparer.CurrentCulture))
+        {
+            WatchedGames.Add(game);
+        }
     }
 
     partial void OnVerboseLoggingChanged(bool value)

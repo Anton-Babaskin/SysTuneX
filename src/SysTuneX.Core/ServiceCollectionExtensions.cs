@@ -40,6 +40,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IDiagnosticsService, DiagnosticsService>();
         services.AddSingleton<ISensorService, SensorService>();
         services.AddSingleton<IGameModeService, GameModeService>();
+        services.AddSingleton<IGameWatcher, GameWatcher>();
+        services.AddSingleton<GameModeAutomation>();
 
         return services;
     }

@@ -409,7 +409,7 @@ public sealed partial class DashboardViewModel : PageViewModel
                 }]);
 
                 GameModeResult result = turningOn
-                    ? await _gameMode.EnableAsync(progress, token).ConfigureAwait(true)
+                    ? await _gameMode.EnableAsync(progress, cancellationToken: token).ConfigureAwait(true)
                     : await _gameMode.DisableAsync(progress, token).ConfigureAwait(true);
 
                 UpdateGameMode();
@@ -442,13 +442,25 @@ public sealed partial class DashboardViewModel : PageViewModel
     {
         IsGameModeOn = _gameMode.IsActive;
 
-        GameModeDetail = _gameMode.Session is { } session
-            ? string.Format(
-                _localization["GameMode_Detail"],
-                session.StoppedServices.Count,
-                session.FreedMemoryMb,
-                session.StartedAt.ToLocalTime().ToString("HH:mm"))
-            : _localization["GameMode_Hint"];
+        if (_gameMode.Session is not { } session)
+        {
+            GameModeDetail = _localization["GameMode_Hint"];
+            return;
+        }
+
+        string detail = string.Format(
+            _localization["GameMode_Detail"],
+            session.StoppedServices.Count,
+            session.FreedMemoryMb,
+            session.StartedAt.ToLocalTime().ToString("HH:mm"));
+
+        // Worth naming: a switch that moved on its own is confusing unless it says what moved it.
+        if (session is { AutoStarted: true, TriggeredBy.Length: > 0 })
+        {
+            detail += " " + string.Format(_localization["GameMode_TriggeredBy"], session.TriggeredBy);
+        }
+
+        GameModeDetail = detail;
     }
 
     private async Task SampleSensorsAsync()

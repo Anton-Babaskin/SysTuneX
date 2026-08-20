@@ -85,6 +85,82 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Automatic game mode -->
+                <Border Style="{StaticResource Card}" Margin="{StaticResource SectionGap}">
+                    <StackPanel>
+                        <TextBlock Text="{loc:Loc Settings_AutoGameMode}"
+                                   Style="{StaticResource SectionTitle}"
+                                   Margin="0,0,0,6" />
+                        <TextBlock Text="{loc:Loc Settings_AutoGameMode_Hint}"
+                                   Style="{StaticResource BodyText}"
+                                   Margin="0,0,0,14" />
+
+                        <ui:ToggleSwitch IsChecked="{Binding AutoGameMode, Mode=TwoWay}"
+                                         Content="{loc:Loc Settings_AutoGameMode}"
+                                         Margin="0,0,0,16" />
+
+                        <TextBlock Text="{loc:Loc Settings_WatchedGames}"
+                                   Style="{StaticResource CaptionText}"
+                                   Margin="0,0,0,8" />
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <ui:TextBox PlaceholderText="{loc:Loc Settings_AddGame_Placeholder}"
+                                        Text="{Binding NewGameName, UpdateSourceTrigger=PropertyChanged}"
+                                        Width="300"
+                                        Margin="0,0,8,0" />
+                            <ui:Button Content="{loc:Loc Settings_AddGame}"
+                                       Icon="{ui:SymbolIcon Add24}"
+                                       Command="{Binding AddGameCommand}" />
+                        </StackPanel>
+
+                        <ItemsControl ItemsSource="{Binding WatchedGames}" MaxHeight="280">
+                            <ItemsControl.Template>
+                                <ControlTemplate TargetType="ItemsControl">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <ItemsPresenter />
+                                    </ScrollViewer>
+                                </ControlTemplate>
+                            </ItemsControl.Template>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource SubtleCard}" Margin="0,0,0,6">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <CheckBox Grid.Column="0"
+                                                      IsChecked="{Binding Enabled, Mode=OneWay}"
+                                                      VerticalAlignment="Center"
+                                                      Margin="0,0,10,0"
+                                                      Command="{Binding DataContext.ToggleGameCommand,
+                                                                RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                      CommandParameter="{Binding}" />
+
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding DisplayName}"
+                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                                <TextBlock Text="{Binding ProcessName}"
+                                                           Style="{StaticResource MonoText}" />
+                                            </StackPanel>
+
+                                            <ui:Button Grid.Column="2"
+                                                       Content="{loc:Loc Settings_RemoveGame}"
+                                                       Icon="{ui:SymbolIcon Delete24}"
+                                                       Visibility="{Binding IsCustom, Converter={StaticResource BoolToVisibility}}"
+                                                       Command="{Binding DataContext.RemoveGameCommand,
+                                                                 RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                       CommandParameter="{Binding}" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
                 <!-- Power -->
                 <Border Style="{StaticResource Card}" Margin="{StaticResource SectionGap}">
                     <StackPanel>
