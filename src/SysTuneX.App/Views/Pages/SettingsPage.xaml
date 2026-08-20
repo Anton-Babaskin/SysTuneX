@@ -85,6 +85,26 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Tray -->
+                <Border Style="{StaticResource Card}" Margin="{StaticResource SectionGap}">
+                    <StackPanel>
+                        <TextBlock Text="{loc:Loc Settings_Tray}"
+                                   Style="{StaticResource SectionTitle}"
+                                   Margin="0,0,0,6" />
+                        <TextBlock Text="{loc:Loc Settings_Tray_Hint}"
+                                   Style="{StaticResource BodyText}"
+                                   Margin="0,0,0,14" />
+
+                        <ui:ToggleSwitch IsChecked="{Binding ShowTrayIcon, Mode=TwoWay}"
+                                         Content="{loc:Loc Settings_ShowTray}"
+                                         Margin="0,0,0,10" />
+
+                        <ui:ToggleSwitch IsChecked="{Binding MinimizeToTray, Mode=TwoWay}"
+                                         IsEnabled="{Binding CanMinimizeToTray}"
+                                         Content="{loc:Loc Settings_MinimizeToTray}" />
+                    </StackPanel>
+                </Border>
+
                 <!-- Automatic game mode -->
                 <Border Style="{StaticResource Card}" Margin="{StaticResource SectionGap}">
                     <StackPanel>

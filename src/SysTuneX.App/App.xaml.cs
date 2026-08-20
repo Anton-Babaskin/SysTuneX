@@ -60,6 +60,7 @@ public partial class App : Application
                 services.AddSingleton<ISnackbarService, SnackbarService>();
                 services.AddSingleton<IContentDialogService, ContentDialogService>();
                 services.AddSingleton<IUserInteraction, UserInteraction>();
+                services.AddSingleton<ITrayIconService, TrayIconService>();
 
                 services.AddSingleton<MainWindow>();
                 services.AddSingleton<MainWindowViewModel>();
@@ -110,6 +111,11 @@ public partial class App : Application
 
             await StartGameModeAutomationAsync(settings.Current.AutoGameMode);
 
+            if (settings.Current.ShowTrayIcon)
+            {
+                _host.Services.GetRequiredService<ITrayIconService>().Show();
+            }
+
             MainWindow = _host.Services.GetRequiredService<MainWindow>();
             MainWindow.Show();
         }
@@ -125,6 +131,10 @@ public partial class App : Application
     {
         try
         {
+            // Before the host stops, or the icon outlives the process and sits there until
+            // something hovers over it.
+            _host.Services.GetRequiredService<ITrayIconService>().Dispose();
+
             await _host.Services.GetRequiredService<IAppSettingsService>().SaveAsync();
             await _host.StopAsync(TimeSpan.FromSeconds(3));
             _host.Dispose();

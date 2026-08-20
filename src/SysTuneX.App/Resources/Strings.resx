@@ -1024,4 +1024,28 @@
   <data name="GameMode_TriggeredBy" xml:space="preserve">
     <value>Started automatically for {0}.</value>
   </data>
+  <data name="Tray_Open" xml:space="preserve">
+    <value>Open SysTuneX</value>
+  </data>
+  <data name="Tray_Quit" xml:space="preserve">
+    <value>Quit</value>
+  </data>
+  <data name="Tray_GameMode_On" xml:space="preserve">
+    <value>Turn game mode on</value>
+  </data>
+  <data name="Tray_GameMode_Off" xml:space="preserve">
+    <value>Turn game mode off</value>
+  </data>
+  <data name="Settings_Tray" xml:space="preserve">
+    <value>Tray icon</value>
+  </data>
+  <data name="Settings_Tray_Hint" xml:space="preserve">
+    <value>Shows CPU, memory and temperature on hover, with the game mode switch in its menu.</value>
+  </data>
+  <data name="Settings_ShowTray" xml:space="preserve">
+    <value>Show the tray icon</value>
+  </data>
+  <data name="Settings_MinimizeToTray" xml:space="preserve">
+    <value>Closing the window leaves SysTuneX running in the tray</value>
+  </data>
 </root>
