@@ -3,6 +3,35 @@
 Every released version, newest first. The release workflow publishes only the section
 for the version being released, so a release page shows that version and nothing else.
 
+## v2.6.0
+
+Three things this time.
+
+**Applying a profile now shows what it will do first.** Every registry value the profile would
+touch, with the machine's current contents beside the new one. Tweaks already in place are
+counted rather than listed, because a dozen no-ops hide the two that matter. Two distinctions the
+preview keeps: "value does not exist" is not "value is zero" — that difference is why revert can
+delete rather than invent — and a tweak handled by code rather than a registry write is marked as
+such rather than shown with an empty list.
+
+**One search box for everything.** Roughly a hundred tweaks across four pages, plus services and
+cleanup targets; knowing which page a setting lives on is the app's problem, not the user's.
+Choosing a result navigates there and filters that page to the item, so it is the one row on
+screen. Catalog identifiers are searchable alongside names — someone who knows the value is
+called HwSchMode should not have to guess what the tweak is called in their language.
+
+**AMD GPU temperatures**, through ADL, which ships with the driver. Only its scalar calls are
+used: the richer ones take large structs whose layout differs between driver branches, and
+getting one wrong corrupts memory rather than returning an error. A tuner that can crash the
+machine it is tuning is worse than one that shows no temperature. Intel is still not covered.
+
+The vendor libraries cannot be tested without the hardware, so the part that picks between them
+now can be: which probe wins, what happens when one throws, and what counts as a believable
+number. Readings outside anything a running part produces are dropped — some firmware returns a
+placeholder, and a plausible-looking wrong number is worse than a blank tile.
+
+---
+
 ## v2.5.0
 
 No new buttons in this one. Game mode was the largest piece of untested code in the project, and
