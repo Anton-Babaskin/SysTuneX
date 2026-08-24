@@ -219,3 +219,82 @@ public sealed class FakeGameWatcher : IGameWatcher
 
     public void Dispose() => IsWatching = false;
 }
+
+/// <summary>A registry whose contents the test decides.</summary>
+public sealed class FakeRegistryService : IRegistryService
+{
+    private readonly Dictionary<string, object> _values = new(StringComparer.OrdinalIgnoreCase);
+
+    public FakeRegistryService Set(string keyPath, string valueName, object value)
+    {
+        _values[$"{keyPath}\\{valueName}"] = value;
+        return this;
+    }
+
+    public object? GetValue(string keyPath, string valueName) =>
+        _values.TryGetValue($"{keyPath}\\{valueName}", out object? value) ? value : null;
+
+    public (object? Value, Microsoft.Win32.RegistryValueKind Kind) GetValueWithKind(string keyPath, string valueName) =>
+        (GetValue(keyPath, valueName), Microsoft.Win32.RegistryValueKind.DWord);
+
+    public OperationResult SetValue(string keyPath, string valueName, object value, Microsoft.Win32.RegistryValueKind kind)
+    {
+        Set(keyPath, valueName, value);
+        return OperationResult.Ok();
+    }
+
+    public OperationResult DeleteValue(string keyPath, string valueName)
+    {
+        _values.Remove($"{keyPath}\\{valueName}");
+        return OperationResult.Ok();
+    }
+
+    public bool KeyExists(string keyPath) =>
+        _values.Keys.Any(k => k.StartsWith(keyPath + "\\", StringComparison.OrdinalIgnoreCase));
+
+    public bool ValueExists(string keyPath, string valueName) => GetValue(keyPath, valueName) is not null;
+
+    public IReadOnlyList<string> GetSubKeyNames(string keyPath) => [];
+}
+
+/// <summary>A tweak engine whose catalog and statuses the test decides.</summary>
+public sealed class FakeTweakEngine : ITweakEngine
+{
+    private readonly Dictionary<string, TweakStatus> _statuses = new(StringComparer.OrdinalIgnoreCase);
+
+    public List<TweakDefinition> Catalog { get; } = [];
+
+    public FakeTweakEngine Add(TweakDefinition tweak, TweakStatus status)
+    {
+        Catalog.Add(tweak);
+        _statuses[tweak.Id] = status;
+        return this;
+    }
+
+    public IReadOnlyList<TweakDefinition> GetSupportedTweaks(TweakCategory? category = null) =>
+        category is null ? Catalog : [.. Catalog.Where(t => t.Category == category)];
+
+    public TweakDefinition? Find(string tweakId) =>
+        Catalog.FirstOrDefault(t => string.Equals(t.Id, tweakId, StringComparison.OrdinalIgnoreCase));
+
+    public TweakStatus GetStatus(TweakDefinition tweak) =>
+        _statuses.TryGetValue(tweak.Id, out TweakStatus status) ? status : TweakStatus.Unknown;
+
+    public Task<OperationResult> ApplyAsync(TweakDefinition tweak, CancellationToken cancellationToken = default) =>
+        Task.FromResult(OperationResult.Ok());
+
+    public Task<OperationResult> RevertAsync(TweakDefinition tweak, CancellationToken cancellationToken = default) =>
+        Task.FromResult(OperationResult.Ok());
+
+    public Task<BatchResult> ApplyManyAsync(
+        IEnumerable<TweakDefinition> tweaks,
+        IProgress<BatchProgress>? progress = null,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult(BatchResult.Empty);
+
+    public Task<BatchResult> RevertManyAsync(
+        IEnumerable<TweakDefinition> tweaks,
+        IProgress<BatchProgress>? progress = null,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult(BatchResult.Empty);
+}
