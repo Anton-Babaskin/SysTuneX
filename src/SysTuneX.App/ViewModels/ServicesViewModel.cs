@@ -8,7 +8,7 @@ using SysTuneX.Core.Models;
 
 namespace SysTuneX.App.ViewModels;
 
-public sealed partial class ServicesViewModel : PageViewModel
+public sealed partial class ServicesViewModel : PageViewModel, IFilterablePage
 {
     private readonly IServiceManager _services;
     private readonly IUserInteraction _interaction;
