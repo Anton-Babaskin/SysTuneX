@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using SysTuneX.Core.Abstractions;
 using SysTuneX.Core.Diagnostics;
 using SysTuneX.Core.Services;
+using SysTuneX.Core.Services.Sensors;
 
 namespace SysTuneX.Core;
 
@@ -38,6 +39,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ITweakEngine, TweakEngine>();
         services.AddSingleton<IProfileService, ProfileService>();
         services.AddSingleton<IDiagnosticsService, DiagnosticsService>();
+        // Registered in order; the first that answers wins. A machine has one vendor's card,
+        // so this needs no detection - the probe for a driver that is not installed says so.
+        services.AddSingleton<IGpuSensorProbe, NvidiaGpuProbe>();
+        services.AddSingleton<IGpuSensorProbe, AmdGpuProbe>();
         services.AddSingleton<ISensorService, SensorService>();
         services.AddSingleton<IGameModeService, GameModeService>();
         services.AddSingleton<IGameWatcher, GameWatcher>();

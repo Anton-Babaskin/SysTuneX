@@ -153,11 +153,13 @@ Automation runs only while SysTuneX is open. Doing it with the app closed would 
 
 ## Temperatures
 
-GPU temperature, load and fan speed come from **NVIDIA's NVML**, which ships with the driver and needs no install. CPU temperature comes from the **ACPI thermal zone** where firmware exposes one — that is a board thermal zone rather than the CPU package, and the dashboard says so.
+GPU temperature comes from the vendor's own library, shipped with the driver and needing no install: **NVML** for NVIDIA — temperature, load and fan — and **ADL** for AMD, which reports temperature and fan. CPU temperature comes from the **ACPI thermal zone** where firmware exposes one — that is a board thermal zone rather than the CPU package, and the dashboard says so.
+
+Only ADL's scalar calls are used. Its richer ones take large structs whose layout differs between driver branches, and getting one wrong corrupts memory rather than returning an error — a tuner that can crash the machine it is tuning is worse than one that shows no temperature. Intel GPUs are not covered yet.
 
 **SysTuneX ships no kernel driver, and will not.** Reading a CPU package temperature properly needs a ring-0 helper, and the off-the-shelf ones are on Microsoft's vulnerable driver blocklist and trip anti-cheat. That is not a trade worth making in a tool people install to play games.
 
-So a reading appears only when a sensor actually answered. Where none does, the card says so and why — a missing reading is not zero degrees. AMD and Intel GPUs report no temperature yet; their vendor libraries are not wired up, and saying so beats inventing a figure.
+So a reading appears only when a sensor actually answered. Where none does, the card says so and why — a missing reading is not zero degrees. Readings outside anything a running part produces are dropped too: some firmware returns a placeholder, and a plausible-looking wrong number is worse than a blank.
 
 ---
 
