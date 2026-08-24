@@ -1108,4 +1108,41 @@
   <data name="Settings_Schedule_Days" xml:space="preserve">
     <value>Days (none selected means every day)</value>
   </data>
+  <data name="Preview_Summary" xml:space="preserve">
+    <value>{0} changes to make, {1} services to switch.</value>
+  </data>
+  <data name="Preview_AlreadyApplied" xml:space="preserve">
+    <value>{0} already in place — not listed below.</value>
+  </data>
+  <data name="Preview_ValueLine" xml:space="preserve">
+    <value>{0}
+    {1}  →  {2}</value>
+  </data>
+  <data name="Preview_ServiceLine" xml:space="preserve">
+    <value>{0}: {1} → {2}</value>
+  </data>
+  <data name="Preview_NotSet" xml:space="preserve">
+    <value>not set</value>
+  </data>
+  <data name="Preview_HandlerDriven" xml:space="preserve">
+    <value>    not a registry write — applied through Windows itself</value>
+  </data>
+  <data name="Preview_PowerScheme" xml:space="preserve">
+    <value>Power scheme → high performance</value>
+  </data>
+  <data name="Preview_NeedsRestart" xml:space="preserve">
+    <value>Some of these take effect after a restart.</value>
+  </data>
+  <data name="Preview_NeedsSignOut" xml:space="preserve">
+    <value>Some of these take effect after signing out.</value>
+  </data>
+  <data name="Preview_HasAdvanced" xml:space="preserve">
+    <value>This includes advanced changes. Everything is recorded and can be rolled back from the change log.</value>
+  </data>
+  <data name="Preview_Nothing" xml:space="preserve">
+    <value>Everything in this profile is already applied.</value>
+  </data>
+  <data name="Search_Placeholder" xml:space="preserve">
+    <value>Search settings</value>
+  </data>
 </root>

@@ -1696,4 +1696,41 @@
   <data name="Settings_Schedule_Days" xml:space="preserve">
     <value>Дни (ничего не выбрано — каждый день)</value>
   </data>
+  <data name="Preview_Summary" xml:space="preserve">
+    <value>Изменений: {0}, служб: {1}.</value>
+  </data>
+  <data name="Preview_AlreadyApplied" xml:space="preserve">
+    <value>Уже применено: {0} — ниже не показаны.</value>
+  </data>
+  <data name="Preview_ValueLine" xml:space="preserve">
+    <value>{0}
+    {1}  →  {2}</value>
+  </data>
+  <data name="Preview_ServiceLine" xml:space="preserve">
+    <value>{0}: {1} → {2}</value>
+  </data>
+  <data name="Preview_NotSet" xml:space="preserve">
+    <value>не задано</value>
+  </data>
+  <data name="Preview_HandlerDriven" xml:space="preserve">
+    <value>    не запись в реестр — применяется средствами Windows</value>
+  </data>
+  <data name="Preview_PowerScheme" xml:space="preserve">
+    <value>Схема питания → высокая производительность</value>
+  </data>
+  <data name="Preview_NeedsRestart" xml:space="preserve">
+    <value>Часть изменений вступит в силу после перезагрузки.</value>
+  </data>
+  <data name="Preview_NeedsSignOut" xml:space="preserve">
+    <value>Часть изменений вступит в силу после повторного входа.</value>
+  </data>
+  <data name="Preview_HasAdvanced" xml:space="preserve">
+    <value>Здесь есть рискованные изменения. Всё записывается и откатывается из журнала изменений.</value>
+  </data>
+  <data name="Preview_Nothing" xml:space="preserve">
+    <value>Всё из этого профиля уже применено.</value>
+  </data>
+  <data name="Search_Placeholder" xml:space="preserve">
+    <value>Поиск по настройкам</value>
+  </data>
 </root>
