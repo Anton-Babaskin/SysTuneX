@@ -61,6 +61,7 @@ public partial class App : Application
                 services.AddSingleton<IContentDialogService, ContentDialogService>();
                 services.AddSingleton<IUserInteraction, UserInteraction>();
                 services.AddSingleton<ITrayIconService, TrayIconService>();
+                services.AddSingleton<IGlobalSearch, GlobalSearch>();
 
                 services.AddSingleton<MainWindow>();
                 services.AddSingleton<MainWindowViewModel>();
