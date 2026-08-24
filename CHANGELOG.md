@@ -3,6 +3,35 @@
 Every released version, newest first. The release workflow publishes only the section
 for the version being released, so a release page shows that version and nothing else.
 
+## v2.5.0
+
+No new buttons in this one. Game mode was the largest piece of untested code in the project, and
+the one whose failure is worst: it does not crash, it quietly leaves a machine with its services
+stopped and nothing on screen saying so.
+
+Thirteen tests now cover it, and they pin the properties that matter rather than the happy path:
+
+* Turning game mode off starts back **exactly** what it stopped — a service that was already
+  stopped beforehand stays stopped, because "restore" must not leave the machine different.
+* Enabling twice does not open a second session. A second one would write an empty
+  stopped-services list over the first, and the services it stopped would never come back.
+* A session interrupted by the app dying is found on disk by the next launch and can still be
+  undone.
+* A service that refuses to stop is named in the notes and not recorded as stopped; one that
+  refuses to start again is reported, and the session still ends rather than stranding the rest.
+* Without administrator rights it refuses instead of half-working.
+
+Seven more cover the automation, including the rule the feature turns on: a session switched on
+by hand survives a game exiting, and is not replaced when one starts.
+
+Six more cover the interface's own strings — every key the UI asks for exists, both languages
+carry the same keys with the same placeholders, and none is blank or defined twice. Those checks
+existed as a script I ran by hand; now they run on every build.
+
+All of it was verified by breaking the code on purpose and watching the right tests fail.
+
+---
+
 ## v2.4.0
 
 **A tray icon.** Hover for CPU, memory and whichever temperatures the machine reports; the menu
