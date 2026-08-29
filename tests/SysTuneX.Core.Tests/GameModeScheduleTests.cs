@@ -1,4 +1,8 @@
+using Microsoft.Extensions.Logging.Abstractions;
+using SysTuneX.Core.Abstractions;
 using SysTuneX.Core.Models;
+using SysTuneX.Core.Services;
+using SysTuneX.Core.Tests.Fakes;
 using Xunit;
 
 namespace SysTuneX.Core.Tests;
@@ -104,4 +108,131 @@ public sealed class GameModeScheduleTests
         StartsAt = new TimeOnly(23, 0),
         EndsAt = new TimeOnly(2, 0),
     };
+}
+
+/// <summary>
+/// The scheduler itself, rather than the window arithmetic.
+///
+/// Only <see cref="GameModeSchedule.Covers"/> had tests, and the schedule shipped with a defect
+/// that no amount of testing Covers could have found: the scheduler turned game mode on and then
+/// refused to turn it off again, leaving services stopped and the power plan raised until someone
+/// noticed by hand.
+/// </summary>
+public sealed class GameModeSchedulerTests
+{
+    private static readonly DateTime Friday = new(2026, 8, 21, 0, 0, 0);
+
+    private static (GameModeScheduler Scheduler, FakeGameModeService GameMode) Scheduler(
+        DateTime now,
+        FakeGameModeService? gameMode = null)
+    {
+        gameMode = gameMode ?? new FakeGameModeService();
+
+        var scheduler = new GameModeScheduler(NullLogger<GameModeScheduler>.Instance, gameMode)
+        {
+            Now = () => now,
+        };
+
+        scheduler.Schedule = new GameModeSchedule
+        {
+            Enabled = true,
+            StartsAt = new TimeOnly(19, 0),
+            EndsAt = new TimeOnly(23, 0),
+        };
+
+        return (scheduler, gameMode);
+    }
+
+    [Fact]
+    public async Task Entering_the_window_turns_game_mode_on()
+    {
+        (GameModeScheduler scheduler, FakeGameModeService gameMode) = Scheduler(Friday.AddHours(20));
+
+        await scheduler.TickAsync();
+
+        Assert.True(gameMode.IsActive);
+        Assert.Equal([GameModeTriggerKind.Schedule], gameMode.EnabledBy);
+    }
+
+    [Fact]
+    public async Task The_schedule_turns_off_what_the_schedule_turned_on()
+    {
+        // The defect, in the shape it actually had: one scheduler, ticked inside the window and
+        // then outside it. Seeding an already-running session instead would have hidden it, since
+        // the bug was in what the scheduler wrote when *it* enabled - the session read as
+        // user-started, and the guard against closing a hand-started session then refused to ever
+        // turn it off. Services stayed stopped and the power plan raised for as long as the
+        // machine stayed up.
+        var gameMode = new FakeGameModeService();
+        DateTime now = Friday.AddHours(20);
+
+        var scheduler = new GameModeScheduler(NullLogger<GameModeScheduler>.Instance, gameMode)
+        {
+            Now = () => now,
+        };
+
+        scheduler.Schedule = new GameModeSchedule
+        {
+            Enabled = true,
+            StartsAt = new TimeOnly(19, 0),
+            EndsAt = new TimeOnly(23, 0),
+        };
+
+        await scheduler.TickAsync();
+        Assert.True(gameMode.IsActive);
+
+        now = Friday.AddHours(23).AddMinutes(1);
+        await scheduler.TickAsync();
+
+        Assert.False(gameMode.IsActive);
+        Assert.Equal(1, gameMode.DisableCount);
+    }
+
+    [Fact]
+    public async Task A_session_switched_on_by_hand_survives_the_end_of_the_window()
+    {
+        // Someone who pressed the switch at 23:05 did not ask for it to end at 23:00.
+        (GameModeScheduler scheduler, FakeGameModeService gameMode) = Scheduler(
+            Friday.AddHours(23).AddMinutes(1),
+            new FakeGameModeService().AlreadyOn(GameModeTriggerKind.User));
+
+        await scheduler.TickAsync();
+
+        Assert.True(gameMode.IsActive);
+        Assert.Equal(0, gameMode.DisableCount);
+    }
+
+    [Fact]
+    public async Task A_session_a_game_started_is_also_closed_by_the_window_ending()
+    {
+        (GameModeScheduler scheduler, FakeGameModeService gameMode) = Scheduler(
+            Friday.AddHours(23).AddMinutes(1),
+            new FakeGameModeService().AlreadyOn(GameModeTriggerKind.Game));
+
+        await scheduler.TickAsync();
+
+        Assert.False(gameMode.IsActive);
+    }
+
+    [Fact]
+    public async Task Ticking_inside_the_window_twice_does_not_start_a_second_session()
+    {
+        (GameModeScheduler scheduler, FakeGameModeService gameMode) = Scheduler(Friday.AddHours(20));
+
+        await scheduler.TickAsync();
+        await scheduler.TickAsync();
+
+        Assert.Single(gameMode.EnabledBy);
+    }
+
+    [Fact]
+    public async Task Ticking_outside_the_window_with_game_mode_already_off_does_nothing()
+    {
+        (GameModeScheduler scheduler, FakeGameModeService gameMode) = Scheduler(Friday.AddHours(12));
+
+        await scheduler.TickAsync();
+
+        Assert.Empty(gameMode.EnabledBy);
+        Assert.Equal(0, gameMode.DisableCount);
+    }
 }

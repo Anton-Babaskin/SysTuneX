@@ -78,7 +78,7 @@ public sealed class GameModeService : IGameModeService
 
     public async Task<GameModeResult> EnableAsync(
         IProgress<string>? progress = null,
-        WatchedGame? trigger = null,
+        GameModeTrigger? startedBy = null,
         CancellationToken cancellationToken = default)
     {
         if (!_environment.IsElevated)
@@ -113,8 +113,9 @@ public sealed class GameModeService : IGameModeService
                 PreviousPowerScheme = previousScheme,
                 PreviousPowerSchemeName = previousName,
                 FreedMemoryMb = freedMb,
-                AutoStarted = trigger is not null,
-                TriggeredBy = trigger?.DisplayName ?? string.Empty,
+                AutoStarted = startedBy is not null,
+                TriggeredBy = startedBy?.Name ?? string.Empty,
+                TriggerKind = startedBy?.Kind ?? GameModeTriggerKind.User,
             };
 
             await SaveSessionAsync(cancellationToken).ConfigureAwait(false);
