@@ -20,7 +20,7 @@ SysTuneX показывает, что именно он меняет, сохра
 [![License](https://img.shields.io/github/license/Anton-Babaskin/SysTuneX)](LICENSE)
 
 ![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows11\&logoColor=white)
-![.NET 9](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet\&logoColor=white)
+![.NET 10](https://img.shields.io/badge/.NET-10.0%20LTS-512BD4?logo=dotnet\&logoColor=white)
 ![WPF UI](https://img.shields.io/badge/WPF%20UI-4.3-5C2D91)
 ![MVVM Toolkit](https://img.shields.io/badge/MVVM%20Toolkit-8.4-5C2D91)
 ![xUnit](https://img.shields.io/badge/xUnit-2.9-512BD4)
@@ -315,7 +315,7 @@ SysTuneX содержит несколько инструментов для с�
 
 | Компонент             | Технология                         |
 | --------------------- | ---------------------------------- |
-| Язык / Runtime        | C# / .NET 9                        |
+| Язык / Runtime        | C# / .NET 10 (LTS)                 |
 | Desktop UI            | WPF                                |
 | UI framework          | WPF UI 4.3                         |
 | Архитектура           | MVVM                               |
@@ -420,7 +420,7 @@ WPF startup tests создают реальный экземпляр прило�
 
 Требования:
 
-* .NET 9 SDK
+* .NET 10 SDK
 * Windows для полного набора WPF-тестов
 
 Клонирование:

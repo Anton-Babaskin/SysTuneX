@@ -24,7 +24,7 @@ SysTuneX shows exactly what it changes, saves your original settings and lets yo
 [![License](https://img.shields.io/github/license/Anton-Babaskin/SysTuneX)](LICENSE)
 
 ![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows11\&logoColor=white)
-![.NET 9](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet\&logoColor=white)
+![.NET 10](https://img.shields.io/badge/.NET-10.0%20LTS-512BD4?logo=dotnet\&logoColor=white)
 ![WPF UI](https://img.shields.io/badge/WPF%20UI-4.3-5C2D91)
 ![MVVM Toolkit](https://img.shields.io/badge/MVVM%20Toolkit-8.4-5C2D91)
 ![xUnit](https://img.shields.io/badge/xUnit-2.9-512BD4)
@@ -319,7 +319,7 @@ Unsupported tweaks are filtered instead of being blindly written.
 
 | Component            | Technology                         |
 | -------------------- | ---------------------------------- |
-| Language / Runtime   | C# / .NET 9                        |
+| Language / Runtime   | C# / .NET 10 (LTS)                 |
 | Desktop UI           | WPF                                |
 | UI framework         | WPF UI 4.3                         |
 | Architecture         | MVVM                               |
@@ -424,7 +424,7 @@ Re-running the job on an unchanged version only refreshes the assets, so it is s
 
 Requirements:
 
-* .NET 9 SDK
+* .NET 10 SDK
 * Windows for the complete WPF test suite
 
 Clone the repository:

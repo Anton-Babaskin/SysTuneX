@@ -12,11 +12,11 @@ dotnet build SysTuneX.sln --configuration Release
 dotnet test tests/SysTuneX.Core.Tests/SysTuneX.Core.Tests.csproj
 ```
 
-`SysTuneX.Core.Tests` runs anywhere with the .NET 9 SDK. `SysTuneX.App.Tests` loads WPF and so
+`SysTuneX.Core.Tests` runs anywhere with the .NET 10 SDK. `SysTuneX.App.Tests` loads WPF and so
 needs Windows; CI runs it on every push, and it is the suite that catches a page whose XAML only
 fails when something tries to draw it.
 
-Requirements: the **.NET 9 SDK**, and Windows for the full test suite.
+Requirements: the **.NET 10 SDK**, and Windows for the full test suite.
 
 ## The rules that are not negotiable
 
