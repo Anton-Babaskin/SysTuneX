@@ -14,7 +14,7 @@ Optimize performance, reduce latency and clean up Windows 10/11 with a few click
 
 SysTuneX shows exactly what it changes, saves your original settings and lets you roll everything back.
 
-[Русская версия](README.ru.md) · [Download](https://github.com/Anton-Babaskin/SysTuneX/releases) · [Build from source](#build-from-source) · [Report an issue](https://github.com/Anton-Babaskin/SysTuneX/issues)
+[Русская версия](README.ru.md) · [Download](https://github.com/Anton-Babaskin/SysTuneX/releases) · [Build from source](#build-from-source) · [Contributing](CONTRIBUTING.md) · [Report an issue](https://github.com/Anton-Babaskin/SysTuneX/issues)
 
 <br>
 
@@ -486,9 +486,8 @@ Use the same game scene, graphics settings and test duration for both runs.
 
 ## Contributing
 
-Issues and pull requests are welcome.
-
-When adding or changing a tweak:
+Issues and pull requests are welcome. **[CONTRIBUTING.md](CONTRIBUTING.md)** has the full guide;
+the short version, when adding or changing a tweak:
 
 * keep system operations out of the UI layer
 * record the original state before modifying it
@@ -496,6 +495,10 @@ When adding or changing a tweak:
 * validate Windows build requirements
 * prefer documented Windows APIs and policies
 * add or update catalog tests
+* give every user-visible string an entry in both `Strings.resx` and `Strings.ru.resx`
+
+Releases are cut per merge; see **[RELEASING.md](RELEASING.md)**. Security reports go through
+**[SECURITY.md](SECURITY.md)** rather than a public issue.
 
 ---
 

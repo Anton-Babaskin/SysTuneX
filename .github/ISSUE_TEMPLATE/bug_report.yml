@@ -1,0 +1,67 @@
+name: Bug report
+description: Something in SysTuneX does not work, or changed the machine in a way it should not have.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        SysTuneX changes system settings, so a report that names the exact tweak and the exact
+        machine is worth ten that describe a feeling. The diagnostic report below collects most
+        of what is needed in one file.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you got instead.
+      placeholder: |
+        1. Opened Gaming
+        2. Applied "Disable Game DVR"
+        3. Expected it to report applied; it reported partial with no explanation
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: SysTuneX version
+      description: Settings → About, or the file version of SysTuneX.exe.
+      placeholder: "2.5.0"
+    validations:
+      required: true
+
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version and build
+      description: Run `winver`, or copy the OS line from Settings → About.
+      placeholder: "Windows 11 24H2, build 26100.2314"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: elevated
+    attributes:
+      label: Was SysTuneX running as administrator?
+      description: Most tweaks, and the frame counter, need it. The app shows a red banner when it is not.
+      options:
+        - "Yes"
+        - "No"
+        - "Not sure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostic report
+      description: >
+        Settings → Everything else → Diagnostics → Create report, then attach the file by
+        dragging it here. Turn on detailed logging first and reproduce the problem if you can.
+        Please skim it before attaching — it contains your hardware and Windows configuration.
+
+  - type: textarea
+    id: anything-else
+    attributes:
+      label: Anything else
+      description: Screenshots, GPU vendor and driver version, whether a revert put the machine back.
