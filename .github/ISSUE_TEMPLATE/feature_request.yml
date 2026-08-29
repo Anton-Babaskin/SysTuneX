@@ -1,0 +1,42 @@
+name: Feature or tweak request
+description: Suggest something SysTuneX should do, or a Windows setting it should expose.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve
+      description: >
+        Describe the situation, not the solution. "Alt-tabbing out of the game to read the frame
+        rate is awkward" says more than "add an overlay", because it leaves room for an answer
+        that works.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you have in mind
+      description: If you already know the registry value, service or API involved, name it here.
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of change is this
+      options:
+        - A new tweak or setting to expose
+        - A change to the interface
+        - Something about game mode or automation
+        - Monitoring, sensors or the frame counter
+        - Something else
+    validations:
+      required: true
+
+  - type: textarea
+    id: risk
+    attributes:
+      label: What could it break
+      description: >
+        If this is a new tweak: is it reversible, does it need a restart, and is there a machine
+        or Windows edition where it would do harm? A tweak that cannot be undone will not be
+        added, so this question decides more than it looks.

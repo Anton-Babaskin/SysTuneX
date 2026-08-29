@@ -1,8 +1,10 @@
 name: Build
 
 on:
+  # Every branch, so a feature branch gets the same build and the same downloadable
+  # SysTuneX.exe as main does. Only the release job is gated on the default branch.
   push:
-    branches: [main, master, 'claude/**']
+    branches: ['**']
   pull_request:
     branches: [main, master]
   workflow_dispatch:

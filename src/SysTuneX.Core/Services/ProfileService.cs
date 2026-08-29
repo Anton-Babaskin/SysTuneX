@@ -20,6 +20,7 @@ public sealed class ProfileService : IProfileService
     private readonly IPrivacyService _privacy;
     private readonly INetworkService _network;
     private readonly IEnvironmentService _environment;
+    private readonly IRegistryService _registry;
 
     public ProfileService(
         ILogger<ProfileService> logger,
@@ -31,7 +32,8 @@ public sealed class ProfileService : IProfileService
         IRestorePointService restorePoints,
         IPrivacyService privacy,
         INetworkService network,
-        IEnvironmentService environment)
+        IEnvironmentService environment,
+        IRegistryService registry)
     {
         _logger = logger;
         _tweaks = tweaks;
@@ -43,6 +45,7 @@ public sealed class ProfileService : IProfileService
         _privacy = privacy;
         _network = network;
         _environment = environment;
+        _registry = registry;
     }
 
     public IReadOnlyList<GameProfile> GetProfiles() => GameProfiles.BuiltIn;
@@ -77,6 +80,98 @@ public sealed class ProfileService : IProfileService
                 return (double)applied / tweaks.Count;
             },
             cancellationToken);
+    }
+
+    /// <summary>
+    /// Reading a value per registry change and a state per service is blocking work. Running it
+    /// here rather than making every caller remember to is the difference between an interface
+    /// that is easy to use correctly and one that freezes a window when someone forgets.
+    /// </summary>
+    public Task<ProfilePreview> PreviewAsync(
+        GameProfile profile,
+        bool includeAdvanced,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(profile);
+
+        return Task.Run(() => BuildPreview(profile, includeAdvanced, cancellationToken), cancellationToken);
+    }
+
+    private ProfilePreview BuildPreview(
+        GameProfile profile,
+        bool includeAdvanced,
+        CancellationToken cancellationToken)
+    {
+
+        IReadOnlyList<TweakDefinition> tweaks = ResolveTweaks(profile, includeAdvanced);
+        var previews = new List<TweakPreview>(tweaks.Count);
+
+        foreach (TweakDefinition tweak in tweaks)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            bool applied = _tweaks.GetStatus(tweak) == TweakStatus.Applied;
+
+            var values = new List<ValueChangePreview>(tweak.Changes.Count);
+            foreach (RegistryChange change in tweak.Changes)
+            {
+                object? current = _registry.GetValue(change.KeyPath, change.ValueName);
+
+                values.Add(new ValueChangePreview(
+                    change.KeyPath,
+                    change.ValueName,
+                    current is null ? null : RegistryValueComparer.Stringify(current),
+                    RegistryValueComparer.Stringify(change.OptimizedValue),
+                    change.WindowsDefaultValue is null
+                        ? null
+                        : RegistryValueComparer.Stringify(change.WindowsDefaultValue)));
+            }
+
+            previews.Add(new TweakPreview(
+                tweak.Id,
+                tweak.Name,
+                tweak.Risk,
+                applied,
+                tweak.RequiresRestart,
+                tweak.RequiresSignOut,
+                values));
+        }
+
+        var services = new List<ServicePreview>();
+        foreach (string serviceName in profile.ServiceNames)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (ServiceCatalog.Find(serviceName) is not { } definition)
+            {
+                continue;
+            }
+
+            ServiceSnapshot state = _services.GetState(serviceName);
+            if (!state.IsInstalled)
+            {
+                // A service Windows does not have on this edition is not a change anyone can
+                // act on, so it is left out rather than listed as "would do nothing".
+                continue;
+            }
+
+            services.Add(new ServicePreview(
+                serviceName,
+                definition.DisplayName,
+                definition.Risk,
+                state.StartMode,
+                definition.DisabledStartMode,
+                state.StartMode != definition.DisabledStartMode));
+        }
+
+        return new ProfilePreview
+        {
+            ProfileId = profile.Id,
+            Tweaks = previews,
+            Services = services,
+            ChangesPowerScheme = profile.ActivateHighPerformancePower,
+            TrimsMemory = profile.TrimMemory,
+        };
     }
 
     public async Task<ProfileApplyResult> ApplyAsync(

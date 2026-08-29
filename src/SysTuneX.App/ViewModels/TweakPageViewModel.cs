@@ -12,7 +12,7 @@ namespace SysTuneX.App.ViewModels;
 /// Shared behaviour for the four tweak pages: grouping, search, risk filtering, and the
 /// apply/revert commands. Only the category and the page copy differ between them.
 /// </summary>
-public abstract partial class TweakPageViewModel : PageViewModel
+public abstract partial class TweakPageViewModel : PageViewModel, IFilterablePage
 {
     private readonly ITweakEngine _tweaks;
     private readonly IEnvironmentService _environment;

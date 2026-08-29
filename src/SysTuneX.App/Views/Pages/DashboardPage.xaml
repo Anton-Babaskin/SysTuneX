@@ -260,55 +260,63 @@
                     </UniformGrid>
 
                     <!--
-                        Temperatures. Every tile here is hidden when its sensor did not answer -
-                        a missing reading is not zero degrees, and pretending otherwise is worse
-                        than showing nothing.
+                        Temperatures, as one line rather than the card of large tiles this used to
+                        be. The Monitor page shows these properly now, next to the frame rate they
+                        explain; repeating that here in full would be the same numbers twice. Each
+                        reading is hidden when its sensor did not answer - a missing reading is not
+                        zero degrees, and pretending otherwise is worse than showing nothing.
                     -->
-                    <Border Style="{StaticResource Card}" Margin="{StaticResource StackGap}">
-                        <StackPanel>
-                            <TextBlock Text="{loc:Loc Dashboard_Temperatures}"
-                                       Style="{StaticResource SectionTitle}"
-                                       Margin="0,0,0,12" />
+                    <Border Style="{StaticResource SubtleCard}" Margin="{StaticResource StackGap}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
 
-                            <UniformGrid Columns="3"
-                                         Visibility="{Binding HasAnySensor, Converter={StaticResource BoolToVisibility}}">
-                                <StackPanel Margin="0,0,12,0"
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
+                                        Visibility="{Binding HasAnySensor, Converter={StaticResource BoolToVisibility}}">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,20,0"
+                                            ToolTip="{Binding CpuTemperatureSource}"
                                             Visibility="{Binding HasCpuTemperature, Converter={StaticResource BoolToVisibility}}">
-                                    <TextBlock Text="{loc:Loc Dashboard_CpuTemp}" Style="{StaticResource CaptionText}" />
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding CpuTemperature}" Style="{StaticResource MetricValue}" />
-                                        <TextBlock Text="°C" Style="{StaticResource MetricUnit}" />
-                                    </StackPanel>
-                                    <TextBlock Text="{Binding CpuTemperatureSource}"
-                                               Style="{StaticResource CaptionText}"
-                                               TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{loc:Loc Dashboard_CpuTemp}" Style="{StaticResource CaptionText}"
+                                               VerticalAlignment="Center" Margin="0,0,6,0" />
+                                    <TextBlock FontWeight="SemiBold" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                                        <Run Text="{Binding CpuTemperature, Mode=OneWay}" /><Run Text="°C" />
+                                    </TextBlock>
                                 </StackPanel>
 
-                                <StackPanel Margin="0,0,12,0"
+                                <StackPanel Orientation="Horizontal" Margin="0,0,20,0"
+                                            ToolTip="{Binding GpuTemperatureSource}"
                                             Visibility="{Binding HasGpuTemperature, Converter={StaticResource BoolToVisibility}}">
-                                    <TextBlock Text="{loc:Loc Dashboard_GpuTemp}" Style="{StaticResource CaptionText}" />
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding GpuTemperature}" Style="{StaticResource MetricValue}" />
-                                        <TextBlock Text="°C" Style="{StaticResource MetricUnit}" />
-                                    </StackPanel>
-                                    <TextBlock Text="{Binding GpuTemperatureSource}"
-                                               Style="{StaticResource CaptionText}"
-                                               TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{loc:Loc Dashboard_GpuTemp}" Style="{StaticResource CaptionText}"
+                                               VerticalAlignment="Center" Margin="0,0,6,0" />
+                                    <TextBlock FontWeight="SemiBold" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                                        <Run Text="{Binding GpuTemperature, Mode=OneWay}" /><Run Text="°C" />
+                                    </TextBlock>
                                 </StackPanel>
 
-                                <StackPanel Visibility="{Binding HasGpuUsage, Converter={StaticResource BoolToVisibility}}">
-                                    <TextBlock Text="{loc:Loc Dashboard_GpuLoad}" Style="{StaticResource CaptionText}" />
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding GpuUsage}" Style="{StaticResource MetricValue}" />
-                                        <TextBlock Text="%" Style="{StaticResource MetricUnit}" />
-                                    </StackPanel>
+                                <StackPanel Orientation="Horizontal"
+                                            Visibility="{Binding HasGpuUsage, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Text="{loc:Loc Dashboard_GpuLoad}" Style="{StaticResource CaptionText}"
+                                               VerticalAlignment="Center" Margin="0,0,6,0" />
+                                    <TextBlock FontWeight="SemiBold" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                                        <Run Text="{Binding GpuUsage, Mode=OneWay}" /><Run Text="%" />
+                                    </TextBlock>
                                 </StackPanel>
-                            </UniformGrid>
+                            </StackPanel>
 
-                            <TextBlock Text="{loc:Loc Dashboard_NoSensors}"
-                                       Style="{StaticResource BodyText}"
+                            <TextBlock Text="{loc:Loc Dashboard_NoSensorsShort}"
+                                       Style="{StaticResource CaptionText}"
+                                       VerticalAlignment="Center"
                                        Visibility="{Binding HasAnySensor, Converter={StaticResource InverseBoolToVisibility}}" />
-                        </StackPanel>
+
+                            <ui:HyperlinkButton Grid.Column="1"
+                                                Content="{loc:Loc Dashboard_OpenMonitor}"
+                                                Command="{Binding OpenMonitorCommand}" />
+                        </Grid>
                     </Border>
 
                     <!-- Machine details -->

@@ -80,20 +80,25 @@ public sealed partial class ProfilesViewModel : PageViewModel
 
         bool advanced = IncludeAdvanced && card.HasAdvanced;
 
-        if (advanced && _settings.Current.ConfirmAdvancedChanges)
-        {
-            bool confirmed = await _interaction
-                .ConfirmAdvancedAsync(
-                    card.Name,
-                    card.Description,
-                    _localization["Warning_Vbs"],
-                    PageToken)
-                .ConfigureAwait(true);
+        // Read the machine first, then show what would change. Applying a dozen tweaks at once
+        // is exactly where "each optimisation names the value it writes" is easiest to lose.
+        ProfilePreview preview = await _profiles
+            .PreviewAsync(card.Profile, advanced, PageToken)
+            .ConfigureAwait(true);
 
-            if (!confirmed)
-            {
-                return;
-            }
+        if (preview.IsNoOp)
+        {
+            _interaction.ShowInfo(_localization["Preview_Nothing"], card.Name);
+            return;
+        }
+
+        bool confirmed = await _interaction
+            .ConfirmProfileAsync(card.Name, preview, PageToken)
+            .ConfigureAwait(true);
+
+        if (!confirmed)
+        {
+            return;
         }
 
         await RunBusyAsync(

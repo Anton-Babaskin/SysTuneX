@@ -47,6 +47,7 @@ public sealed partial class SettingsViewModel : PageViewModel
     private bool _confirmAdvanced;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DiagnosticsSummary))]
     private bool _verboseLogging;
 
     [ObservableProperty]
@@ -56,9 +57,11 @@ public sealed partial class SettingsViewModel : PageViewModel
     private bool _isBuildingReport;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PowerSummary))]
     private PowerScheme? _selectedPowerScheme;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(AutoGameModeSummary))]
     private bool _autoGameMode;
 
     [ObservableProperty]
@@ -66,18 +69,23 @@ public sealed partial class SettingsViewModel : PageViewModel
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanMinimizeToTray))]
+    [NotifyPropertyChangedFor(nameof(TraySummary))]
     private bool _showTrayIcon = true;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TraySummary))]
     private bool _minimizeToTray;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ScheduleSummary))]
     private bool _scheduleEnabled;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ScheduleSummary))]
     private string _scheduleStart = "19:00";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ScheduleSummary))]
     private string _scheduleEnd = "23:00";
 
     public SettingsViewModel(
@@ -153,6 +161,10 @@ public sealed partial class SettingsViewModel : PageViewModel
             current.Schedule.Days.Contains((DayOfWeek)(((int)DayOfWeek.Monday + index) % 7))))];
         OnPropertyChanged(nameof(ScheduleDays));
 
+        // ScheduleEnabled and the two times raised ScheduleSummary above, before the days existed,
+        // so the summary they produced said "no days selected". Re-read it now that they do.
+        RefreshSummaries();
+
         _isLoading = false;
 
         RefreshWatchedGames();
@@ -222,17 +234,28 @@ public sealed partial class SettingsViewModel : PageViewModel
 
         _settings.Current.Theme = theme;
 
+        System.Windows.Window? mainWindow = System.Windows.Application.Current.MainWindow;
+
         if (theme == ApplicationTheme.Unknown)
         {
             ApplicationThemeManager.ApplySystemTheme();
 
-            if (System.Windows.Application.Current.MainWindow is { } window)
+            if (mainWindow is not null)
             {
-                SystemThemeWatcher.Watch(window);
+                SystemThemeWatcher.Watch(mainWindow);
             }
         }
         else
         {
+            // Stop following Windows before applying the choice. The watcher used to be left
+            // running, so picking Dark by hand worked until the next time Windows changed its own
+            // theme - at which point the watcher applied that over the top and the manual setting
+            // silently stopped holding.
+            if (mainWindow is not null)
+            {
+                SystemThemeWatcher.UnWatch(mainWindow);
+            }
+
             ApplicationThemeManager.Apply(theme);
         }
 
@@ -266,6 +289,10 @@ public sealed partial class SettingsViewModel : PageViewModel
         _settings.Current.Language = value.Code;
         _localization.SetLanguage(value.Code);
         OnPropertyChanged(nameof(ElevationDescription));
+        OnPropertyChanged(nameof(TraySummary));
+        OnPropertyChanged(nameof(PowerSummary));
+        OnPropertyChanged(nameof(DiagnosticsSummary));
+        RefreshSummaries();
         Save();
     }
 
@@ -289,6 +316,53 @@ public sealed partial class SettingsViewModel : PageViewModel
 
         _settings.Current.ConfirmAdvancedChanges = value;
         Save();
+    }
+
+
+    // ── Collapsed-row summaries ──────────────────────────────────────────────
+    //
+    // Everything below the first two cards is folded away, which only works if a folded row still
+    // says what it is set to. Otherwise simplifying the page just means hiding it, and someone has
+    // to open all six to find the one they changed last week.
+
+    public string TraySummary => !ShowTrayIcon
+        ? _localization["Settings_Summary_Off"]
+        : MinimizeToTray
+            ? _localization["Settings_Summary_TrayAndClose"]
+            : _localization["Settings_Summary_On"];
+
+    public string AutoGameModeSummary => AutoGameMode
+        ? _localization.Format("Settings_Summary_GamesWatched", WatchedGames.Count(g => g.Enabled))
+        : _localization["Settings_Summary_Off"];
+
+    public string ScheduleSummary
+    {
+        get
+        {
+            if (!ScheduleEnabled)
+            {
+                return _localization["Settings_Summary_Off"];
+            }
+
+            string[] days = [.. ScheduleDays.Where(d => d.Selected).Select(d => d.Label)];
+
+            return days.Length == 0
+                ? _localization.Format("Settings_Summary_ScheduleNoDays", ScheduleStart, ScheduleEnd)
+                : _localization.Format("Settings_Summary_Schedule", ScheduleStart, ScheduleEnd, string.Join(", ", days));
+        }
+    }
+
+    public string PowerSummary => SelectedPowerScheme?.Name ?? _localization["Settings_Summary_Unknown"];
+
+    public string DiagnosticsSummary => VerboseLogging
+        ? _localization["Settings_Summary_VerboseOn"]
+        : _localization["Settings_Summary_VerboseOff"];
+
+    /// <summary>Raised together because the schedule and the game list feed two of the summaries.</summary>
+    private void RefreshSummaries()
+    {
+        OnPropertyChanged(nameof(ScheduleSummary));
+        OnPropertyChanged(nameof(AutoGameModeSummary));
     }
 
     /// <summary>Closing to the tray only makes sense while there is a tray icon to come back from.</summary>
@@ -340,6 +414,7 @@ public sealed partial class SettingsViewModel : PageViewModel
 
         _settings.Current.Schedule = schedule;
         _scheduler.Schedule = schedule;
+        RefreshSummaries();
         Save();
     }
 
@@ -452,6 +527,8 @@ public sealed partial class SettingsViewModel : PageViewModel
         {
             WatchedGames.Add(game);
         }
+
+        RefreshSummaries();
     }
 
     partial void OnVerboseLoggingChanged(bool value)
