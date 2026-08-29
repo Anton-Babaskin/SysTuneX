@@ -72,6 +72,7 @@ public partial class App : Application
                 AddPage<DashboardPage, DashboardViewModel>(services);
                 AddPage<ProfilesPage, ProfilesViewModel>(services);
                 AddPage<GamingPage, GamingViewModel>(services);
+                AddPage<MonitorPage, MonitorViewModel>(services);
                 AddPage<Windows11Page, Windows11ViewModel>(services);
                 AddPage<ServicesPage, ServicesViewModel>(services);
                 AddPage<PrivacyPage, PrivacyViewModel>(services);

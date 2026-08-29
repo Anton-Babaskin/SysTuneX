@@ -40,6 +40,9 @@ public sealed class EtwFrameRateProbe : IFrameRateProbe
     /// </summary>
     private static readonly TimeSpan SampleWindow = TimeSpan.FromSeconds(2);
 
+    /// <summary>How often to check what is in the foreground. Alt-tab does not need millisecond precision.</summary>
+    private static readonly TimeSpan ForegroundPollInterval = TimeSpan.FromMilliseconds(500);
+
     private readonly ILogger<EtwFrameRateProbe> _logger;
     private readonly FrameTimeWindow _frames = new(SampleWindow);
     private readonly int _ownProcessId = Environment.ProcessId;
@@ -47,11 +50,12 @@ public sealed class EtwFrameRateProbe : IFrameRateProbe
 
     private TraceEventSession? _session;
     private Thread? _pump;
+    private Timer? _foregroundWatch;
     private bool _disposed;
 
     /// <summary>
-    /// Which process the frames are being attributed to. Written by <see cref="Read"/> on the UI's
-    /// timer and read by the trace thread on every event, hence volatile.
+    /// Which process the frames are being attributed to. Written by the foreground watch and read
+    /// by the trace thread on every event, hence volatile.
     /// </summary>
     private volatile int _targetProcessId;
 
@@ -89,6 +93,11 @@ public sealed class EtwFrameRateProbe : IFrameRateProbe
                 };
                 _pump.Start();
 
+                // The target is tracked on its own clock rather than inside Read(), so a game
+                // launched while the monitor page is closed is still picked up. Two P/Invokes
+                // twice a second; naming the process only happens when it actually changes.
+                _foregroundWatch = new Timer(_ => RefreshTarget(), null, TimeSpan.Zero, ForegroundPollInterval);
+
                 IsRunning = true;
                 UnavailableReason = string.Empty;
                 _logger.LogInformation("Frame rate tracing started");
@@ -112,8 +121,6 @@ public sealed class EtwFrameRateProbe : IFrameRateProbe
             return null;
         }
 
-        RefreshTarget();
-
         return _frames.Compute(DateTime.Now.Ticks / (double)TimeSpan.TicksPerMillisecond);
     }
 
@@ -128,15 +135,25 @@ public sealed class EtwFrameRateProbe : IFrameRateProbe
     /// </summary>
     private void RefreshTarget()
     {
-        int foreground = ForegroundProcessId();
-
-        if (foreground == 0 || foreground == _ownProcessId || foreground == _targetProcessId)
+        try
         {
-            return;
-        }
+            int foreground = ForegroundProcessId();
 
-        _targetProcessName = ProcessName(foreground);
-        _targetProcessId = foreground;
+            if (foreground == 0 || foreground == _ownProcessId || foreground == _targetProcessId)
+            {
+                return;
+            }
+
+            // Name first: the trace thread reads both, and a frame attributed to the new process
+            // before its name is set would be labelled with the old game's name.
+            _targetProcessName = ProcessName(foreground);
+            _targetProcessId = foreground;
+        }
+        catch (Exception ex)
+        {
+            // A timer callback that throws takes the process down with it.
+            _logger.LogDebug(ex, "Could not identify the foreground process");
+        }
     }
 
     private void OnEvent(TraceEvent data)
@@ -233,6 +250,17 @@ public sealed class EtwFrameRateProbe : IFrameRateProbe
     private void Cleanup()
     {
         IsRunning = false;
+
+        try
+        {
+            _foregroundWatch?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Foreground watch did not stop cleanly");
+        }
+
+        _foregroundWatch = null;
 
         try
         {
