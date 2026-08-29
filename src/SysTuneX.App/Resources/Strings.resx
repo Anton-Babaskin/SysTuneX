@@ -658,9 +658,6 @@
   <data name="Settings_About" xml:space="preserve">
     <value>About</value>
   </data>
-  <data name="Settings_Version" xml:space="preserve">
-    <value>Version</value>
-  </data>
   <data name="Settings_DataFolder" xml:space="preserve">
     <value>Backup journal</value>
   </data>
@@ -1189,5 +1186,35 @@
   </data>
   <data name="Dashboard_OpenMonitor" xml:space="preserve">
     <value>Open monitor</value>
+  </data>
+  <data name="Settings_Summary_On" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="Settings_Summary_Off" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="Settings_Summary_TrayAndClose" xml:space="preserve">
+    <value>On · closing goes to the tray</value>
+  </data>
+  <data name="Settings_Summary_GamesWatched" xml:space="preserve">
+    <value>On · watching {0} games</value>
+  </data>
+  <data name="Settings_Summary_Schedule" xml:space="preserve">
+    <value>{0}–{1} · {2}</value>
+  </data>
+  <data name="Settings_Summary_ScheduleNoDays" xml:space="preserve">
+    <value>{0}–{1} · no days selected</value>
+  </data>
+  <data name="Settings_Summary_VerboseOn" xml:space="preserve">
+    <value>Detailed logging on</value>
+  </data>
+  <data name="Settings_Summary_VerboseOff" xml:space="preserve">
+    <value>Standard logging</value>
+  </data>
+  <data name="Settings_Summary_Unknown" xml:space="preserve">
+    <value>Not set</value>
+  </data>
+  <data name="Settings_MoreSettings" xml:space="preserve">
+    <value>Everything else</value>
   </data>
 </root>
