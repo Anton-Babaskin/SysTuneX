@@ -3,6 +3,94 @@
 Every released version, newest first. The release workflow publishes only the section
 for the version being released, so a release page shows that version and nothing else.
 
+## v2.6.0
+
+A review release. No new buttons — a code review of everything that went into 2.5.0 turned up
+eight defects, six of them confirmed by reading the code, and this fixes all of them. Four could
+change someone's machine in ways SysTuneX could not undo, which is the one category this project
+does not get to ship.
+
+### Restore no longer invents a state it never recorded
+
+Pressing "Restore" on a service with nothing in the change journal used to guess: Manual for a
+handful of services, Automatic for everything else, and then start it. Several services in the
+catalog ship **Disabled** on stock Windows 11 — RemoteRegistry among them — so they read as
+"disabled" in the interface on a machine SysTuneX had never been run on. "Restore all" then
+enabled and started them, and because nothing had been recorded first, that change could not be
+undone. Turning RemoteRegistry on behind someone's back is the opposite of what this tool is for.
+
+No journal entry now means nothing to restore, and it says so.
+
+Separately, starting a Disabled service quietly lifted its start type to Manual with no journal
+entry, so the user's Disabled setting was lost with no way back. That lift is recorded first now.
+
+### A scheduled game mode window that actually ends
+
+The schedule could turn game mode on and never turn it off. It enabled without saying who was
+asking, so the session recorded as user-started, and the guard that protects a hand-started
+session from being closed by the clock then refused to close it — services stopped and the power
+plan raised until someone noticed by hand.
+
+The cause was a type that could not express the truth: the parameter was a watched game, and the
+schedule had no game to pass, so it passed nothing. It can say so now, and the distinction reaches
+the interface, which can tell a game from a clock.
+
+Only the window arithmetic had tests, which is how a scheduler that never turned anything off
+shipped at all. Six now drive the scheduler itself.
+
+### A failed rollback no longer discards what it failed to restore
+
+Reverting a tweak retired its journal entry as soon as it had *tried* to restore it, without
+checking whether the write landed. So a revert that wrote nothing — an unelevated run, a protected
+key — still threw away the machine's real original value, and the next attempt fell back to the
+documented Windows default. A rollback that quietly degrades into a guess about a machine it has
+stopped knowing anything about is worse than one that fails and says so.
+
+This also fixes the partial case: one writable key and one protected one used to retire both.
+
+### The front page no longer flatters an untouched machine
+
+The tuning score counted a service as tuned if it was disabled *or* simply not running. Most
+managed services on stock Windows are on-demand and idle, so an install SysTuneX had never touched
+already scored close to the full service weighting — a quarter of the total, handed out for
+nothing. A service now counts when its start type matches what SysTuneX would set it to.
+
+The arithmetic moved into the core, where a test can reach it. That it lived in a view model is
+exactly why a wrong number sat on the front page unnoticed.
+
+### Restore point availability is now actually checked
+
+The profiles page asked PowerShell to count restore points and then decided from the exit code,
+throwing the count away — and with `-ErrorAction SilentlyContinue` that exit code is zero whether
+or not System Protection is on. It answered "available" every time, so the page offered a safety
+net that would not be there. Reading the count would not have been right either: protection can be
+on with no restore points yet.
+
+It reads the two registry values that actually decide it, which is both correct and takes a shell
+spawn and its thirty-second timeout off the page.
+
+### Two concurrency defects
+
+The special-handler status cache was cleared *before* the handler ran rather than after. These
+shell out to powercfg or bcdedit and take seconds, so a status read landing in that window cached
+the pre-change value again and the toggle appeared to snap back.
+
+The backup journal's loader mutated its entry list holding only a semaphore, while all eight
+readers guard it with a lock on the list itself — so any read landing during the load could throw.
+
+### .NET 10
+
+.NET 9 reached end of support in May 2026 and stopped receiving security fixes, which is a poor
+foundation for a tool that runs elevated and writes to the registry and the service database.
+.NET 10 is the long-term release, supported until November 2028.
+
+The migration was a target framework change and nothing else: no source edits, no API removals to
+work around. The Microsoft.Extensions and System.* packages follow the runtime, and the test SDK,
+xunit and the MVVM toolkit move up with them. The executable stays self-contained, so nothing has
+to be installed to run it.
+
+---
+
 ## v2.5.0
 
 Everything since 2.4.0, in one release. Three things a player uses, and tests for the parts that
