@@ -369,7 +369,12 @@ public sealed partial class DashboardViewModel : PageViewModel
                         return (
                             appliedCount,
                             tweaks.Count,
-                            services.Count(s => s.State.IsDisabled || !s.State.IsRunning),
+                            // A service counts as tuned when its start type already matches what
+                            // SysTuneX would set it to - the same test the profile preview uses.
+                            // Counting anything merely not running instead meant every on-demand
+                            // service idling on a stock machine scored as tuned, which handed an
+                            // untouched install almost the whole service weighting.
+                            services.Count(s => s.State.StartMode == s.Definition.DisabledStartMode),
                             services.Count,
                             scheme?.Name ?? string.Empty,
                             isHighPerformance);
@@ -382,13 +387,7 @@ public sealed partial class DashboardViewModel : PageViewModel
             TotalServices = totalServices;
             PowerPlan = powerPlan;
 
-            // 55 / 25 / 20 weighting: tweaks are the bulk of what SysTuneX does, services matter
-            // less than the marketing usually claims, and the power scheme is one binary choice.
-            double tweakScore = total > 0 ? (double)applied / total * 55 : 0;
-            double serviceScore = totalServices > 0 ? (double)disabledServices / totalServices * 25 : 0;
-            double powerScore = highPerformance ? 20 : 0;
-
-            Score = Math.Round(tweakScore + serviceScore + powerScore);
+            Score = TuningScore.Calculate(applied, total, disabledServices, totalServices, highPerformance);
         }
         catch (OperationCanceledException)
         {
