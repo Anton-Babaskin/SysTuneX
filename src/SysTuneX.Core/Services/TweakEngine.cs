@@ -124,11 +124,23 @@ public sealed class TweakEngine : ITweakEngine
 
         if (tweak.HandlerKey is { } key)
         {
-            InvalidateHandlerStatus(key);
+            if (!_handlers.TryGetValue(key, out ISpecialTweakHandler? handler))
+            {
+                return OperationResult.Fail(CoreMessages.TweakNoHandler, key);
+            }
 
-            return _handlers.TryGetValue(key, out ISpecialTweakHandler? handler)
-                ? await handler.ApplyAsync(cancellationToken).ConfigureAwait(false)
-                : OperationResult.Fail(CoreMessages.TweakNoHandler, key);
+            try
+            {
+                return await handler.ApplyAsync(cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                // After the handler, not before it. These shell out to powercfg or bcdedit and
+                // take seconds; clearing the cache first left a window in which a status read
+                // could cache the pre-change value again, and the toggle then appeared to snap
+                // back for as long as that entry lived.
+                InvalidateHandlerStatus(key);
+            }
         }
 
         var errors = new List<string>();
@@ -177,11 +189,23 @@ public sealed class TweakEngine : ITweakEngine
     {
         if (tweak.HandlerKey is { } key)
         {
-            InvalidateHandlerStatus(key);
+            if (!_handlers.TryGetValue(key, out ISpecialTweakHandler? handler))
+            {
+                return OperationResult.Fail(CoreMessages.TweakNoHandler, key);
+            }
 
-            return _handlers.TryGetValue(key, out ISpecialTweakHandler? handler)
-                ? await handler.RevertAsync(cancellationToken).ConfigureAwait(false)
-                : OperationResult.Fail(CoreMessages.TweakNoHandler, key);
+            try
+            {
+                return await handler.RevertAsync(cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                // After the handler, not before it. These shell out to powercfg or bcdedit and
+                // take seconds; clearing the cache first left a window in which a status read
+                // could cache the pre-change value again, and the toggle then appeared to snap
+                // back for as long as that entry lived.
+                InvalidateHandlerStatus(key);
+            }
         }
 
         var errors = new List<string>();
@@ -214,7 +238,6 @@ public sealed class TweakEngine : ITweakEngine
                             entry.OriginalValueKind == RegistryValueKind.Unknown ? change.ValueKind : entry.OriginalValueKind);
                 }
 
-                revertedEntries.Add(entry.Id);
             }
             else if (change.WindowsDefaultValue is null)
             {
@@ -229,8 +252,20 @@ public sealed class TweakEngine : ITweakEngine
             if (!result.Success)
             {
                 errors.Add(result.Message ?? $"{change.KeyPath}\\{change.ValueName} could not be restored.");
+                continue;
             }
-            else if (result.Changed)
+
+            // A journal entry is retired only once its value has actually been put back. Adding
+            // it before the write was checked meant a revert that wrote nothing - an unelevated
+            // run, a protected key - still discarded the machine's real original value, and the
+            // next attempt wrote the documented Windows default instead. A rollback that quietly
+            // degrades into a guess is worse than one that fails and says so.
+            if (entry is not null)
+            {
+                revertedEntries.Add(entry.Id);
+            }
+
+            if (result.Changed)
             {
                 changedAnything = true;
             }
