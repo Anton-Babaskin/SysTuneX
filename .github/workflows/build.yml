@@ -29,10 +29,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET 9
+      - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Restore
         run: dotnet restore SysTuneX.sln
@@ -48,7 +48,7 @@ jobs:
 
       # XAML is parsed at run time, so a compile-only pipeline says nothing about whether the
       # app starts. These tests build the real Application, realise every resource and construct
-      # the window and all ten pages through the container - on a runner with no display, which
+      # the window and every page through the container - on a runner with no display, which
       # is fine because none of it is ever shown.
       - name: Test startup
         run: dotnet test tests/SysTuneX.App.Tests/SysTuneX.App.Tests.csproj --configuration Release --no-build --verbosity normal
@@ -62,10 +62,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET 9
+      - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Publish single-file executable
         run: >
