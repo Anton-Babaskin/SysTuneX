@@ -114,6 +114,47 @@ public sealed class TweakEngineTests
     }
 
     [Fact]
+    public async Task A_revert_that_could_not_write_keeps_the_recorded_original()
+    {
+        // The value this machine really had was 5. If the write is refused - not elevated, key
+        // protected - the journal entry has to survive, or the next attempt has nothing left to
+        // restore and falls back to the documented Windows default: a rollback that quietly turns
+        // into a guess about a machine it has stopped knowing anything about.
+        var backup = new FakeBackupService().Record(@"HKLM\Locked", "Value", "5");
+        var registry = new TracingRegistryService();
+        registry.ReadOnlyPaths.Add(@"HKLM\Locked");
+
+        OperationResult result = await Engine(registry, backup)
+            .RevertAsync(Tweak("t", Change(@"HKLM\Locked", "Value", 2, 1)));
+
+        Assert.False(result.Success);
+        Assert.Empty(backup.RevertedIds);
+        Assert.Single(backup.GetActive());
+    }
+
+    [Fact]
+    public async Task A_partly_failed_revert_retires_only_the_entries_it_put_back()
+    {
+        // One key writable, one not. Retiring both would lose the original of the one that is
+        // still changed, and the interface would stop showing it as outstanding.
+        var backup = new FakeBackupService()
+            .Record(@"HKLM\Open", "Value", "5")
+            .Record(@"HKLM\Locked", "Value", "7");
+
+        var registry = new TracingRegistryService();
+        registry.ReadOnlyPaths.Add(@"HKLM\Locked");
+
+        await Engine(registry, backup).RevertAsync(Tweak(
+            "t",
+            Change(@"HKLM\Open", "Value", 2, 1),
+            Change(@"HKLM\Locked", "Value", 2, 1)));
+
+        Assert.Single(backup.RevertedIds);
+        Assert.Single(backup.GetActive());
+        Assert.Equal(@"HKLM\Locked", backup.GetActive()[0].Target);
+    }
+
+    [Fact]
     public async Task A_tweak_the_running_build_does_not_support_writes_nothing()
     {
         var registry = new TracingRegistryService();

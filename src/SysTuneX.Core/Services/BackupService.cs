@@ -41,6 +41,14 @@ public sealed class BackupService : IBackupService
 
     private string JournalPath => Path.Combine(_environment.DataDirectory, "backup.json");
 
+    private int Count()
+    {
+        lock (_entries)
+        {
+            return _entries.Count;
+        }
+    }
+
     public async Task LoadAsync(CancellationToken cancellationToken = default)
     {
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -63,19 +71,30 @@ public sealed class BackupService : IBackupService
                 .DeserializeAsync<List<BackupEntry>>(stream, JsonOptions, cancellationToken)
                 .ConfigureAwait(false);
 
+            // Every reader guards the list with this lock, so the one writer that was not taking
+            // it - this one - could throw "Collection was modified" under any read that happened
+            // to land while the journal was still loading. The gate serialises loads against each
+            // other; it does nothing about readers. Order matches the persist path: gate, then list.
             if (loaded is not null)
             {
-                _entries.AddRange(loaded);
+                lock (_entries)
+                {
+                    _entries.AddRange(loaded);
+                }
             }
 
-            _logger.LogInformation("Loaded {Count} backup entries", _entries.Count);
+            _logger.LogInformation("Loaded {Count} backup entries", Count());
         }
         catch (Exception ex)
         {
             // A corrupt journal must not stop the app from starting; it is kept aside for inspection.
             _logger.LogError(ex, "Backup journal could not be read, starting a fresh one");
             TryQuarantineJournal();
-            _entries.Clear();
+
+            lock (_entries)
+            {
+                _entries.Clear();
+            }
         }
         finally
         {
