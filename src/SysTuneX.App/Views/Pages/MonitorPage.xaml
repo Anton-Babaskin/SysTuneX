@@ -1,0 +1,233 @@
+<pages:SysTuneXPage x:Class="SysTuneX.App.Views.Pages.MonitorPage"
+                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                    xmlns:loc="clr-namespace:SysTuneX.App.Localization"
+                    xmlns:pages="clr-namespace:SysTuneX.App.Views.Pages"
+                    xmlns:controls="clr-namespace:SysTuneX.App.Controls"
+                    xmlns:vm="clr-namespace:SysTuneX.App.ViewModels"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    mc:Ignorable="d"
+                    d:DataContext="{d:DesignInstance Type=vm:MonitorViewModel}"
+                    Title="Monitor">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="{StaticResource PagePadding}">
+        <StackPanel MaxWidth="{StaticResource MaxContentWidth}" HorizontalAlignment="Left">
+
+            <StackPanel Margin="{StaticResource SectionGap}">
+                <TextBlock Text="{loc:Loc Monitor_Title}" Style="{StaticResource PageTitle}" />
+                <TextBlock Text="{loc:Loc Monitor_Subtitle}" Style="{StaticResource PageSubtitle}" />
+            </StackPanel>
+
+            <!--
+                Frame rate, given the whole width and the largest type on the page. It is the one
+                number someone opens this page to read; everything below it exists to explain it.
+            -->
+            <Border Style="{StaticResource Card}" Margin="{StaticResource StackGap}">
+                <Grid Height="148">
+                    <controls:Sparkline Values="{Binding FpsHistory}"
+                                        Maximum="{Binding FpsScale}"
+                                        Capacity="60"
+                                        Margin="-20,84,-20,-20"
+                                        Stroke="{StaticResource BrandBrush}"
+                                        Fill="#227C5CFF" />
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel VerticalAlignment="Top">
+                            <TextBlock Text="{loc:Loc Monitor_FrameRate}" Style="{StaticResource CaptionText}" />
+
+                            <StackPanel Orientation="Horizontal"
+                                        Visibility="{Binding HasFrameRate, Converter={StaticResource BoolToVisibility}}">
+                                <TextBlock Text="{Binding Fps}"
+                                           FontSize="64"
+                                           FontWeight="SemiBold"
+                                           LineHeight="70"
+                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                <TextBlock Text="FPS"
+                                           FontSize="16"
+                                           Margin="8,0,0,14"
+                                           VerticalAlignment="Bottom"
+                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                            </StackPanel>
+
+                            <TextBlock Text="{Binding GameName}"
+                                       FontSize="14"
+                                       Margin="0,2,0,0"
+                                       TextTrimming="CharacterEllipsis"
+                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                       Visibility="{Binding HasFrameRate, Converter={StaticResource BoolToVisibility}}" />
+
+                            <!-- No number is not an error. Say which of the two reasons it is. -->
+                            <TextBlock Text="{Binding FrameRateHint}"
+                                       Style="{StaticResource BodyText}"
+                                       MaxWidth="420"
+                                       Margin="0,10,0,0"
+                                       HorizontalAlignment="Left"
+                                       Visibility="{Binding HasFrameRate, Converter={StaticResource InverseBoolToVisibility}}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2"
+                                    VerticalAlignment="Top"
+                                    MinWidth="150"
+                                    Visibility="{Binding HasFrameRate, Converter={StaticResource BoolToVisibility}}">
+                            <!--
+                                The 1% low sits next to the average because on its own the average
+                                lies. 144 with a 1% low of 40 stutters; a steady 90 does not.
+                            -->
+                            <TextBlock Text="{loc:Loc Monitor_OnePercentLow}" Style="{StaticResource CaptionText}" />
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding OnePercentLowFps}" Style="{StaticResource MetricValue}" />
+                                <TextBlock Text="FPS" Style="{StaticResource MetricUnit}" />
+                            </StackPanel>
+
+                            <TextBlock Text="{loc:Loc Monitor_FrameTime}"
+                                       Style="{StaticResource CaptionText}"
+                                       Margin="0,12,0,0" />
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding FrameTimeMs, StringFormat={}{0:F1}}"
+                                           Style="{StaticResource MetricValue}" />
+                                <TextBlock Text="ms" Style="{StaticResource MetricUnit}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- What the machine is doing while it renders that. -->
+            <UniformGrid Columns="3">
+
+                <Border Style="{StaticResource Card}" Margin="0,0,6,0">
+                    <Grid Height="110">
+                        <controls:Sparkline Values="{Binding CpuHistory}"
+                                            Maximum="100"
+                                            Capacity="60"
+                                            Margin="-20,52,-20,-20"
+                                            Stroke="{StaticResource BrandBrush}"
+                                            Fill="#227C5CFF" />
+
+                        <StackPanel VerticalAlignment="Top">
+                            <TextBlock Text="{loc:Loc Monitor_Cpu}" Style="{StaticResource CaptionText}" />
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding CpuUsage, StringFormat={}{0:F0}}"
+                                           Style="{StaticResource MetricValue}" />
+                                <TextBlock Text="%" Style="{StaticResource MetricUnit}" />
+
+                                <TextBlock Style="{StaticResource MetricValue}"
+                                           FontSize="18"
+                                           Margin="14,0,0,3"
+                                           VerticalAlignment="Bottom"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           Visibility="{Binding HasCpuTemperature, Converter={StaticResource BoolToVisibility}}">
+                                    <Run Text="{Binding CpuTemperature, Mode=OneWay}" /><Run Text="°C" />
+                                </TextBlock>
+                            </StackPanel>
+                            <TextBlock Text="{Binding CpuName}"
+                                       Style="{StaticResource CaptionText}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Card}" Margin="6,0,6,0">
+                    <Grid Height="110">
+                        <controls:Sparkline Values="{Binding GpuHistory}"
+                                            Maximum="100"
+                                            Capacity="60"
+                                            Margin="-20,52,-20,-20"
+                                            Stroke="{StaticResource BrandSecondaryBrush}"
+                                            Fill="#2222B8E6" />
+
+                        <StackPanel VerticalAlignment="Top">
+                            <TextBlock Text="{loc:Loc Monitor_Gpu}" Style="{StaticResource CaptionText}" />
+
+                            <StackPanel Orientation="Horizontal">
+                                <!-- Load and temperature share a line: a hot card at 40% and a hot
+                                     card at 99% mean completely different things. -->
+                                <StackPanel Orientation="Horizontal"
+                                            Visibility="{Binding HasGpuUsage, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Text="{Binding GpuUsage}" Style="{StaticResource MetricValue}" />
+                                    <TextBlock Text="%" Style="{StaticResource MetricUnit}" />
+                                </StackPanel>
+
+                                <TextBlock Style="{StaticResource MetricValue}"
+                                           FontSize="18"
+                                           Margin="14,0,0,3"
+                                           VerticalAlignment="Bottom"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           Visibility="{Binding HasGpuTemperature, Converter={StaticResource BoolToVisibility}}">
+                                    <Run Text="{Binding GpuTemperature, Mode=OneWay}" /><Run Text="°C" />
+                                </TextBlock>
+
+                                <TextBlock Style="{StaticResource MetricValue}"
+                                           FontSize="18"
+                                           Margin="14,0,0,3"
+                                           VerticalAlignment="Bottom"
+                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                           Visibility="{Binding HasGpuFan, Converter={StaticResource BoolToVisibility}}">
+                                    <Run Text="{Binding GpuFan, Mode=OneWay}" /><Run Text="%" />
+                                </TextBlock>
+                            </StackPanel>
+
+                            <TextBlock Text="{Binding GpuName}"
+                                       Style="{StaticResource CaptionText}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Card}" Margin="6,0,0,0">
+                    <Grid Height="110">
+                        <controls:Sparkline Values="{Binding RamHistory}"
+                                            Maximum="100"
+                                            Capacity="60"
+                                            Margin="-20,52,-20,-20"
+                                            Stroke="{StaticResource BrandSecondaryBrush}"
+                                            Fill="#2222B8E6" />
+
+                        <StackPanel VerticalAlignment="Top">
+                            <TextBlock Text="{loc:Loc Monitor_Memory}" Style="{StaticResource CaptionText}" />
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding RamUsedMb, Converter={StaticResource MegabytesToSize}}"
+                                           Style="{StaticResource MetricValue}" />
+                                <TextBlock Style="{StaticResource MetricUnit}">
+                                    <Run Text="{loc:Loc Common_Of}" /><Run Text=" " /><Run Text="{Binding RamTotalMb, Converter={StaticResource MegabytesToSize}, Mode=OneWay}" />
+                                </TextBlock>
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource CaptionText}">
+                                <Run Text="{loc:Loc Monitor_Label_Processes}" />
+                                <Run Text="{Binding ProcessCount, Mode=OneWay}" />
+                            </TextBlock>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+            </UniformGrid>
+
+            <!-- Only once both temperatures have actually come back empty, and then with the
+                 reason: a blank number where a temperature should be reads as a broken app. -->
+            <TextBlock Text="{loc:Loc Dashboard_NoSensors}"
+                       Style="{StaticResource CaptionText}"
+                       Margin="0,14,0,0"
+                       Visibility="{Binding HasNoTemperature, Converter={StaticResource BoolToVisibility}}" />
+
+            <!--
+                Said once, here, rather than as a disclaimer on every tile. Someone who wonders why
+                there is no overlay deserves the real reason, and the reason is a good one.
+            -->
+            <ui:InfoBar Severity="Informational"
+                        IsOpen="True"
+                        IsClosable="True"
+                        Margin="0,16,0,0"
+                        Title="{loc:Loc Monitor_HowItWorks_Title}"
+                        Message="{loc:Loc Monitor_HowItWorks_Message}" />
+
+        </StackPanel>
+    </ScrollViewer>
+</pages:SysTuneXPage>

@@ -109,6 +109,14 @@
                         </ui:NavigationViewItem.Icon>
                     </ui:NavigationViewItem>
 
+                    <ui:NavigationViewItem Content="{loc:Loc Nav_Monitor}"
+                                           NavigationCacheMode="Enabled"
+                                           TargetPageType="{x:Type pages:MonitorPage}">
+                        <ui:NavigationViewItem.Icon>
+                            <ui:SymbolIcon Symbol="Pulse24" />
+                        </ui:NavigationViewItem.Icon>
+                    </ui:NavigationViewItem>
+
                     <ui:NavigationViewItemSeparator />
 
                     <ui:NavigationViewItem Content="{loc:Loc Nav_Gaming}"

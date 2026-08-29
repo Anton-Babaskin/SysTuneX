@@ -7,6 +7,7 @@ using SysTuneX.App.Services;
 using SysTuneX.Core.Abstractions;
 using SysTuneX.Core.Models;
 using SysTuneX.Core.Tweaks;
+using Wpf.Ui;
 
 namespace SysTuneX.App.ViewModels;
 
@@ -26,6 +27,7 @@ public sealed partial class DashboardViewModel : PageViewModel
     private readonly ILocalizationService _localization;
     private readonly ISensorService _sensors;
     private readonly IGameModeService _gameMode;
+    private readonly INavigationService _navigation;
     private readonly DispatcherTimer _timer;
 
     /// <summary>Sensors are read every few ticks; WMI and NVML are far heavier than a counter read.</summary>
@@ -139,7 +141,8 @@ public sealed partial class DashboardViewModel : PageViewModel
         IUserInteraction interaction,
         ILocalizationService localization,
         ISensorService sensors,
-        IGameModeService gameMode)
+        IGameModeService gameMode,
+        INavigationService navigation)
     {
         _systemInfo = systemInfo;
         _tweaks = tweaks;
@@ -153,6 +156,7 @@ public sealed partial class DashboardViewModel : PageViewModel
         _localization = localization;
         _sensors = sensors;
         _gameMode = gameMode;
+        _navigation = navigation;
 
         _gameMode.Changed += OnGameModeChanged;
 
@@ -214,6 +218,10 @@ public sealed partial class DashboardViewModel : PageViewModel
 
     [RelayCommand]
     private Task RefreshAsync() => RefreshCountersAsync();
+
+    /// <summary>The temperatures here are a glance; the Monitor page is where they mean something.</summary>
+    [RelayCommand]
+    private void OpenMonitor() => _navigation.Navigate(typeof(Views.Pages.MonitorPage));
 
     [RelayCommand]
     private async Task QuickOptimizeAsync()
