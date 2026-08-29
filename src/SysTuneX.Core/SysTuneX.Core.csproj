@@ -12,8 +12,29 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+    <!-- Reads the Present events for the frame counter. See the trim below. -->
+    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.2.6" />
     <PackageReference Include="System.Management" Version="9.0.0" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      TraceEvent's props copies its native payload for every architecture — msdia140.dll and
+      KernelTraceControl.dll, ten megabytes across x86, amd64 and arm64. Those serve symbol
+      resolution and kernel-session merging; the frame counter reads event headers and decodes no
+      payload, so nothing ever loads them. Dropping them keeps the download honest.
+
+      Removed here rather than with ExcludeAssets because that would also drop Dia2Lib and
+      TraceReloggerLib, which are 82 KB of COM interop the package copies from the same props.
+      They cost nothing and guessing wrong about them is a runtime failure, not a build error.
+
+      This has to be an ItemGroup in the project body: NuGet's generated props is imported before
+      it, so the items exist by the time this runs.
+    -->
+    <None Remove="@(None->WithMetadataValue('Filename','msdia140'))" />
+    <None Remove="@(None->WithMetadataValue('Filename','KernelTraceControl'))" />
+    <None Remove="@(None->WithMetadataValue('Filename','KernelTraceControl.Win61'))" />
   </ItemGroup>
 
   <ItemGroup>
