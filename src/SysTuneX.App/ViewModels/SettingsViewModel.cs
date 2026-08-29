@@ -234,17 +234,28 @@ public sealed partial class SettingsViewModel : PageViewModel
 
         _settings.Current.Theme = theme;
 
+        System.Windows.Window? mainWindow = System.Windows.Application.Current.MainWindow;
+
         if (theme == ApplicationTheme.Unknown)
         {
             ApplicationThemeManager.ApplySystemTheme();
 
-            if (System.Windows.Application.Current.MainWindow is { } window)
+            if (mainWindow is not null)
             {
-                SystemThemeWatcher.Watch(window);
+                SystemThemeWatcher.Watch(mainWindow);
             }
         }
         else
         {
+            // Stop following Windows before applying the choice. The watcher used to be left
+            // running, so picking Dark by hand worked until the next time Windows changed its own
+            // theme - at which point the watcher applied that over the top and the manual setting
+            // silently stopped holding.
+            if (mainWindow is not null)
+            {
+                SystemThemeWatcher.UnWatch(mainWindow);
+            }
+
             ApplicationThemeManager.Apply(theme);
         }
 

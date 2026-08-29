@@ -44,6 +44,17 @@ switches stay open; the other six fold away, each showing what it is currently s
 12 games", "19:00–23:00, Mon Tue Wed", "closing goes to the tray". Folding without that summary
 would be hiding rather than simplifying.
 
+### A theme that stays where you put it
+
+The app has followed the Windows light/dark setting by default since 2.0, with light and dark
+selectable by hand in Settings. What it did not do was stop following Windows once you chose.
+The system-theme watcher was started for the automatic mode and never stopped, so picking Dark
+worked right up until Windows next changed its own theme - a scheduled switch at sunset, or
+someone toggling it - at which point the watcher applied that over the top and the manual choice
+silently stopped holding. It is now unhooked when you pin a theme.
+
+Both READMEs gained a line about this, having never mentioned themes at all.
+
 ### Applying a profile shows what it will do first
 
 Every registry value the profile would touch, with the machine's current contents beside the new
