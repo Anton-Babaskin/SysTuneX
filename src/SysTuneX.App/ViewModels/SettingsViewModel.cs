@@ -161,6 +161,10 @@ public sealed partial class SettingsViewModel : PageViewModel
             current.Schedule.Days.Contains((DayOfWeek)(((int)DayOfWeek.Monday + index) % 7))))];
         OnPropertyChanged(nameof(ScheduleDays));
 
+        // ScheduleEnabled and the two times raised ScheduleSummary above, before the days existed,
+        // so the summary they produced said "no days selected". Re-read it now that they do.
+        RefreshSummaries();
+
         _isLoading = false;
 
         RefreshWatchedGames();
