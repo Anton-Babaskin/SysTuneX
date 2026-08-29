@@ -89,12 +89,18 @@ public sealed class GameModeScheduler : IDisposable
 
         if (shouldBeOn)
         {
-            GameModeResult result = await _gameMode.EnableAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            // Saying who started it is what lets the schedule close it again. Passing nothing here
+            // marked the session as user-started, and the guard below then refused to ever turn it
+            // off - so a scheduled window switched game mode on and left it on, with services
+            // stopped and the power plan raised, indefinitely.
+            GameModeResult result = await _gameMode
+                .EnableAsync(startedBy: GameModeTrigger.Schedule, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
             Report(result, "on");
             return;
         }
 
-        // Only a scheduled session is closed by the schedule. Someone who switched game mode on
+        // Only an automatic session is closed by the schedule. Someone who switched game mode on
         // by hand at 23:05 did not ask for it to end at 23:00.
         if (_gameMode.Session is { AutoStarted: false })
         {

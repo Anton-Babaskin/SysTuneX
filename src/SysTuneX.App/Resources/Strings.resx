@@ -1217,4 +1217,7 @@
   <data name="Settings_MoreSettings" xml:space="preserve">
     <value>Everything else</value>
   </data>
+  <data name="Core_Service_NotChangedByUs" xml:space="preserve">
+    <value>{0} was not changed by SysTuneX, so there is nothing to restore.</value>
+  </data>
 </root>

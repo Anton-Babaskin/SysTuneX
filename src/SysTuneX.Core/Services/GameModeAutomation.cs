@@ -91,7 +91,7 @@ public sealed class GameModeAutomation : IDisposable
                     return;
                 }
 
-                GameModeResult result = await _gameMode.EnableAsync(trigger: game).ConfigureAwait(false);
+                GameModeResult result = await _gameMode.EnableAsync(startedBy: GameModeTrigger.ForGame(game)).ConfigureAwait(false);
                 Report(result, $"turn game mode on for {game.DisplayName}");
             }
             else

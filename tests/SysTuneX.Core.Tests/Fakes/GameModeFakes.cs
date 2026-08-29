@@ -298,3 +298,60 @@ public sealed class FakeTweakEngine : ITweakEngine
         CancellationToken cancellationToken = default) =>
         Task.FromResult(BatchResult.Empty);
 }
+
+/// <summary>
+/// Game mode reduced to what the scheduler can see: whether it is on, who turned it on, and a
+/// count of each call. Enough to prove the scheduler closes its own window.
+/// </summary>
+public sealed class FakeGameModeService : IGameModeService
+{
+    public bool IsActive => Session is not null;
+
+    public GameModeSession? Session { get; private set; }
+
+    public event EventHandler? Changed;
+
+    public List<GameModeTriggerKind> EnabledBy { get; } = [];
+
+    public int DisableCount { get; private set; }
+
+    public Task LoadAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    /// <summary>Puts the fake into an already-running session, as if the user had pressed the switch.</summary>
+    public FakeGameModeService AlreadyOn(GameModeTriggerKind kind)
+    {
+        Session = new GameModeSession
+        {
+            AutoStarted = kind != GameModeTriggerKind.User,
+            TriggerKind = kind,
+        };
+
+        return this;
+    }
+
+    public Task<GameModeResult> EnableAsync(
+        IProgress<string>? progress = null,
+        GameModeTrigger? startedBy = null,
+        CancellationToken cancellationToken = default)
+    {
+        EnabledBy.Add(startedBy?.Kind ?? GameModeTriggerKind.User);
+
+        Session = new GameModeSession
+        {
+            AutoStarted = startedBy is not null,
+            TriggeredBy = startedBy?.Name ?? string.Empty,
+            TriggerKind = startedBy?.Kind ?? GameModeTriggerKind.User,
+        };
+
+        Changed?.Invoke(this, EventArgs.Empty);
+        return Task.FromResult(new GameModeResult(OperationResult.Ok(), 0, 0, []));
+    }
+
+    public Task<GameModeResult> DisableAsync(IProgress<string>? progress = null, CancellationToken cancellationToken = default)
+    {
+        DisableCount++;
+        Session = null;
+        Changed?.Invoke(this, EventArgs.Empty);
+        return Task.FromResult(new GameModeResult(OperationResult.Ok(), 0, 0, []));
+    }
+}

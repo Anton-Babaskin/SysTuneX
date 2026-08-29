@@ -201,10 +201,24 @@ public sealed class GameModeServiceTests : IDisposable
         GameModeService gameMode = Service(new FakeServiceManager());
 
         var dota = new WatchedGame { ProcessName = "dota2", DisplayName = "Dota 2" };
-        await gameMode.EnableAsync(trigger: dota);
+        await gameMode.EnableAsync(startedBy: GameModeTrigger.ForGame(dota));
 
         Assert.True(gameMode.Session!.AutoStarted);
         Assert.Equal("Dota 2", gameMode.Session.TriggeredBy);
+        Assert.Equal(GameModeTriggerKind.Game, gameMode.Session.TriggerKind);
+    }
+
+    [Fact]
+    public async Task A_session_started_by_the_schedule_counts_as_automatic()
+    {
+        // The schedule had no way to say it was the one asking, so its sessions were recorded as
+        // user-started - and the schedule then refused to close its own window.
+        GameModeService gameMode = Service(new FakeServiceManager());
+
+        await gameMode.EnableAsync(startedBy: GameModeTrigger.Schedule);
+
+        Assert.True(gameMode.Session!.AutoStarted);
+        Assert.Equal(GameModeTriggerKind.Schedule, gameMode.Session.TriggerKind);
     }
 
     [Fact]
@@ -215,6 +229,7 @@ public sealed class GameModeServiceTests : IDisposable
 
         Assert.False(gameMode.Session!.AutoStarted);
         Assert.Empty(gameMode.Session.TriggeredBy);
+        Assert.Equal(GameModeTriggerKind.User, gameMode.Session.TriggerKind);
     }
 
     /// <summary>
