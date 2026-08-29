@@ -199,6 +199,14 @@ public sealed partial class MonitorViewModel : PageViewModel
         Append(CpuHistory, snapshot.CpuUsagePercent);
         Append(RamHistory, snapshot.RamUsagePercent);
 
+        // Appended here rather than from the sensor sample, which runs at half this rate. Three
+        // graphs side by side have to share one time base or the shapes cannot be compared, and
+        // the GPU one would silently be showing twice the history of the two next to it.
+        if (GpuUsage is { } load)
+        {
+            Append(GpuHistory, load);
+        }
+
         SampleFrameRate();
     }
 
@@ -240,10 +248,6 @@ public sealed partial class MonitorViewModel : PageViewModel
             GpuUsage = readings.GpuUsagePercent;
             GpuFan = readings.GpuFanPercent;
 
-            if (readings.GpuUsagePercent is { } load)
-            {
-                Append(GpuHistory, load);
-            }
         }
         catch (Exception)
         {
