@@ -25,29 +25,46 @@ public sealed class RestorePointService : IRestorePointService
         _environment = environment;
     }
 
-    public async Task<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
+    /// <summary>Policy key that turns System Restore off for the whole machine.</summary>
+    private const string SystemRestorePolicyKey = @"HKLM\SOFTWARE\Policies\Microsoft\Windows NT\SystemRestore";
+
+    public Task<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
     {
         if (!_environment.IsElevated)
         {
-            return false;
+            return Task.FromResult(false);
         }
 
-        // Get-ComputerRestorePoint only works when System Protection is on for a volume.
-        ProcessRunResult result = await ProcessRunner
-            .RunPowerShellAsync(
-                "(Get-CimInstance -Namespace root/default -ClassName SystemRestore -ErrorAction SilentlyContinue | Measure-Object).Count",
-                TimeSpan.FromSeconds(30),
-                cancellationToken)
-            .ConfigureAwait(false);
-
-        if (result.Success)
+        // Read from the registry rather than asking PowerShell.
+        //
+        // The previous check ran a command that counted restore points and then ignored the count
+        // entirely, deciding from the exit code alone - and with -ErrorAction SilentlyContinue
+        // PowerShell exits 0 whether or not System Protection is on, so it answered "available"
+        // every time. It also could not have been right had it read the number: a machine with
+        // protection enabled and no restore points yet reports zero, and that is a machine where
+        // creating one works perfectly well.
+        //
+        // These two values are what actually decide it, and reading them costs nothing - which
+        // also takes a shell spawn and its thirty-second timeout off the profiles page.
+        if (IsTurnedOff(SystemRestorePolicyKey) || IsTurnedOff(SystemRestoreKey))
         {
-            return true;
+            _logger.LogDebug("System Restore is switched off for this machine");
+            return Task.FromResult(false);
         }
 
-        _logger.LogDebug("System Restore is not queryable: {Error}", result.Output.Trim());
-        return false;
+        // Zero means System Protection is not enabled on any volume. Absent means the machine has
+        // never had it configured either way, which is the stock state where it does work.
+        if (_registry.GetValue(SystemRestoreKey, "RPSessionInterval") is int interval && interval == 0)
+        {
+            _logger.LogDebug("System Protection is not enabled on any volume");
+            return Task.FromResult(false);
+        }
+
+        return Task.FromResult(true);
     }
+
+    private bool IsTurnedOff(string keyPath) =>
+        _registry.GetValue(keyPath, "DisableSR") is int disabled && disabled == 1;
 
     public async Task<OperationResult> CreateAsync(string description, CancellationToken cancellationToken = default)
     {
