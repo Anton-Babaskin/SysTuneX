@@ -20,20 +20,36 @@ namespace SysTuneX.App.Tests;
 [Collection(WpfApplicationCollection.Name)]
 public sealed class StartupSmokeTests(WpfApplicationFixture host)
 {
-    /// <summary>Every page the navigation view can reach, in menu order.</summary>
-    public static TheoryData<Type> PageTypes =>
-    [
-        typeof(DashboardPage),
-        typeof(ProfilesPage),
-        typeof(GamingPage),
-        typeof(Windows11Page),
-        typeof(ServicesPage),
-        typeof(PrivacyPage),
-        typeof(NetworkPage),
-        typeof(CleanupPage),
-        typeof(HistoryPage),
-        typeof(SettingsPage),
-    ];
+    /// <summary>
+    /// Every page in the app, found by reflection rather than listed by hand.
+    ///
+    /// This was a hand-written list, and a new page was added to the navigation without being
+    /// added here - so the one page nobody had run yet was also the one page nothing tested. A
+    /// list that has to be remembered is a list that will be forgotten, and the failure it lets
+    /// through is the exact one this file exists to catch.
+    /// </summary>
+    public static TheoryData<Type> PageTypes => [.. DiscoverPages()];
+
+    private static IReadOnlyList<Type> DiscoverPages() =>
+        [.. typeof(App).Assembly
+            .GetTypes()
+            .Where(t => !t.IsAbstract && typeof(SysTuneXPage).IsAssignableFrom(t))
+            .OrderBy(t => t.Name, StringComparer.Ordinal)];
+
+    /// <summary>
+    /// Guards the discovery above. A query that quietly matched nothing would make every page
+    /// test below pass without having run a single page.
+    /// </summary>
+    [Fact]
+    public void Every_page_is_discovered()
+    {
+        IReadOnlyList<Type> pages = DiscoverPages();
+
+        Assert.Contains(typeof(DashboardPage), pages);
+        Assert.Contains(typeof(MonitorPage), pages);
+        Assert.Contains(typeof(SettingsPage), pages);
+        Assert.True(pages.Count >= 11, $"Only {pages.Count} pages were discovered.");
+    }
 
     [Fact]
     public void Application_resources_load()

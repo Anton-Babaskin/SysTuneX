@@ -16,6 +16,11 @@ public partial class MainWindow : FluentWindow
     private readonly IAppSettingsService _settings;
     private readonly ILocalizationService _localization;
     private readonly ITrayIconService _tray;
+    private readonly IGlobalSearch _search;
+    private readonly INavigationService _navigation;
+
+    /// <summary>Results behind the suggestions currently on screen, keyed by their display text.</summary>
+    private readonly Dictionary<string, SearchHit> _hits = new(StringComparer.Ordinal);
 
     public MainWindow(
         MainWindowViewModel viewModel,
@@ -25,12 +30,15 @@ public partial class MainWindow : FluentWindow
         IContentDialogService dialogService,
         IAppSettingsService settings,
         ILocalizationService localization,
-        ITrayIconService tray)
+        ITrayIconService tray,
+        IGlobalSearch search)
     {
         ViewModel = viewModel;
         _settings = settings;
         _localization = localization;
         _tray = tray;
+        _search = search;
+        _navigation = navigationService;
 
         DataContext = viewModel;
         InitializeComponent();
@@ -95,6 +103,69 @@ public partial class MainWindow : FluentWindow
         {
             Dispatcher.BeginInvoke(() => RootNavigation.Navigate(current));
         }
+    }
+
+
+    private void OnSearchTextChanged(
+        Wpf.Ui.Controls.AutoSuggestBox sender,
+        Wpf.Ui.Controls.AutoSuggestBoxTextChangedEventArgs args)
+    {
+        // Only when the user typed. Reacting to programmatic changes would re-open the list
+        // every time a chosen suggestion is written back into the box.
+        if (args.Reason != Wpf.Ui.Controls.AutoSuggestionBoxTextChangeReason.UserInput)
+        {
+            return;
+        }
+
+        _hits.Clear();
+
+        var suggestions = new List<string>();
+        foreach (SearchHit hit in _search.Search(sender.Text))
+        {
+            // The category is part of the text so two settings with similar names stay
+            // distinguishable, and because "which page is this on" is the question being asked.
+            string label = $"{hit.Title}  ·  {hit.Category}";
+            _hits[label] = hit;
+            suggestions.Add(label);
+        }
+
+        sender.ItemsSource = suggestions;
+    }
+
+    private void OnSearchSuggestionChosen(
+        Wpf.Ui.Controls.AutoSuggestBox sender,
+        Wpf.Ui.Controls.AutoSuggestBoxSuggestionChosenEventArgs args) =>
+        GoTo(args.SelectedItem as string);
+
+    private void OnSearchSubmitted(
+        Wpf.Ui.Controls.AutoSuggestBox sender,
+        Wpf.Ui.Controls.AutoSuggestBoxQuerySubmittedEventArgs args)
+    {
+        // Enter with nothing selected takes the best match, which is what a search box that
+        // ranks its results should do.
+        GoTo(_hits.Keys.FirstOrDefault());
+    }
+
+    private void GoTo(string? label)
+    {
+        if (label is null || !_hits.TryGetValue(label, out SearchHit? hit))
+        {
+            return;
+        }
+
+        _navigation.Navigate(hit.PageType);
+
+        // Put the item's own name in the destination page's filter, so it is the one row on
+        // screen rather than one of thirty.
+        if (!string.IsNullOrEmpty(hit.Filter) &&
+            App.Services.GetService(hit.PageType) is FrameworkElement { DataContext: IFilterablePage page })
+        {
+            page.SearchText = hit.Filter;
+        }
+
+        SearchBox.Text = string.Empty;
+        SearchBox.ItemsSource = null;
+        _hits.Clear();
     }
 
     private void ApplyWindowState()

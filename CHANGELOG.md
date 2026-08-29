@@ -3,6 +3,110 @@
 Every released version, newest first. The release workflow publishes only the section
 for the version being released, so a release page shows that version and nothing else.
 
+## v2.5.0
+
+Everything since 2.4.0, in one release. Three things a player uses, and tests for the parts that
+had none.
+
+### A frame counter that does not touch the game
+
+RTSS, Afterburner and Fraps hook the graphics API from inside the game process. That is how they
+draw an overlay, and it is also exactly what anti-cheat looks for. A tool whose whole point is to
+be run before playing cannot ship something that risks a ban, so SysTuneX reads the Present events
+the DirectX stack already writes to Event Tracing for Windows — the same source PresentMon and the
+Xbox Game Bar counter use. Nothing is loaded into the game.
+
+The cost of that choice is honest: no overlay over a fullscreen game. Alt-tab to read the numbers
+instead. The counter deliberately stays pointed at the game when SysTuneX comes to the foreground,
+because retargeting to our own window would show our own frame rate, which is worse than useless.
+
+A 1% low is shown next to the average. An average of 144 with a 1% low of 40 stutters and a steady
+90 does not, so an average alone hides the exact problem this tool exists to fix.
+
+### A monitor page
+
+One screen to leave open on a second display: frame rate with its frame time and 1% low, CPU and
+GPU load and temperature, memory. Every tile answers a question a player actually asks — is the
+game slower than it should be, and what is the machine doing about it.
+
+Where there is no frame rate the page says which of the two reasons it is. "Nothing is rendering
+right now" and "the trace session could not start" are different problems, and a blank tile tells
+them apart for nobody.
+
+The dashboard's temperature card shrinks to one line with a link here, since these numbers now
+have a page where they sit beside the frame rate they explain.
+
+### Settings that fit on a screen
+
+It was eight cards, all open, five screens of scrolling, everything looking equally important.
+Almost nobody opens Settings for the schedule or the log folder. Appearance and the two safety
+switches stay open; the other six fold away, each showing what it is currently set to — "watching
+12 games", "19:00–23:00, Mon Tue Wed", "closing goes to the tray". Folding without that summary
+would be hiding rather than simplifying.
+
+### A theme that stays where you put it
+
+The app has followed the Windows light/dark setting by default since 2.0, with light and dark
+selectable by hand in Settings. What it did not do was stop following Windows once you chose.
+The system-theme watcher was started for the automatic mode and never stopped, so picking Dark
+worked right up until Windows next changed its own theme - a scheduled switch at sunset, or
+someone toggling it - at which point the watcher applied that over the top and the manual choice
+silently stopped holding. It is now unhooked when you pin a theme.
+
+Both READMEs gained a line about this, having never mentioned themes at all.
+
+### Applying a profile shows what it will do first
+
+Every registry value the profile would touch, with the machine's current contents beside the new
+one. Tweaks already in place are counted rather than listed, because a dozen no-ops hide the two
+that matter. Two distinctions the preview keeps: "value does not exist" is not "value is zero" —
+that difference is why revert can delete rather than invent — and a tweak handled by code rather
+than a registry write is marked as such rather than shown with an empty list.
+
+### One search box for everything
+
+Roughly a hundred tweaks across four pages, plus services and cleanup targets; knowing which page
+a setting lives on is the app's problem, not the user's. Choosing a result navigates there and
+filters that page to the item, so it is the one row on screen. Catalog identifiers are searchable
+alongside names — someone who knows the value is called HwSchMode should not have to guess what
+the tweak is called in their language.
+
+### AMD GPU temperatures
+
+Through ADL, which ships with the driver. Only its scalar calls are used: the richer ones take
+large structs whose layout differs between driver branches, and getting one wrong corrupts memory
+rather than returning an error. A tuner that can crash the machine it is tuning is worse than one
+that shows no temperature. Intel is still not covered.
+
+### Tests for the parts that had none
+
+**The tweak engine**, which every tweak is written through, and therefore the single place the
+project's promises are kept or lost. The previous value is recorded *before* the new one is
+written — doing it the other way round looks identical in every other test and loses the original
+on any crash between the two, which is a rollback that cannot roll back. Reverting restores what
+was recorded, not what Windows ships: a machine that had a value of 5 gets 5 back, and a value
+recorded as absent is deleted rather than replaced with a number the machine never had. Also
+covered: a tweak outside its build range reports as unsupported rather than not applied, and one
+half-written because a key was protected reports as partial rather than being rounded down.
+
+**Game mode**, which was the largest untested piece and the one whose failure is worst — it does
+not crash, it quietly leaves a machine with its services stopped and nothing on screen saying so.
+Turning it off starts back exactly what it stopped, and a service already stopped beforehand stays
+stopped. Enabling twice does not open a second session, which would write an empty list over the
+first and strand every service it stopped. A session interrupted by the app dying is found on disk
+by the next launch and can still be undone.
+
+**The frame rate arithmetic.** The trace session only runs on a live elevated Windows box, so
+everything that could be wrong about the numbers lives where a test can reach it: the averaging,
+the percentile, what happens when a game closes and when the foreground switches between two.
+
+**The interface's strings** — every key the UI asks for exists, both languages carry the same keys
+with the same placeholders, and none is blank or defined twice.
+
+All of it was verified by breaking the code on purpose and watching the right tests fail.
+
+---
+
 ## v2.4.0
 
 **A tray icon.** Hover for CPU, memory and whichever temperatures the machine reports; the menu

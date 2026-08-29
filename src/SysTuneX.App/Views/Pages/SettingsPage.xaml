@@ -11,6 +11,15 @@
                     d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
                     Title="Settings">
 
+    <!--
+        This page used to be eight cards, all open, five screens of scrolling, everything looking
+        equally important. Almost nobody comes here for the schedule or the log folder; they come
+        to change the language or the theme.
+
+        So the two things people actually touch stay open at the top, and the other six fold away -
+        each showing what it is currently set to, so a folded row still answers the question without
+        being opened. Folding without that summary would be hiding, not simplifying.
+    -->
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="{StaticResource PagePadding}">
         <Grid MaxWidth="760" HorizontalAlignment="Left">
             <StackPanel>
@@ -20,55 +29,84 @@
                     <TextBlock Text="{loc:Loc Settings_Subtitle}" Style="{StaticResource PageSubtitle}" />
                 </StackPanel>
 
-                <!-- Appearance -->
+                <!-- ── Open: the two that get changed ────────────────────────────────── -->
+
                 <Border Style="{StaticResource Card}" Margin="{StaticResource StackGap}">
                     <StackPanel>
                         <TextBlock Text="{loc:Loc Settings_Appearance}"
                                    Style="{StaticResource SectionTitle}"
                                    Margin="0,0,0,14" />
 
-                        <TextBlock Text="{loc:Loc Settings_Theme}" Style="{StaticResource CaptionText}" />
-                        <StackPanel Orientation="Horizontal" Margin="0,6,0,16">
-                            <RadioButton GroupName="Theme"
-                                         Content="{loc:Loc Settings_Theme_System}"
-                                         Margin="0,0,16,0"
-                                         IsChecked="{Binding SelectedTheme, Converter={StaticResource StringEquals}, ConverterParameter=system}" />
-                            <RadioButton GroupName="Theme"
-                                         Content="{loc:Loc Settings_Theme_Light}"
-                                         Margin="0,0,16,0"
-                                         IsChecked="{Binding SelectedTheme, Converter={StaticResource StringEquals}, ConverterParameter=light}" />
-                            <RadioButton GroupName="Theme"
-                                         Content="{loc:Loc Settings_Theme_Dark}"
-                                         IsChecked="{Binding SelectedTheme, Converter={StaticResource StringEquals}, ConverterParameter=dark}" />
-                        </StackPanel>
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{loc:Loc Settings_Language}"
+                                       Style="{StaticResource CaptionText}"
+                                       VerticalAlignment="Center"
+                                       Width="110" />
+                            <ComboBox Grid.Column="1"
+                                      ItemsSource="{Binding Languages}"
+                                      SelectedItem="{Binding SelectedLanguage}"
+                                      DisplayMemberPath="DisplayName"
+                                      Width="240"
+                                      HorizontalAlignment="Left" />
+                        </Grid>
 
-                        <TextBlock Text="{loc:Loc Settings_Backdrop}" Style="{StaticResource CaptionText}" />
-                        <StackPanel Orientation="Horizontal" Margin="0,6,0,16">
-                            <RadioButton GroupName="Backdrop"
-                                         Content="{loc:Loc Settings_Backdrop_Mica}"
-                                         Margin="0,0,16,0"
-                                         IsChecked="{Binding SelectedBackdrop, Converter={StaticResource StringEquals}, ConverterParameter=Mica}" />
-                            <RadioButton GroupName="Backdrop"
-                                         Content="{loc:Loc Settings_Backdrop_Acrylic}"
-                                         Margin="0,0,16,0"
-                                         IsChecked="{Binding SelectedBackdrop, Converter={StaticResource StringEquals}, ConverterParameter=Acrylic}" />
-                            <RadioButton GroupName="Backdrop"
-                                         Content="{loc:Loc Settings_Backdrop_None}"
-                                         IsChecked="{Binding SelectedBackdrop, Converter={StaticResource StringEquals}, ConverterParameter=None}" />
-                        </StackPanel>
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{loc:Loc Settings_Theme}"
+                                       Style="{StaticResource CaptionText}"
+                                       VerticalAlignment="Center"
+                                       Width="110" />
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <RadioButton GroupName="Theme"
+                                             Content="{loc:Loc Settings_Theme_System}"
+                                             Margin="0,0,16,0"
+                                             IsChecked="{Binding SelectedTheme, Converter={StaticResource StringEquals}, ConverterParameter=system}" />
+                                <RadioButton GroupName="Theme"
+                                             Content="{loc:Loc Settings_Theme_Light}"
+                                             Margin="0,0,16,0"
+                                             IsChecked="{Binding SelectedTheme, Converter={StaticResource StringEquals}, ConverterParameter=light}" />
+                                <RadioButton GroupName="Theme"
+                                             Content="{loc:Loc Settings_Theme_Dark}"
+                                             IsChecked="{Binding SelectedTheme, Converter={StaticResource StringEquals}, ConverterParameter=dark}" />
+                            </StackPanel>
+                        </Grid>
 
-                        <TextBlock Text="{loc:Loc Settings_Language}" Style="{StaticResource CaptionText}" />
-                        <ComboBox ItemsSource="{Binding Languages}"
-                                  SelectedItem="{Binding SelectedLanguage}"
-                                  DisplayMemberPath="DisplayName"
-                                  Width="240"
-                                  HorizontalAlignment="Left"
-                                  Margin="0,6,0,0" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{loc:Loc Settings_Backdrop}"
+                                       Style="{StaticResource CaptionText}"
+                                       VerticalAlignment="Center"
+                                       Width="110" />
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <RadioButton GroupName="Backdrop"
+                                             Content="{loc:Loc Settings_Backdrop_Mica}"
+                                             Margin="0,0,16,0"
+                                             IsChecked="{Binding SelectedBackdrop, Converter={StaticResource StringEquals}, ConverterParameter=Mica}" />
+                                <RadioButton GroupName="Backdrop"
+                                             Content="{loc:Loc Settings_Backdrop_Acrylic}"
+                                             Margin="0,0,16,0"
+                                             IsChecked="{Binding SelectedBackdrop, Converter={StaticResource StringEquals}, ConverterParameter=Acrylic}" />
+                                <RadioButton GroupName="Backdrop"
+                                             Content="{loc:Loc Settings_Backdrop_None}"
+                                             IsChecked="{Binding SelectedBackdrop, Converter={StaticResource StringEquals}, ConverterParameter=None}" />
+                            </StackPanel>
+                        </Grid>
                     </StackPanel>
                 </Border>
 
-                <!-- Behaviour -->
-                <Border Style="{StaticResource Card}" Margin="{StaticResource StackGap}">
+                <!-- Two switches that decide what happens before a tweak is written. Small enough
+                     to stay open, and important enough that they should be. -->
+                <Border Style="{StaticResource Card}" Margin="{StaticResource SectionGap}">
                     <StackPanel>
                         <TextBlock Text="{loc:Loc Settings_Behaviour}"
                                    Style="{StaticResource SectionTitle}"
@@ -85,87 +123,22 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Schedule -->
-                <Border Style="{StaticResource Card}" Margin="{StaticResource SectionGap}">
-                    <StackPanel>
-                        <TextBlock Text="{loc:Loc Settings_Schedule}"
-                                   Style="{StaticResource SectionTitle}"
-                                   Margin="0,0,0,6" />
-                        <TextBlock Text="{loc:Loc Settings_Schedule_Hint}"
-                                   Style="{StaticResource BodyText}"
-                                   Margin="0,0,0,14" />
+                <!-- ── Folded: everything occasional ─────────────────────────────────── -->
 
-                        <ui:ToggleSwitch IsChecked="{Binding ScheduleEnabled, Mode=TwoWay}"
-                                         Content="{loc:Loc Settings_Schedule_On}"
-                                         Margin="0,0,0,14" />
+                <TextBlock Text="{loc:Loc Settings_MoreSettings}"
+                           Style="{StaticResource SectionTitle}"
+                           Margin="0,4,0,12" />
 
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                            <TextBlock Text="{loc:Loc Settings_Schedule_From}"
-                                       Style="{StaticResource CaptionText}"
-                                       VerticalAlignment="Center"
-                                       Margin="0,0,8,0" />
-                            <ui:TextBox Text="{Binding ScheduleStart, UpdateSourceTrigger=LostFocus}"
-                                        Width="90"
-                                        Margin="0,0,16,0" />
-
-                            <TextBlock Text="{loc:Loc Settings_Schedule_To}"
-                                       Style="{StaticResource CaptionText}"
-                                       VerticalAlignment="Center"
-                                       Margin="0,0,8,0" />
-                            <ui:TextBox Text="{Binding ScheduleEnd, UpdateSourceTrigger=LostFocus}"
-                                        Width="90" />
+                <ui:CardExpander Icon="{ui:SymbolIcon XboxController24}" Margin="0,0,0,8" IsExpanded="False">
+                    <ui:CardExpander.Header>
+                        <StackPanel>
+                            <TextBlock Text="{loc:Loc Settings_AutoGameMode}" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                            <TextBlock Text="{Binding AutoGameModeSummary}" Style="{StaticResource CaptionText}" />
                         </StackPanel>
+                    </ui:CardExpander.Header>
 
-                        <TextBlock Text="{loc:Loc Settings_Schedule_Days}"
-                                   Style="{StaticResource CaptionText}"
-                                   Margin="0,0,0,8" />
-
-                        <ItemsControl ItemsSource="{Binding ScheduleDays}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <ToggleButton Style="{DynamicResource FilterToggle}"
-                                                  Content="{Binding Label}"
-                                                  IsChecked="{Binding Selected, Mode=OneWay}"
-                                                  Command="{Binding DataContext.ToggleScheduleDayCommand,
-                                                            RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                  CommandParameter="{Binding}" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </Border>
-
-                <!-- Tray -->
-                <Border Style="{StaticResource Card}" Margin="{StaticResource SectionGap}">
                     <StackPanel>
-                        <TextBlock Text="{loc:Loc Settings_Tray}"
-                                   Style="{StaticResource SectionTitle}"
-                                   Margin="0,0,0,6" />
-                        <TextBlock Text="{loc:Loc Settings_Tray_Hint}"
-                                   Style="{StaticResource BodyText}"
-                                   Margin="0,0,0,14" />
-
-                        <ui:ToggleSwitch IsChecked="{Binding ShowTrayIcon, Mode=TwoWay}"
-                                         Content="{loc:Loc Settings_ShowTray}"
-                                         Margin="0,0,0,10" />
-
-                        <ui:ToggleSwitch IsChecked="{Binding MinimizeToTray, Mode=TwoWay}"
-                                         IsEnabled="{Binding CanMinimizeToTray}"
-                                         Content="{loc:Loc Settings_MinimizeToTray}" />
-                    </StackPanel>
-                </Border>
-
-                <!-- Automatic game mode -->
-                <Border Style="{StaticResource Card}" Margin="{StaticResource SectionGap}">
-                    <StackPanel>
-                        <TextBlock Text="{loc:Loc Settings_AutoGameMode}"
-                                   Style="{StaticResource SectionTitle}"
-                                   Margin="0,0,0,6" />
                         <TextBlock Text="{loc:Loc Settings_AutoGameMode_Hint}"
                                    Style="{StaticResource BodyText}"
                                    Margin="0,0,0,14" />
@@ -234,14 +207,77 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </StackPanel>
-                </Border>
+                </ui:CardExpander>
 
-                <!-- Power -->
-                <Border Style="{StaticResource Card}" Margin="{StaticResource SectionGap}">
+                <ui:CardExpander Icon="{ui:SymbolIcon Clock24}" Margin="0,0,0,8" IsExpanded="False">
+                    <ui:CardExpander.Header>
+                        <StackPanel>
+                            <TextBlock Text="{loc:Loc Settings_Schedule}" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                            <TextBlock Text="{Binding ScheduleSummary}" Style="{StaticResource CaptionText}" />
+                        </StackPanel>
+                    </ui:CardExpander.Header>
+
                     <StackPanel>
-                        <TextBlock Text="{loc:Loc Settings_PowerPlan}"
-                                   Style="{StaticResource SectionTitle}"
-                                   Margin="0,0,0,6" />
+                        <TextBlock Text="{loc:Loc Settings_Schedule_Hint}"
+                                   Style="{StaticResource BodyText}"
+                                   Margin="0,0,0,14" />
+
+                        <ui:ToggleSwitch IsChecked="{Binding ScheduleEnabled, Mode=TwoWay}"
+                                         Content="{loc:Loc Settings_Schedule_On}"
+                                         Margin="0,0,0,14" />
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                            <TextBlock Text="{loc:Loc Settings_Schedule_From}"
+                                       Style="{StaticResource CaptionText}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0" />
+                            <ui:TextBox Text="{Binding ScheduleStart, UpdateSourceTrigger=LostFocus}"
+                                        Width="90"
+                                        Margin="0,0,16,0" />
+
+                            <TextBlock Text="{loc:Loc Settings_Schedule_To}"
+                                       Style="{StaticResource CaptionText}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0" />
+                            <ui:TextBox Text="{Binding ScheduleEnd, UpdateSourceTrigger=LostFocus}"
+                                        Width="90" />
+                        </StackPanel>
+
+                        <TextBlock Text="{loc:Loc Settings_Schedule_Days}"
+                                   Style="{StaticResource CaptionText}"
+                                   Margin="0,0,0,8" />
+
+                        <ItemsControl ItemsSource="{Binding ScheduleDays}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <ToggleButton Style="{DynamicResource FilterToggle}"
+                                                  Content="{Binding Label}"
+                                                  IsChecked="{Binding Selected, Mode=OneWay}"
+                                                  Command="{Binding DataContext.ToggleScheduleDayCommand,
+                                                            RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                  CommandParameter="{Binding}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ui:CardExpander>
+
+                <ui:CardExpander Icon="{ui:SymbolIcon Battery1024}" Margin="0,0,0,8" IsExpanded="False">
+                    <ui:CardExpander.Header>
+                        <StackPanel>
+                            <TextBlock Text="{loc:Loc Settings_PowerPlan}" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                            <TextBlock Text="{Binding PowerSummary}" Style="{StaticResource CaptionText}" />
+                        </StackPanel>
+                    </ui:CardExpander.Header>
+
+                    <StackPanel>
                         <TextBlock Text="{loc:Loc Settings_PowerPlan_Hint}"
                                    Style="{StaticResource BodyText}"
                                    Margin="0,0,0,14" />
@@ -258,14 +294,42 @@
                                    HorizontalAlignment="Left"
                                    Command="{Binding ApplyPowerSchemeCommand}" />
                     </StackPanel>
-                </Border>
+                </ui:CardExpander>
 
-                <!-- Diagnostics -->
-                <Border Style="{StaticResource Card}" Margin="{StaticResource SectionGap}">
+                <ui:CardExpander Icon="{ui:SymbolIcon Chat24}" Margin="0,0,0,8" IsExpanded="False">
+                    <ui:CardExpander.Header>
+                        <StackPanel>
+                            <TextBlock Text="{loc:Loc Settings_Tray}" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                            <TextBlock Text="{Binding TraySummary}" Style="{StaticResource CaptionText}" />
+                        </StackPanel>
+                    </ui:CardExpander.Header>
+
                     <StackPanel>
-                        <TextBlock Text="{loc:Loc Settings_Diagnostics}"
-                                   Style="{StaticResource SectionTitle}"
-                                   Margin="0,0,0,6" />
+                        <TextBlock Text="{loc:Loc Settings_Tray_Hint}"
+                                   Style="{StaticResource BodyText}"
+                                   Margin="0,0,0,14" />
+
+                        <ui:ToggleSwitch IsChecked="{Binding ShowTrayIcon, Mode=TwoWay}"
+                                         Content="{loc:Loc Settings_ShowTray}"
+                                         Margin="0,0,0,10" />
+
+                        <ui:ToggleSwitch IsChecked="{Binding MinimizeToTray, Mode=TwoWay}"
+                                         IsEnabled="{Binding CanMinimizeToTray}"
+                                         Content="{loc:Loc Settings_MinimizeToTray}" />
+                    </StackPanel>
+                </ui:CardExpander>
+
+                <ui:CardExpander Icon="{ui:SymbolIcon DocumentBulletList24}" Margin="0,0,0,8" IsExpanded="False">
+                    <ui:CardExpander.Header>
+                        <StackPanel>
+                            <TextBlock Text="{loc:Loc Settings_Diagnostics}" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                            <TextBlock Text="{Binding DiagnosticsSummary}" Style="{StaticResource CaptionText}" />
+                        </StackPanel>
+                    </ui:CardExpander.Header>
+
+                    <StackPanel>
                         <TextBlock Text="{loc:Loc Settings_Diagnostics_Hint}"
                                    Style="{StaticResource BodyText}"
                                    Margin="0,0,0,14" />
@@ -304,25 +368,18 @@
                                    Margin="0,12,0,0"
                                    Visibility="{Binding LastReportPath, Converter={StaticResource EmptyToVisibility}}" />
                     </StackPanel>
-                </Border>
+                </ui:CardExpander>
 
-                <!-- About -->
-                <Border Style="{StaticResource Card}">
-                    <StackPanel>
-                        <TextBlock Text="{loc:Loc Settings_About}"
-                                   Style="{StaticResource SectionTitle}"
-                                   Margin="0,0,0,14" />
-
-                        <Grid Margin="0,0,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="140" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="{loc:Loc Settings_Version}" Style="{StaticResource CaptionText}" />
-                            <TextBlock Grid.Column="1" Text="{Binding Version}" FontWeight="SemiBold"
+                <ui:CardExpander Icon="{ui:SymbolIcon Info24}" Margin="0,0,0,8" IsExpanded="False">
+                    <ui:CardExpander.Header>
+                        <StackPanel>
+                            <TextBlock Text="{loc:Loc Settings_About}" FontWeight="SemiBold"
                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
-                        </Grid>
+                            <TextBlock Text="{Binding Version}" Style="{StaticResource CaptionText}" />
+                        </StackPanel>
+                    </ui:CardExpander.Header>
 
+                    <StackPanel>
                         <Grid Margin="0,0,0,10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="140" />
@@ -358,7 +415,7 @@
                                     IsClosable="False"
                                     Message="{loc:Loc Settings_Disclaimer}" />
                     </StackPanel>
-                </Border>
+                </ui:CardExpander>
 
             </StackPanel>
         </Grid>

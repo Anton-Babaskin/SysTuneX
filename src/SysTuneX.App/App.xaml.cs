@@ -61,6 +61,7 @@ public partial class App : Application
                 services.AddSingleton<IContentDialogService, ContentDialogService>();
                 services.AddSingleton<IUserInteraction, UserInteraction>();
                 services.AddSingleton<ITrayIconService, TrayIconService>();
+                services.AddSingleton<IGlobalSearch, GlobalSearch>();
 
                 services.AddSingleton<MainWindow>();
                 services.AddSingleton<MainWindowViewModel>();
@@ -71,6 +72,7 @@ public partial class App : Application
                 AddPage<DashboardPage, DashboardViewModel>(services);
                 AddPage<ProfilesPage, ProfilesViewModel>(services);
                 AddPage<GamingPage, GamingViewModel>(services);
+                AddPage<MonitorPage, MonitorViewModel>(services);
                 AddPage<Windows11Page, Windows11ViewModel>(services);
                 AddPage<ServicesPage, ServicesViewModel>(services);
                 AddPage<PrivacyPage, PrivacyViewModel>(services);

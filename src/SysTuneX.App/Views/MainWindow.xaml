@@ -82,6 +82,16 @@
                                IsPaneToggleVisible="True"
                                TransitionDuration="180">
 
+                <!-- One search across every page. Knowing which page a setting lives on is the
+                     app's problem, not the user's. -->
+                <ui:NavigationView.AutoSuggestBox>
+                    <ui:AutoSuggestBox x:Name="SearchBox"
+                                       PlaceholderText="{loc:Loc Search_Placeholder}"
+                                       QuerySubmitted="OnSearchSubmitted"
+                                       SuggestionChosen="OnSearchSuggestionChosen"
+                                       TextChanged="OnSearchTextChanged" />
+                </ui:NavigationView.AutoSuggestBox>
+
                 <ui:NavigationView.MenuItems>
                     <ui:NavigationViewItem Content="{loc:Loc Nav_Dashboard}"
                                            NavigationCacheMode="Enabled"
@@ -96,6 +106,14 @@
                                            TargetPageType="{x:Type pages:ProfilesPage}">
                         <ui:NavigationViewItem.Icon>
                             <ui:SymbolIcon Symbol="Rocket24" />
+                        </ui:NavigationViewItem.Icon>
+                    </ui:NavigationViewItem>
+
+                    <ui:NavigationViewItem Content="{loc:Loc Nav_Monitor}"
+                                           NavigationCacheMode="Enabled"
+                                           TargetPageType="{x:Type pages:MonitorPage}">
+                        <ui:NavigationViewItem.Icon>
+                            <ui:SymbolIcon Symbol="Pulse24" />
                         </ui:NavigationViewItem.Icon>
                     </ui:NavigationViewItem>
 

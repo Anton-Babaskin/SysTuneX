@@ -658,9 +658,6 @@
   <data name="Settings_About" xml:space="preserve">
     <value>About</value>
   </data>
-  <data name="Settings_Version" xml:space="preserve">
-    <value>Version</value>
-  </data>
   <data name="Settings_DataFolder" xml:space="preserve">
     <value>Backup journal</value>
   </data>
@@ -777,9 +774,6 @@
   </data>
   <data name="Settings_Report_Done" xml:space="preserve">
     <value>Report {0} written — {1} log lines, {2} journal entries.</value>
-  </data>
-  <data name="Dashboard_Temperatures" xml:space="preserve">
-    <value>Temperatures</value>
   </data>
   <data name="Dashboard_CpuTemp" xml:space="preserve">
     <value>CPU</value>
@@ -1107,5 +1101,120 @@
   </data>
   <data name="Settings_Schedule_Days" xml:space="preserve">
     <value>Days (none selected means every day)</value>
+  </data>
+  <data name="Preview_Summary" xml:space="preserve">
+    <value>{0} changes to make, {1} services to switch.</value>
+  </data>
+  <data name="Preview_AlreadyApplied" xml:space="preserve">
+    <value>{0} already in place — not listed below.</value>
+  </data>
+  <data name="Preview_ValueLine" xml:space="preserve">
+    <value>{0}
+    {1}  →  {2}</value>
+  </data>
+  <data name="Preview_ServiceLine" xml:space="preserve">
+    <value>{0}: {1} → {2}</value>
+  </data>
+  <data name="Preview_NotSet" xml:space="preserve">
+    <value>not set</value>
+  </data>
+  <data name="Preview_HandlerDriven" xml:space="preserve">
+    <value>    not a registry write — applied through Windows itself</value>
+  </data>
+  <data name="Preview_PowerScheme" xml:space="preserve">
+    <value>Power scheme → high performance</value>
+  </data>
+  <data name="Preview_NeedsRestart" xml:space="preserve">
+    <value>Some of these take effect after a restart.</value>
+  </data>
+  <data name="Preview_NeedsSignOut" xml:space="preserve">
+    <value>Some of these take effect after signing out.</value>
+  </data>
+  <data name="Preview_HasAdvanced" xml:space="preserve">
+    <value>This includes advanced changes. Everything is recorded and can be rolled back from the change log.</value>
+  </data>
+  <data name="Preview_Nothing" xml:space="preserve">
+    <value>Everything in this profile is already applied.</value>
+  </data>
+  <data name="Search_Placeholder" xml:space="preserve">
+    <value>Search settings</value>
+  </data>
+  <data name="Nav_Monitor" xml:space="preserve">
+    <value>Monitor</value>
+  </data>
+  <data name="Monitor_Title" xml:space="preserve">
+    <value>Monitor</value>
+  </data>
+  <data name="Monitor_Subtitle" xml:space="preserve">
+    <value>Frame rate, load and temperature while you play. Leave it open on a second screen.</value>
+  </data>
+  <data name="Monitor_FrameRate" xml:space="preserve">
+    <value>Frame rate</value>
+  </data>
+  <data name="Monitor_OnePercentLow" xml:space="preserve">
+    <value>1% low</value>
+  </data>
+  <data name="Monitor_FrameTime" xml:space="preserve">
+    <value>Frame time</value>
+  </data>
+  <data name="Monitor_Cpu" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="Monitor_Gpu" xml:space="preserve">
+    <value>GPU</value>
+  </data>
+  <data name="Monitor_Memory" xml:space="preserve">
+    <value>Memory</value>
+  </data>
+  <data name="Monitor_Label_Processes" xml:space="preserve">
+    <value>Processes:</value>
+  </data>
+  <data name="Monitor_Fps_Idle" xml:space="preserve">
+    <value>Nothing is rendering right now. Start a game — the counter finds it on its own.</value>
+  </data>
+  <data name="Monitor_Fps_Unavailable" xml:space="preserve">
+    <value>The frame counter needs administrator rights to start its trace session. ({0})</value>
+  </data>
+  <data name="Monitor_HowItWorks_Title" xml:space="preserve">
+    <value>Measured without touching the game</value>
+  </data>
+  <data name="Monitor_HowItWorks_Message" xml:space="preserve">
+    <value>SysTuneX counts frames through Event Tracing for Windows, the same way PresentMon and the Xbox Game Bar do. Nothing is injected into the game, so no anti-cheat has anything to object to. The cost is that there is no overlay: alt-tab here to read the numbers, and the counter stays pointed at the game.</value>
+  </data>
+  <data name="Dashboard_NoSensorsShort" xml:space="preserve">
+    <value>No temperature sensor answered on this machine.</value>
+  </data>
+  <data name="Dashboard_OpenMonitor" xml:space="preserve">
+    <value>Open monitor</value>
+  </data>
+  <data name="Settings_Summary_On" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="Settings_Summary_Off" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="Settings_Summary_TrayAndClose" xml:space="preserve">
+    <value>On · closing goes to the tray</value>
+  </data>
+  <data name="Settings_Summary_GamesWatched" xml:space="preserve">
+    <value>On · watching {0} games</value>
+  </data>
+  <data name="Settings_Summary_Schedule" xml:space="preserve">
+    <value>{0}–{1} · {2}</value>
+  </data>
+  <data name="Settings_Summary_ScheduleNoDays" xml:space="preserve">
+    <value>{0}–{1} · no days selected</value>
+  </data>
+  <data name="Settings_Summary_VerboseOn" xml:space="preserve">
+    <value>Detailed logging on</value>
+  </data>
+  <data name="Settings_Summary_VerboseOff" xml:space="preserve">
+    <value>Standard logging</value>
+  </data>
+  <data name="Settings_Summary_Unknown" xml:space="preserve">
+    <value>Not set</value>
+  </data>
+  <data name="Settings_MoreSettings" xml:space="preserve">
+    <value>Everything else</value>
   </data>
 </root>

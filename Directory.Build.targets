@@ -1,0 +1,32 @@
+<Project>
+
+  <!--
+    Undo the file copying in TraceEvent's props, all of which is either unused or already done.
+
+    msdia140.dll and KernelTraceControl.dll are ten megabytes across x86, amd64 and arm64, serving
+    symbol resolution and kernel-session merging. The frame counter reads event headers and decodes
+    no payload, so nothing ever loads them.
+
+    Dia2Lib and TraceReloggerLib are COM interop the props copies out of lib/netstandard2.0 - the
+    same folder NuGet already resolves them from as references. Keeping both copies hands crossgen
+    the same assembly twice under one simple name and ReadyToRun fails the publish outright:
+    "Multiple input files matching same simple name". They still ship, by the reference path they
+    were always going to arrive on.
+
+    This lives here rather than in SysTuneX.Core, which is where the package is referenced, because
+    a transitive PackageReference propagates to every project downstream - so the app re-imports
+    the same props and re-adds every item Core just removed. Doing it once for the whole tree is
+    both shorter and the only version that actually holds.
+
+    It has to be a .targets: Directory.Build.props is imported before NuGet's generated props, so
+    at that point there would be nothing to remove yet.
+  -->
+  <ItemGroup Condition="'@(None)' != ''">
+    <None Remove="@(None->WithMetadataValue('Filename','msdia140'))" />
+    <None Remove="@(None->WithMetadataValue('Filename','KernelTraceControl'))" />
+    <None Remove="@(None->WithMetadataValue('Filename','KernelTraceControl.Win61'))" />
+    <None Remove="@(None->WithMetadataValue('Filename','Dia2Lib'))" />
+    <None Remove="@(None->WithMetadataValue('Filename','TraceReloggerLib'))" />
+  </ItemGroup>
+
+</Project>

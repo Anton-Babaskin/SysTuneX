@@ -13,6 +13,15 @@ public interface IProfileService
     /// <summary>How far through the profile the machine already is, as a fraction between 0 and 1.</summary>
     Task<double> GetCompletionAsync(GameProfile profile, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Everything applying this profile would change, read from the machine as it is now.
+    /// Does real registry and service-manager work, so keep it off the UI thread.
+    /// </summary>
+    Task<ProfilePreview> PreviewAsync(
+        GameProfile profile,
+        bool includeAdvanced,
+        CancellationToken cancellationToken = default);
+
     Task<ProfileApplyResult> ApplyAsync(
         GameProfile profile,
         ProfileApplyOptions options,

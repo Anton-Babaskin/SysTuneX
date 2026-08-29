@@ -64,7 +64,14 @@ public sealed class GameModeAutomation : IDisposable
     /// <summary>Raised after an automatic switch, so the interface can catch up.</summary>
     public event EventHandler? Switched;
 
-    private void OnDetectionChanged(object? sender, EventArgs e) => _ = HandleAsync();
+    /// <summary>
+    /// The work kicked off by the last detection. An event handler cannot await, so this is the
+    /// only handle on it - without one a test has to sleep and hope, which is both slow and the
+    /// kind of flake that gets a suite ignored.
+    /// </summary>
+    internal Task LastOperation { get; private set; } = Task.CompletedTask;
+
+    private void OnDetectionChanged(object? sender, EventArgs e) => LastOperation = HandleAsync();
 
     private async Task HandleAsync()
     {

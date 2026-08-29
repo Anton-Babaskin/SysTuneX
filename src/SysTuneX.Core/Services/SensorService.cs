@@ -3,7 +3,6 @@ using System.Management;
 using System.Runtime.Versioning;
 using Microsoft.Extensions.Logging;
 using SysTuneX.Core.Abstractions;
-using SysTuneX.Core.Native;
 
 namespace SysTuneX.Core.Services;
 
@@ -22,18 +21,19 @@ public sealed class SensorService : ISensorService, IDisposable
     private const double PlausibleMax = 125;
 
     private readonly ILogger<SensorService> _logger;
+    private readonly IReadOnlyList<IGpuSensorProbe> _probes;
     private readonly SemaphoreSlim _gate = new(1, 1);
-
-    private bool _nvmlReady;
-    private bool _nvmlAttempted;
-    private IntPtr _nvmlDevice;
 
     /// <summary>Set once the thermal zone has refused, so a timer does not retry WMI every second.</summary>
     private bool _thermalZoneUnavailable;
 
     private bool _disposed;
 
-    public SensorService(ILogger<SensorService> logger) => _logger = logger;
+    public SensorService(ILogger<SensorService> logger, IEnumerable<IGpuSensorProbe> probes)
+    {
+        _logger = logger;
+        _probes = [.. probes];
+    }
 
     public async Task<SensorReadings> ReadAsync(CancellationToken cancellationToken = default)
     {
@@ -45,7 +45,7 @@ public sealed class SensorService : ISensorService, IDisposable
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            TemperatureReading? gpu = ReadNvidia(out int? gpuUsage, out int? gpuFan);
+            (TemperatureReading? gpu, int? gpuUsage, int? gpuFan) = ReadGpu();
             TemperatureReading? cpu = ReadThermalZone();
 
             return new SensorReadings
@@ -68,103 +68,35 @@ public sealed class SensorService : ISensorService, IDisposable
     }
 
     /// <summary>
-    /// NVML, which ships with the NVIDIA driver. AMD's equivalent is ADL and Intel's is a
-    /// different library again; neither is wired up yet, so those cards report no temperature
-    /// rather than a made-up one.
+    /// The first probe that answers wins. A machine has one vendor's card in it, so asking them
+    /// all and taking the first reading needs no guessing about which is installed - and a probe
+    /// that throws is skipped rather than taking the whole sample with it.
     /// </summary>
-    private TemperatureReading? ReadNvidia(out int? usage, out int? fan)
+    private (TemperatureReading? Temperature, int? Usage, int? Fan) ReadGpu()
     {
-        usage = null;
-        fan = null;
-
-        if (!EnsureNvml())
+        foreach (IGpuSensorProbe probe in _probes)
         {
-            return null;
-        }
+            GpuReading? reading;
 
-        try
-        {
-            if (Nvml.GetUtilization(_nvmlDevice, out Nvml.Utilization utilization) == Nvml.Success)
+            try
             {
-                usage = (int)Math.Min(utilization.Gpu, 100);
+                reading = probe.Read();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "GPU probe {Vendor} failed", probe.Vendor);
+                continue;
             }
 
-            if (Nvml.GetFanSpeed(_nvmlDevice, out uint fanPercent) == Nvml.Success)
+            if (reading is null || !IsPlausible(reading.Celsius))
             {
-                fan = (int)Math.Min(fanPercent, 100);
+                continue;
             }
 
-            if (Nvml.GetTemperature(_nvmlDevice, Nvml.TemperatureSensorGpu, out uint celsius) != Nvml.Success)
-            {
-                return null;
-            }
-
-            return IsPlausible(celsius) ? new TemperatureReading(celsius, "NVIDIA NVML") : null;
-        }
-        catch (DllNotFoundException)
-        {
-            _nvmlReady = false;
-            return null;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogDebug(ex, "NVML sample failed");
-            return null;
-        }
-    }
-
-    private bool EnsureNvml()
-    {
-        if (_nvmlReady)
-        {
-            return true;
+            return (new TemperatureReading(reading.Celsius, probe.Vendor), reading.UsagePercent, reading.FanPercent);
         }
 
-        if (_nvmlAttempted)
-        {
-            return false;
-        }
-
-        _nvmlAttempted = true;
-
-        try
-        {
-            if (Nvml.Init() != Nvml.Success)
-            {
-                _logger.LogDebug("NVML is present but would not initialise; no NVIDIA GPU readings");
-                return false;
-            }
-
-            if (Nvml.GetDeviceCount(out uint count) != Nvml.Success || count == 0)
-            {
-                Nvml.Shutdown();
-                return false;
-            }
-
-            // Device 0. A machine with two NVIDIA cards is rare enough that picking the first
-            // is better than guessing which one the game is on.
-            if (Nvml.GetDeviceHandle(0, out IntPtr device) != Nvml.Success)
-            {
-                Nvml.Shutdown();
-                return false;
-            }
-
-            _nvmlDevice = device;
-            _nvmlReady = true;
-            _logger.LogInformation("NVML initialised, reading GPU sensors from device 0 of {Count}", count);
-            return true;
-        }
-        catch (DllNotFoundException)
-        {
-            // No NVIDIA driver on this machine. Expected on AMD and Intel systems.
-            _logger.LogDebug("nvml.dll is not present; no NVIDIA GPU readings");
-            return false;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogDebug(ex, "NVML could not be initialised");
-            return false;
-        }
+        return (null, null, null);
     }
 
     /// <summary>
@@ -237,15 +169,15 @@ public sealed class SensorService : ISensorService, IDisposable
 
         _disposed = true;
 
-        if (_nvmlReady)
+        foreach (IGpuSensorProbe probe in _probes)
         {
             try
             {
-                Nvml.Shutdown();
+                probe.Dispose();
             }
             catch
             {
-                // Nothing useful to do if the driver library is already gone.
+                // One vendor library failing to unload must not stop the others from doing so.
             }
         }
 

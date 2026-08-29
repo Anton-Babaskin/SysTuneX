@@ -14,7 +14,7 @@ Optimize performance, reduce latency and clean up Windows 10/11 with a few click
 
 SysTuneX shows exactly what it changes, saves your original settings and lets you roll everything back.
 
-[Русская версия](README.ru.md) · [Download](https://github.com/Anton-Babaskin/SysTuneX/releases) · [Build from source](#build-from-source) · [Report an issue](https://github.com/Anton-Babaskin/SysTuneX/issues)
+[Русская версия](README.ru.md) · [Download](https://github.com/Anton-Babaskin/SysTuneX/releases) · [Build from source](#build-from-source) · [Contributing](CONTRIBUTING.md) · [Report an issue](https://github.com/Anton-Babaskin/SysTuneX/issues)
 
 <br>
 
@@ -93,6 +93,7 @@ SysTuneX requests elevation automatically because system tuning requires access 
 | Area            | What SysTuneX does                                                                                                       |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | **Dashboard**   | Live CPU and memory monitoring, tuning status, Quick Optimize and full restore                                           |
+| **Monitor**     | Frame rate with its 1% low and frame time, CPU and GPU load and temperature, memory — measured without touching the game |
 | **Profiles**    | Ready-made tuning profiles for different gaming and workload scenarios                                                   |
 | **Gaming**      | Game Bar, Game DVR, fullscreen optimizations, mouse acceleration, CPU scheduling and more                                |
 | **Windows 11**  | VBS, HVCI, hypervisor, Recall, Copilot, widgets, search features and other build-aware settings                          |
@@ -102,8 +103,10 @@ SysTuneX requests elevation automatically because system tuning requires access 
 | **Cleanup**     | Temporary files, update caches, crash dumps, shader caches, thumbnails and other disposable data                         |
 | **Game mode**   | One switch that stops background services, raises the power scheme and frees memory — and undoes all of it              |
 | **Automation**  | Game mode follows the game, or a schedule, without either one undoing what you switched on by hand                      |
-| **Sensors**     | GPU temperature, load and fan through NVML; CPU temperature from the ACPI thermal zone where firmware exposes one       |
+| **Sensors**     | GPU temperature, load and fan through NVML and ADL; CPU temperature from the ACPI thermal zone where firmware exposes one |
+| **Search**      | One box across every tweak, service and cleanup target — it navigates to the page and filters it down to the result     |
 | **Tray**        | Live counters on hover and the game mode switch in the menu                                                            |
+| **Appearance**  | Follows the Windows light/dark setting by default, or pin light or dark by hand; Mica, Acrylic or plain backdrop        |
 | **Before/after**| Record the machine either side of a change and see exactly what moved                                                   |
 | **Diagnostics** | Persistent logs, verbose logging and a complete diagnostic report                                                        |
 | **Change log**  | Full history of recorded changes with individual or complete rollback                                                    |
@@ -151,13 +154,29 @@ Automation runs only while SysTuneX is open. Doing it with the app closed would 
 
 ---
 
+## Frame rate
+
+SysTuneX counts frames through **Event Tracing for Windows**, reading the Present events the DirectX stack already writes — the same source PresentMon and the Xbox Game Bar counter use.
+
+**Nothing is injected into the game.** RTSS, Afterburner and Fraps hook the graphics API from inside the game process; that is how they draw an overlay, and it is also exactly what anti-cheat looks for. A tool whose whole point is to be run before playing cannot ship something that risks a ban.
+
+The cost of that choice is stated rather than hidden: there is **no overlay** over a fullscreen game. Alt-tab to the Monitor page to read the numbers. The counter deliberately stays pointed at the game when SysTuneX comes to the foreground — retargeting to our own window would show SysTuneX's frame rate, which is worse than useless.
+
+Alongside the average, the Monitor shows the **1% low** — the frame rate of the worst one percent of frames. An average of 144 with a 1% low of 40 stutters, and a steady 90 does not; an average on its own hides the exact problem this tool exists to fix.
+
+Starting a trace session needs administrator rights. Where it cannot start, the page says so instead of showing a blank number.
+
+---
+
 ## Temperatures
 
-GPU temperature, load and fan speed come from **NVIDIA's NVML**, which ships with the driver and needs no install. CPU temperature comes from the **ACPI thermal zone** where firmware exposes one — that is a board thermal zone rather than the CPU package, and the dashboard says so.
+GPU temperature comes from the vendor's own library, shipped with the driver and needing no install: **NVML** for NVIDIA — temperature, load and fan — and **ADL** for AMD, which reports temperature and fan. CPU temperature comes from the **ACPI thermal zone** where firmware exposes one — that is a board thermal zone rather than the CPU package, and the dashboard says so.
+
+Only ADL's scalar calls are used. Its richer ones take large structs whose layout differs between driver branches, and getting one wrong corrupts memory rather than returning an error — a tuner that can crash the machine it is tuning is worse than one that shows no temperature. Intel GPUs are not covered yet.
 
 **SysTuneX ships no kernel driver, and will not.** Reading a CPU package temperature properly needs a ring-0 helper, and the off-the-shelf ones are on Microsoft's vulnerable driver blocklist and trip anti-cheat. That is not a trade worth making in a tool people install to play games.
 
-So a reading appears only when a sensor actually answered. Where none does, the card says so and why — a missing reading is not zero degrees. AMD and Intel GPUs report no temperature yet; their vendor libraries are not wired up, and saying so beats inventing a figure.
+So a reading appears only when a sensor actually answered. Where none does, the card says so and why — a missing reading is not zero degrees. Readings outside anything a running part produces are dropped too: some firmware returns a placeholder, and a plausible-looking wrong number is worse than a blank.
 
 ---
 
@@ -165,7 +184,7 @@ So a reading appears only when a sensor actually answered. Where none does, the 
 
 Record the machine before a change and again after it, then compare the two. The result names every tweak that became applied, every service that started or stopped, and a changed power scheme.
 
-**It is not a performance measurement and does not pretend to be.** SysTuneX cannot see frame times; for those, run the same benchmark on both sides and compare it yourself. Memory and process counts are reported only when they move further than they drift on their own — listing a 3 MB difference as the effect of a tweak would be a lie dressed as data.
+**It is not a performance measurement and does not pretend to be.** It compares configuration, not speed — for frame times, watch the Monitor page while you play, or run the same benchmark on both sides and compare it yourself. Memory and process counts are reported only when they move further than they drift on their own — listing a 3 MB difference as the effect of a tweak would be a lie dressed as data.
 
 ---
 
@@ -307,6 +326,8 @@ Unsupported tweaks are filtered instead of being blindly written.
 | MVVM toolkit         | CommunityToolkit.Mvvm 8.4          |
 | Dependency injection | Microsoft.Extensions.Hosting       |
 | Windows integration  | Win32 API, Registry, WMI           |
+| Frame counting       | Event Tracing for Windows          |
+| GPU sensors          | NVML (NVIDIA), ADL (AMD)           |
 | System tooling       | powercfg, netsh, bcdedit, ipconfig |
 | Testing              | xUnit                              |
 | CI/CD                | GitHub Actions                     |
@@ -465,9 +486,8 @@ Use the same game scene, graphics settings and test duration for both runs.
 
 ## Contributing
 
-Issues and pull requests are welcome.
-
-When adding or changing a tweak:
+Issues and pull requests are welcome. **[CONTRIBUTING.md](CONTRIBUTING.md)** has the full guide;
+the short version, when adding or changing a tweak:
 
 * keep system operations out of the UI layer
 * record the original state before modifying it
@@ -475,6 +495,10 @@ When adding or changing a tweak:
 * validate Windows build requirements
 * prefer documented Windows APIs and policies
 * add or update catalog tests
+* give every user-visible string an entry in both `Strings.resx` and `Strings.ru.resx`
+
+Releases are cut per merge; see **[RELEASING.md](RELEASING.md)**. Security reports go through
+**[SECURITY.md](SECURITY.md)** rather than a public issue.
 
 ---
 
