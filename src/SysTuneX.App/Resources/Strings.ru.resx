@@ -658,9 +658,6 @@
   <data name="Settings_About" xml:space="preserve">
     <value>О программе</value>
   </data>
-  <data name="Settings_Version" xml:space="preserve">
-    <value>Версия</value>
-  </data>
   <data name="Settings_DataFolder" xml:space="preserve">
     <value>Журнал резервных копий</value>
   </data>
@@ -1777,5 +1774,35 @@
   </data>
   <data name="Dashboard_OpenMonitor" xml:space="preserve">
     <value>Открыть монитор</value>
+  </data>
+  <data name="Settings_Summary_On" xml:space="preserve">
+    <value>Включено</value>
+  </data>
+  <data name="Settings_Summary_Off" xml:space="preserve">
+    <value>Выключено</value>
+  </data>
+  <data name="Settings_Summary_TrayAndClose" xml:space="preserve">
+    <value>Включено · закрытие сворачивает в трей</value>
+  </data>
+  <data name="Settings_Summary_GamesWatched" xml:space="preserve">
+    <value>Включено · отслеживается игр: {0}</value>
+  </data>
+  <data name="Settings_Summary_Schedule" xml:space="preserve">
+    <value>{0}–{1} · {2}</value>
+  </data>
+  <data name="Settings_Summary_ScheduleNoDays" xml:space="preserve">
+    <value>{0}–{1} · дни не выбраны</value>
+  </data>
+  <data name="Settings_Summary_VerboseOn" xml:space="preserve">
+    <value>Подробные логи включены</value>
+  </data>
+  <data name="Settings_Summary_VerboseOff" xml:space="preserve">
+    <value>Обычные логи</value>
+  </data>
+  <data name="Settings_Summary_Unknown" xml:space="preserve">
+    <value>Не задано</value>
+  </data>
+  <data name="Settings_MoreSettings" xml:space="preserve">
+    <value>Всё остальное</value>
   </data>
 </root>
