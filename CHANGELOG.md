@@ -5,7 +5,7 @@ for the version being released, so a release page shows that version and nothing
 
 ## v2.6.0
 
-Three things this time.
+Three features and the tests for the piece everything else runs through.
 
 **Applying a profile now shows what it will do first.** Every registry value the profile would
 touch, with the machine's current contents beside the new one. Tweaks already in place are
@@ -29,6 +29,24 @@ The vendor libraries cannot be tested without the hardware, so the part that pic
 now can be: which probe wins, what happens when one throws, and what counts as a believable
 number. Readings outside anything a running part produces are dropped — some firmware returns a
 placeholder, and a plausible-looking wrong number is worse than a blank tile.
+
+**Twenty tests for the tweak engine**, which had none. It is the single place every tweak is
+written through, which makes it the single place the project's promises are kept or lost — and
+two of them now fail loudly if broken rather than silently on someone's machine.
+
+The previous value is recorded *before* the new one is written. Doing it the other way round
+looks identical in every other test and loses the original on any crash or access-denied between
+the two, which is a rollback that cannot roll back.
+
+Reverting restores what was recorded, not what Windows ships. A machine that had a value of 5
+gets 5 back, not the documented default; a value recorded as absent is deleted rather than
+replaced with a number the machine never had.
+
+Also covered: a tweak outside its build range writes nothing and reports as unsupported rather
+than as not applied; a tweak half-written because one key was protected reports as partial rather
+than being rounded down to "not applied", which would tell the user to apply it again and change
+nothing; and applying a handler-driven tweak drops its cached status, so the page does not keep
+showing the state from before the change.
 
 ---
 
