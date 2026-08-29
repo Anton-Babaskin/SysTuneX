@@ -74,6 +74,12 @@ internal static class NativeMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool SystemParametersInfoArray(uint action, uint param, int[] pointerValue, uint winIni);
 
+    [DllImport("user32.dll")]
+    internal static extern IntPtr GetForegroundWindow();
+
+    [DllImport("user32.dll", SetLastError = true)]
+    internal static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+
     internal static readonly IntPtr HWND_BROADCAST = new(0xFFFF);
     internal const uint WM_SETTINGCHANGE = 0x001A;
     internal const uint SMTO_ABORTIFHUNG = 0x0002;

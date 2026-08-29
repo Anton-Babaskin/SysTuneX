@@ -44,6 +44,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IGpuSensorProbe, NvidiaGpuProbe>();
         services.AddSingleton<IGpuSensorProbe, AmdGpuProbe>();
         services.AddSingleton<ISensorService, SensorService>();
+        // Started on demand rather than here: an ETW session is a machine-wide resource, and
+        // there is no reason to hold one open for someone who never opens the monitor.
+        services.AddSingleton<IFrameRateProbe, EtwFrameRateProbe>();
         services.AddSingleton<IGameModeService, GameModeService>();
         services.AddSingleton<IGameWatcher, GameWatcher>();
         services.AddSingleton<GameModeAutomation>();
