@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using SysTuneX.App.Localization;
+using SysTuneX.App.Services;
 using SysTuneX.Core.Abstractions;
 using SysTuneX.Core.Models;
 
@@ -26,6 +27,7 @@ public sealed partial class MonitorViewModel : PageViewModel
     private readonly ISensorService _sensors;
     private readonly IFrameRateProbe _frameRate;
     private readonly ILocalizationService _localization;
+    private readonly IAppSettingsService _settings;
     private readonly DispatcherTimer _timer;
 
     private int _tickCount;
@@ -90,16 +92,55 @@ public sealed partial class MonitorViewModel : PageViewModel
     [ObservableProperty]
     private int _processCount;
 
+    // ── What the monitor measures ────────────────────────────────────────────
+    //
+    // Each of these is a real cost rather than a preference about clutter, so each is a switch:
+    // the frame counter holds an ETW session open, and the temperatures cost a WMI query or a call
+    // into the vendor's driver library on every sample.
+
+    [ObservableProperty]
+    private bool _frameCounterEnabled;
+
+    [ObservableProperty]
+    private bool _keepFrameCounterInBackground = true;
+
+    [ObservableProperty]
+    private bool _showCpuLoad = true;
+
+    [ObservableProperty]
+    private bool _showCpuTemperature = true;
+
+    [ObservableProperty]
+    private bool _showGpuLoad = true;
+
+    [ObservableProperty]
+    private bool _showGpuTemperature = true;
+
+    [ObservableProperty]
+    private bool _showGpuFan;
+
+    [ObservableProperty]
+    private bool _showMemory = true;
+
+    [ObservableProperty]
+    private bool _showProcessCount;
+
+    /// <summary>True while the trace session is being created, so the switch can show it is working.</summary>
+    [ObservableProperty]
+    private bool _frameCounterStarting;
+
     public MonitorViewModel(
         ISystemInfoService systemInfo,
         ISensorService sensors,
         IFrameRateProbe frameRate,
-        ILocalizationService localization)
+        ILocalizationService localization,
+        IAppSettingsService settings)
     {
         _systemInfo = systemInfo;
         _sensors = sensors;
         _frameRate = frameRate;
         _localization = localization;
+        _settings = settings;
 
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _timer.Tick += OnTick;
@@ -149,7 +190,152 @@ public sealed partial class MonitorViewModel : PageViewModel
     /// False only once a sample has actually come back empty. Before that the tiles say nothing
     /// rather than announcing an absence that has not been established yet.
     /// </summary>
-    public bool HasNoTemperature => _sensorsChecked && CpuTemperature is null && GpuTemperature is null;
+    public bool HasNoTemperature =>
+        _sensorsChecked &&
+        (ShowCpuTemperature || ShowGpuTemperature) &&
+        CpuTemperature is null &&
+        GpuTemperature is null;
+
+    /// <summary>The GPU card is worth drawing only if at least one of its readings is wanted.</summary>
+    public bool ShowGpuCard => ShowGpuLoad || ShowGpuTemperature || ShowGpuFan;
+
+    /// <summary>Nothing ticked at all, which is a state worth naming rather than showing a blank page.</summary>
+    public bool ShowNothing => !FrameCounterEnabled && !ShowCpuLoad && !ShowGpuCard && !ShowMemory;
+
+    private bool _loading;
+
+    private void LoadSettings()
+    {
+        MonitorSettings monitor = _settings.Current.Monitor;
+
+        _loading = true;
+        try
+        {
+            FrameCounterEnabled = monitor.FrameCounter;
+            KeepFrameCounterInBackground = monitor.KeepFrameCounterInBackground;
+            ShowCpuLoad = monitor.ShowCpuLoad;
+            ShowCpuTemperature = monitor.ShowCpuTemperature;
+            ShowGpuLoad = monitor.ShowGpuLoad;
+            ShowGpuTemperature = monitor.ShowGpuTemperature;
+            ShowGpuFan = monitor.ShowGpuFan;
+            ShowMemory = monitor.ShowMemory;
+            ShowProcessCount = monitor.ShowProcessCount;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    /// <summary>Writes the switches back. Called from every one of them, so it stays cheap and idempotent.</summary>
+    private void SaveSettings()
+    {
+        if (_loading)
+        {
+            return;
+        }
+
+        MonitorSettings monitor = _settings.Current.Monitor;
+
+        monitor.FrameCounter = FrameCounterEnabled;
+        monitor.KeepFrameCounterInBackground = KeepFrameCounterInBackground;
+        monitor.ShowCpuLoad = ShowCpuLoad;
+        monitor.ShowCpuTemperature = ShowCpuTemperature;
+        monitor.ShowGpuLoad = ShowGpuLoad;
+        monitor.ShowGpuTemperature = ShowGpuTemperature;
+        monitor.ShowGpuFan = ShowGpuFan;
+        monitor.ShowMemory = ShowMemory;
+        monitor.ShowProcessCount = ShowProcessCount;
+
+        _ = _settings.SaveAsync();
+    }
+
+    /// <summary>
+    /// The switch that owns the trace session. Creating one takes long enough to be felt, so it
+    /// happens off the interface thread with the switch showing that it is working.
+    /// </summary>
+    async partial void OnFrameCounterEnabledChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowNothing));
+        SaveSettings();
+
+        if (_loading)
+        {
+            return;
+        }
+
+        if (value)
+        {
+            await StartFrameCounterAsync().ConfigureAwait(true);
+            return;
+        }
+
+        _frameRate.Stop();
+        Fps = null;
+        GameName = string.Empty;
+        FpsHistory.Clear();
+        FrameRateHint = _localization["Monitor_Fps_Off"];
+    }
+
+    private async Task StartFrameCounterAsync()
+    {
+        FrameCounterStarting = true;
+        try
+        {
+            await Task.Run(_frameRate.Start, PageToken).ConfigureAwait(true);
+        }
+        catch (OperationCanceledException)
+        {
+            // Navigated away while the session was being created.
+        }
+        finally
+        {
+            FrameCounterStarting = false;
+        }
+
+        // A refusal is reported on the switch itself rather than only in the empty tile, because
+        // the person who just flipped it is owed an answer about why nothing happened.
+        if (!_frameRate.IsRunning)
+        {
+            FrameRateHint = _localization.Format("Monitor_Fps_Unavailable", _frameRate.UnavailableReason);
+        }
+    }
+
+    partial void OnKeepFrameCounterInBackgroundChanged(bool value) => SaveSettings();
+
+    partial void OnShowCpuLoadChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowNothing));
+        SaveSettings();
+    }
+
+    partial void OnShowCpuTemperatureChanged(bool value)
+    {
+        OnPropertyChanged(nameof(HasNoTemperature));
+        SaveSettings();
+    }
+
+    partial void OnShowGpuLoadChanged(bool value) => OnGpuSwitchChanged();
+
+    partial void OnShowGpuTemperatureChanged(bool value) => OnGpuSwitchChanged();
+
+    partial void OnShowGpuFanChanged(bool value) => OnGpuSwitchChanged();
+
+    private void OnGpuSwitchChanged()
+    {
+        OnPropertyChanged(nameof(ShowGpuCard));
+        OnPropertyChanged(nameof(HasNoTemperature));
+        OnPropertyChanged(nameof(ShowNothing));
+        SaveSettings();
+    }
+
+    partial void OnShowMemoryChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowNothing));
+        SaveSettings();
+    }
+
+    partial void OnShowProcessCountChanged(bool value) => SaveSettings();
 
     protected override async Task OnEnterAsync()
     {
@@ -159,9 +345,15 @@ public sealed partial class MonitorViewModel : PageViewModel
             CpuName = hardware.CpuName;
             GpuName = hardware.GpuName;
 
-            // Creating the trace session takes long enough to be felt, and it only has to happen
-            // once - the session then stays up so a game launched later is still caught.
-            await Task.Run(_frameRate.Start, PageToken).ConfigureAwait(true);
+            LoadSettings();
+        }
+
+        // Restores the switch rather than acting on a page visit. The trace session used to be
+        // started here the first time anyone opened the page and then left running for the life of
+        // the app; now it runs when it has been asked to and not otherwise.
+        if (FrameCounterEnabled && !_frameRate.IsRunning)
+        {
+            await StartFrameCounterAsync().ConfigureAwait(true);
         }
 
         _timer.Start();
@@ -173,12 +365,24 @@ public sealed partial class MonitorViewModel : PageViewModel
     protected override Task OnLeaveAsync()
     {
         _timer.Stop();
+
+        // Leaving the page stops the counter unless it was asked to keep going. Someone who wants
+        // to alt-tab into a game and read the numbers afterwards needs it left on; someone who
+        // just looked at the page does not need a trace session running for the rest of the day.
+        if (!KeepFrameCounterInBackground && _frameRate.IsRunning)
+        {
+            _frameRate.Stop();
+        }
+
         return Task.CompletedTask;
     }
 
     private void OnTick(object? sender, EventArgs e)
     {
-        if (_tickCount++ % SensorTickInterval == 0)
+        // Skipped outright when nothing on screen needs it. A WMI query and a call into the
+        // vendor's driver library are not free, and taking them for a tile that is switched off
+        // is exactly the kind of background work this app exists to remove.
+        if (_tickCount++ % SensorTickInterval == 0 && _settings.Current.Monitor.NeedsSensors)
         {
             _ = SampleSensorsAsync();
         }

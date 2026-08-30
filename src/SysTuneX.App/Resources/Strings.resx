@@ -1220,4 +1220,58 @@
   <data name="Core_Service_NotChangedByUs" xml:space="preserve">
     <value>{0} was not changed by SysTuneX, so there is nothing to restore.</value>
   </data>
+  <data name="Monitor_Settings" xml:space="preserve">
+    <value>What to measure</value>
+  </data>
+  <data name="Monitor_Settings_Hint" xml:space="preserve">
+    <value>Pick the readings you want. Everything else is left alone.</value>
+  </data>
+  <data name="Monitor_Settings_Readings" xml:space="preserve">
+    <value>Show on this page</value>
+  </data>
+  <data name="Monitor_Settings_Cost" xml:space="preserve">
+    <value>A reading you switch off is not sampled by this page. The frame counter goes further: its trace session is closed entirely, not left running. The tray icon and the dashboard read temperatures on their own schedule regardless.</value>
+  </data>
+  <data name="Monitor_FrameCounter" xml:space="preserve">
+    <value>Frame counter</value>
+  </data>
+  <data name="Monitor_FrameCounter_Hint" xml:space="preserve">
+    <value>Counts frames through Event Tracing for Windows, the way PresentMon and the Xbox Game Bar do. Nothing is injected into the game. It holds a trace session open while it runs and needs administrator rights to start one, so it stays off until you ask for it.</value>
+  </data>
+  <data name="Monitor_KeepInBackground" xml:space="preserve">
+    <value>Keep counting when this page is closed</value>
+  </data>
+  <data name="Monitor_KeepInBackground_Hint" xml:space="preserve">
+    <value>Leave this on to alt-tab into a game and read the numbers when you come back. Turn it off and the trace session stops the moment you leave the page.</value>
+  </data>
+  <data name="Monitor_Show_CpuLoad" xml:space="preserve">
+    <value>CPU load</value>
+  </data>
+  <data name="Monitor_Show_CpuTemperature" xml:space="preserve">
+    <value>CPU temperature</value>
+  </data>
+  <data name="Monitor_Show_GpuLoad" xml:space="preserve">
+    <value>GPU load</value>
+  </data>
+  <data name="Monitor_Show_GpuTemperature" xml:space="preserve">
+    <value>GPU temperature</value>
+  </data>
+  <data name="Monitor_Show_GpuFan" xml:space="preserve">
+    <value>GPU fan</value>
+  </data>
+  <data name="Monitor_Show_Memory" xml:space="preserve">
+    <value>Memory</value>
+  </data>
+  <data name="Monitor_Show_Processes" xml:space="preserve">
+    <value>Process count</value>
+  </data>
+  <data name="Monitor_Empty_Title" xml:space="preserve">
+    <value>Nothing is being measured</value>
+  </data>
+  <data name="Monitor_Empty_Message" xml:space="preserve">
+    <value>Open "What to measure" above and tick what you want to see.</value>
+  </data>
+  <data name="Monitor_Fps_Off" xml:space="preserve">
+    <value>The frame counter is off. Turn it on above to start measuring.</value>
+  </data>
 </root>

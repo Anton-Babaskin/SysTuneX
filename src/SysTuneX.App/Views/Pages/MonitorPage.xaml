@@ -21,10 +21,91 @@
             </StackPanel>
 
             <!--
+                What to measure. Folded away, because it is set once and then left alone - but the
+                frame counter's switch is duplicated on the header row so the one control people
+                reach for repeatedly does not need the panel opened first.
+            -->
+            <ui:CardExpander Icon="{ui:SymbolIcon Options24}" Margin="{StaticResource StackGap}" IsExpanded="False">
+                <ui:CardExpander.Header>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="{loc:Loc Monitor_Settings}" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                            <TextBlock Text="{loc:Loc Monitor_Settings_Hint}" Style="{StaticResource CaptionText}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"
+                                    Margin="0,0,12,0">
+                            <ui:ProgressRing IsIndeterminate="True" Width="18" Height="18" Margin="0,0,10,0"
+                                             Visibility="{Binding FrameCounterStarting, Converter={StaticResource BoolToVisibility}}" />
+                            <TextBlock Text="{loc:Loc Monitor_FrameCounter}" Style="{StaticResource CaptionText}"
+                                       VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <ui:ToggleSwitch IsChecked="{Binding FrameCounterEnabled, Mode=TwoWay}" />
+                        </StackPanel>
+                    </Grid>
+                </ui:CardExpander.Header>
+
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Monitor_FrameCounter_Hint}"
+                               Style="{StaticResource BodyText}"
+                               Margin="0,0,0,12" />
+
+                    <CheckBox Content="{loc:Loc Monitor_KeepInBackground}"
+                              IsChecked="{Binding KeepFrameCounterInBackground, Mode=TwoWay}"
+                              IsEnabled="{Binding FrameCounterEnabled}"
+                              Margin="0,0,0,4" />
+                    <TextBlock Text="{loc:Loc Monitor_KeepInBackground_Hint}"
+                               Style="{StaticResource CaptionText}"
+                               Margin="28,0,0,16" />
+
+                    <Border Style="{StaticResource Divider}" />
+
+                    <TextBlock Text="{loc:Loc Monitor_Settings_Readings}"
+                               Style="{StaticResource CaptionText}"
+                               Margin="0,0,0,10" />
+
+                    <UniformGrid Columns="2">
+                        <CheckBox Content="{loc:Loc Monitor_Show_CpuLoad}" Margin="0,0,0,8"
+                                  IsChecked="{Binding ShowCpuLoad, Mode=TwoWay}" />
+                        <CheckBox Content="{loc:Loc Monitor_Show_GpuLoad}" Margin="0,0,0,8"
+                                  IsChecked="{Binding ShowGpuLoad, Mode=TwoWay}" />
+                        <CheckBox Content="{loc:Loc Monitor_Show_CpuTemperature}" Margin="0,0,0,8"
+                                  IsChecked="{Binding ShowCpuTemperature, Mode=TwoWay}" />
+                        <CheckBox Content="{loc:Loc Monitor_Show_GpuTemperature}" Margin="0,0,0,8"
+                                  IsChecked="{Binding ShowGpuTemperature, Mode=TwoWay}" />
+                        <CheckBox Content="{loc:Loc Monitor_Show_Memory}" Margin="0,0,0,8"
+                                  IsChecked="{Binding ShowMemory, Mode=TwoWay}" />
+                        <CheckBox Content="{loc:Loc Monitor_Show_GpuFan}" Margin="0,0,0,8"
+                                  IsChecked="{Binding ShowGpuFan, Mode=TwoWay}" />
+                        <CheckBox Content="{loc:Loc Monitor_Show_Processes}" Margin="0,0,0,8"
+                                  IsChecked="{Binding ShowProcessCount, Mode=TwoWay}" />
+                    </UniformGrid>
+
+                    <TextBlock Text="{loc:Loc Monitor_Settings_Cost}"
+                               Style="{StaticResource CaptionText}"
+                               Margin="0,8,0,0" />
+                </StackPanel>
+            </ui:CardExpander>
+
+            <!-- Nothing ticked is a state worth naming, not a blank page. -->
+            <ui:InfoBar Severity="Informational"
+                        IsOpen="{Binding ShowNothing, Mode=OneWay}"
+                        IsClosable="False"
+                        Margin="{StaticResource StackGap}"
+                        Title="{loc:Loc Monitor_Empty_Title}"
+                        Message="{loc:Loc Monitor_Empty_Message}" />
+
+            <!--
                 Frame rate, given the whole width and the largest type on the page. It is the one
                 number someone opens this page to read; everything below it exists to explain it.
             -->
-            <Border Style="{StaticResource Card}" Margin="{StaticResource StackGap}">
+            <Border Style="{StaticResource Card}" Margin="{StaticResource StackGap}"
+                    Visibility="{Binding FrameCounterEnabled, Converter={StaticResource BoolToVisibility}}">
                 <Grid Height="148">
                     <controls:Sparkline Values="{Binding FpsHistory}"
                                         Maximum="{Binding FpsScale}"
@@ -100,10 +181,19 @@
                 </Grid>
             </Border>
 
-            <!-- What the machine is doing while it renders that. -->
-            <UniformGrid Columns="3">
+            <!--
+                What the machine is doing while it renders that. A Grid rather than a UniformGrid
+                so a hidden tile gives its width back to the others instead of leaving a hole.
+            -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
 
-                <Border Style="{StaticResource Card}" Margin="0,0,6,0">
+                <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,6,0"
+                        Visibility="{Binding ShowCpuLoad, Converter={StaticResource BoolToVisibility}}">
                     <Grid Height="110">
                         <controls:Sparkline Values="{Binding CpuHistory}"
                                             Maximum="100"
@@ -124,7 +214,7 @@
                                            Margin="14,0,0,3"
                                            VerticalAlignment="Bottom"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                           Visibility="{Binding HasCpuTemperature, Converter={StaticResource BoolToVisibility}}">
+                                           Visibility="{Binding ShowCpuTemperature, Converter={StaticResource BoolToVisibility}}">
                                     <Run Text="{Binding CpuTemperature, Mode=OneWay}" /><Run Text="°C" />
                                 </TextBlock>
                             </StackPanel>
@@ -135,7 +225,8 @@
                     </Grid>
                 </Border>
 
-                <Border Style="{StaticResource Card}" Margin="6,0,6,0">
+                <Border Grid.Column="1" Style="{StaticResource Card}" Margin="6,0,6,0"
+                        Visibility="{Binding ShowGpuCard, Converter={StaticResource BoolToVisibility}}">
                     <Grid Height="110">
                         <controls:Sparkline Values="{Binding GpuHistory}"
                                             Maximum="100"
@@ -151,7 +242,7 @@
                                 <!-- Load and temperature share a line: a hot card at 40% and a hot
                                      card at 99% mean completely different things. -->
                                 <StackPanel Orientation="Horizontal"
-                                            Visibility="{Binding HasGpuUsage, Converter={StaticResource BoolToVisibility}}">
+                                            Visibility="{Binding ShowGpuLoad, Converter={StaticResource BoolToVisibility}}">
                                     <TextBlock Text="{Binding GpuUsage}" Style="{StaticResource MetricValue}" />
                                     <TextBlock Text="%" Style="{StaticResource MetricUnit}" />
                                 </StackPanel>
@@ -161,7 +252,7 @@
                                            Margin="14,0,0,3"
                                            VerticalAlignment="Bottom"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                           Visibility="{Binding HasGpuTemperature, Converter={StaticResource BoolToVisibility}}">
+                                           Visibility="{Binding ShowGpuTemperature, Converter={StaticResource BoolToVisibility}}">
                                     <Run Text="{Binding GpuTemperature, Mode=OneWay}" /><Run Text="°C" />
                                 </TextBlock>
 
@@ -170,7 +261,7 @@
                                            Margin="14,0,0,3"
                                            VerticalAlignment="Bottom"
                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                           Visibility="{Binding HasGpuFan, Converter={StaticResource BoolToVisibility}}">
+                                           Visibility="{Binding ShowGpuFan, Converter={StaticResource BoolToVisibility}}">
                                     <Run Text="{Binding GpuFan, Mode=OneWay}" /><Run Text="%" />
                                 </TextBlock>
                             </StackPanel>
@@ -182,7 +273,8 @@
                     </Grid>
                 </Border>
 
-                <Border Style="{StaticResource Card}" Margin="6,0,0,0">
+                <Border Grid.Column="2" Style="{StaticResource Card}" Margin="6,0,0,0"
+                        Visibility="{Binding ShowMemory, Converter={StaticResource BoolToVisibility}}">
                     <Grid Height="110">
                         <controls:Sparkline Values="{Binding RamHistory}"
                                             Maximum="100"
@@ -200,7 +292,8 @@
                                     <Run Text="{loc:Loc Common_Of}" /><Run Text=" " /><Run Text="{Binding RamTotalMb, Converter={StaticResource MegabytesToSize}, Mode=OneWay}" />
                                 </TextBlock>
                             </StackPanel>
-                            <TextBlock Style="{StaticResource CaptionText}">
+                            <TextBlock Style="{StaticResource CaptionText}"
+                                       Visibility="{Binding ShowProcessCount, Converter={StaticResource BoolToVisibility}}">
                                 <Run Text="{loc:Loc Monitor_Label_Processes}" />
                                 <Run Text="{Binding ProcessCount, Mode=OneWay}" />
                             </TextBlock>
@@ -208,7 +301,7 @@
                     </Grid>
                 </Border>
 
-            </UniformGrid>
+            </Grid>
 
             <!-- Only once both temperatures have actually come back empty, and then with the
                  reason: a blank number where a temperature should be reads as a broken app. -->

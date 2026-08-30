@@ -39,11 +39,54 @@ public sealed class AppSettings
     /// <summary>Window of the day during which game mode is held on.</summary>
     public GameModeSchedule Schedule { get; set; } = new();
 
+    /// <summary>What the monitor page measures and shows.</summary>
+    public MonitorSettings Monitor { get; set; } = new();
+
     public double WindowWidth { get; set; } = 1240;
 
     public double WindowHeight { get; set; } = 800;
 
     public bool WindowMaximized { get; set; }
+}
+
+/// <summary>
+/// Which readings the monitor takes, and whether it takes them at all.
+///
+/// Every one of these is a real cost, not a preference about clutter. The frame counter holds an
+/// Event Tracing session open for as long as it runs, and that is a machine-wide resource paid for
+/// by the whole system - so it is off until asked for, rather than started quietly the first time
+/// someone opens the page. Temperatures cost a WMI query or a call into the vendor's driver
+/// library. A tuning tool that leaves all of that running for numbers nobody is reading is doing
+/// the opposite of its job.
+/// </summary>
+public sealed class MonitorSettings
+{
+    /// <summary>
+    /// The frame counter. Off by default: it needs administrator rights and a trace session, and
+    /// it should be a deliberate act rather than something that happens on a page visit.
+    /// </summary>
+    public bool FrameCounter { get; set; }
+
+    /// <summary>Keep the counter running after leaving the page, so a game can be measured while it is in front.</summary>
+    public bool KeepFrameCounterInBackground { get; set; } = true;
+
+    public bool ShowCpuLoad { get; set; } = true;
+
+    public bool ShowCpuTemperature { get; set; } = true;
+
+    public bool ShowGpuLoad { get; set; } = true;
+
+    public bool ShowGpuTemperature { get; set; } = true;
+
+    public bool ShowGpuFan { get; set; }
+
+    public bool ShowMemory { get; set; } = true;
+
+    public bool ShowProcessCount { get; set; }
+
+    /// <summary>True when any reading that needs a sensor is switched on, so the slow sample can be skipped entirely.</summary>
+    [JsonIgnore]
+    public bool NeedsSensors => ShowCpuTemperature || ShowGpuLoad || ShowGpuTemperature || ShowGpuFan;
 }
 
 public interface IAppSettingsService
