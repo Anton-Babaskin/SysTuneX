@@ -27,12 +27,10 @@ public interface IGameModeService
     /// </summary>
     Task LoadAsync(CancellationToken cancellationToken = default);
 
-    /// <param name="trigger">
-    /// The game that caused this, when the watcher started it. Null means the user did.
-    /// </param>
+    /// <param name="startedBy">What caused this. Null means the user asked for it directly.</param>
     Task<GameModeResult> EnableAsync(
         IProgress<string>? progress = null,
-        WatchedGame? trigger = null,
+        GameModeTrigger? startedBy = null,
         CancellationToken cancellationToken = default);
 
     Task<GameModeResult> DisableAsync(IProgress<string>? progress = null, CancellationToken cancellationToken = default);
@@ -54,13 +52,48 @@ public sealed record GameModeSession
     public long FreedMemoryMb { get; init; }
 
     /// <summary>
-    /// The watcher turned this on, not the user. Only an automatic session is turned off
+    /// Something other than the user turned this on. Only an automatic session is turned off
     /// automatically — switching it on by hand and having a game exit undo it would be rude.
     /// </summary>
     public bool AutoStarted { get; init; }
 
-    /// <summary>Game that triggered an automatic session, for the interface to name.</summary>
+    /// <summary>Game that triggered an automatic session, for the interface to name. Empty for the schedule.</summary>
     public string TriggeredBy { get; init; } = string.Empty;
+
+    /// <summary>
+    /// What turned it on. Kept beside <see cref="AutoStarted"/> rather than replacing it so a
+    /// session file written by an older build still reads back with its behaviour intact.
+    /// </summary>
+    public GameModeTriggerKind TriggerKind { get; init; } = GameModeTriggerKind.User;
+}
+
+/// <summary>Who asked for game mode. The distinction decides what may turn it off again.</summary>
+public enum GameModeTriggerKind
+{
+    User,
+    Game,
+    Schedule,
+}
+
+/// <summary>
+/// What started a session.
+///
+/// This exists because the schedule could not previously say so. The parameter was a
+/// <see cref="WatchedGame"/>, the schedule had no game to pass, and so it passed nothing — which
+/// left the session marked as user-started, and the schedule's own guard against closing a
+/// hand-started session then refused to ever turn it off again.
+/// </summary>
+public sealed record GameModeTrigger
+{
+    public required GameModeTriggerKind Kind { get; init; }
+
+    /// <summary>The game's name, when a game caused it.</summary>
+    public string Name { get; init; } = string.Empty;
+
+    public static GameModeTrigger ForGame(WatchedGame game) =>
+        new() { Kind = GameModeTriggerKind.Game, Name = game.DisplayName };
+
+    public static GameModeTrigger Schedule { get; } = new() { Kind = GameModeTriggerKind.Schedule };
 }
 
 /// <param name="Result">Whether the switch did what it said.</param>

@@ -1805,4 +1805,7 @@
   <data name="Settings_MoreSettings" xml:space="preserve">
     <value>Всё остальное</value>
   </data>
+  <data name="Core_Service_NotChangedByUs" xml:space="preserve">
+    <value>SysTuneX не изменял службу {0}, восстанавливать нечего.</value>
+  </data>
 </root>

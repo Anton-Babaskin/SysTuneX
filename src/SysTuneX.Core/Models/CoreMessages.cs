@@ -49,6 +49,9 @@ public static class CoreMessages
     public static readonly MessageTemplate ServiceStopFailed =
         new("Service_StopFailed", "Could not stop {0}: {1}");
 
+    public static readonly MessageTemplate ServiceNotChangedByUs =
+        new("Service_NotChangedByUs", "{0} was not changed by SysTuneX, so there is nothing to restore.");
+
     public static readonly MessageTemplate ServiceUnknownStartType =
         new("Service_UnknownStartType", "Refusing to write an unknown start type.");
 
@@ -214,6 +217,7 @@ public static class CoreMessages
         RegistryAccessDeniedDelete, RegistryDeleteFailed,
         ServiceNotInstalled, ServiceStartTimedOut, ServiceStartFailed, ServiceCannotBeStopped,
         ServiceStopTimedOut, ServiceStopFailed, ServiceUnknownStartType, ServiceSetStartTypeFailed,
+        ServiceNotChangedByUs,
         PowerNoHighPerformanceScheme, PowerActivateFailed, PowerCoreParkingRejected,
         PowerReapplyFailed, PowerHibernationFailed,
         NetworkAdapterGone, NetworkInvalidAddress, NetworkNoIpv4Interface, NetworkSetResolverFailed,

@@ -150,17 +150,29 @@ public sealed class ServiceManager : IServiceManager
         BackupEntry? entry = _backup.FindActive(BackupKind.ServiceConfiguration, resolved)
                              ?? _backup.FindActive(BackupKind.ServiceConfiguration, serviceName);
 
-        ServiceDefinition? definition = ServiceCatalog.Find(serviceName);
+        // No journal entry means SysTuneX never touched this service, so there is nothing here to
+        // restore and no way to know what "restored" would even mean.
+        //
+        // This used to guess: Manual for a handful of services and Automatic for everything else,
+        // then start it. Several services in the catalog ship Disabled on stock Windows 11 -
+        // RemoteRegistry among them - so they read as "disabled" in the interface even on a
+        // machine SysTuneX had never been run on. Pressing Restore All then enabled and started
+        // them, and because nothing was recorded first, that change could not be undone. Turning
+        // on RemoteRegistry behind someone's back is the opposite of what this tool is for.
+        if (entry is null)
+        {
+            return OperationResult.NoChange(CoreMessages.ServiceNotChangedByUs, serviceName);
+        }
 
-        // Without a recorded value, fall back to the documented Windows default for this service
-        // rather than guessing "Automatic" for everything.
-        ServiceStartMode targetMode = entry?.OriginalStartMode is { } recorded && recorded != ServiceStartMode.Unknown
-            ? recorded
-            : definition?.DisabledStartMode == ServiceStartMode.Manual
-                ? ServiceStartMode.Manual
-                : ServiceStartMode.Automatic;
+        ServiceStartMode targetMode = entry.OriginalStartMode;
 
-        bool shouldRun = entry?.OriginalWasRunning ?? true;
+        // A recording that failed to read the start type cannot be acted on either.
+        if (targetMode == ServiceStartMode.Unknown)
+        {
+            return OperationResult.NoChange(CoreMessages.ServiceNotChangedByUs, serviceName);
+        }
+
+        bool shouldRun = entry.OriginalWasRunning;
 
         OperationResult startMode = SetStartMode(resolved, targetMode);
         if (!startMode.Success)
@@ -178,25 +190,34 @@ public sealed class ServiceManager : IServiceManager
             }
         }
 
-        if (entry is not null)
-        {
-            await _backup.MarkRevertedAsync([entry.Id], cancellationToken).ConfigureAwait(false);
-        }
+        await _backup.MarkRevertedAsync([entry.Id], cancellationToken).ConfigureAwait(false);
 
         return OperationResult.Ok();
     }
 
-    public Task<OperationResult> StartAsync(string serviceName, CancellationToken cancellationToken = default)
+    public async Task<OperationResult> StartAsync(string serviceName, CancellationToken cancellationToken = default)
     {
-        return Task.Run(
+        string? resolved = ResolveServiceName(serviceName);
+        if (resolved is null)
+        {
+            return OperationResult.NoChange(CoreMessages.ServiceNotInstalled, serviceName);
+        }
+
+        ServiceSnapshot before = GetState(resolved);
+
+        // Starting a Disabled service means changing its start type, and that is a change to the
+        // machine like any other - so it is journalled before it happens, not after. Without this
+        // the lift to Manual was invisible to the change log and could not be undone.
+        if (before.StartMode == ServiceStartMode.Disabled && !before.IsRunning)
+        {
+            await _backup
+                .RecordServiceAsync($"service:{resolved}", resolved, before.StartMode, wasRunning: false, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        return await Task.Run(
             () =>
             {
-                string? resolved = ResolveServiceName(serviceName);
-                if (resolved is null)
-                {
-                    return OperationResult.NoChange(CoreMessages.ServiceNotInstalled, serviceName);
-                }
-
                 try
                 {
                     using var controller = new ServiceController(resolved);
