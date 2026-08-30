@@ -1808,4 +1808,58 @@
   <data name="Core_Service_NotChangedByUs" xml:space="preserve">
     <value>SysTuneX не изменял службу {0}, восстанавливать нечего.</value>
   </data>
+  <data name="Monitor_Settings" xml:space="preserve">
+    <value>Что измерять</value>
+  </data>
+  <data name="Monitor_Settings_Hint" xml:space="preserve">
+    <value>Отметьте нужные показания. Остальное не трогается.</value>
+  </data>
+  <data name="Monitor_Settings_Readings" xml:space="preserve">
+    <value>Показывать на этой странице</value>
+  </data>
+  <data name="Monitor_Settings_Cost" xml:space="preserve">
+    <value>Отключённое показание эта страница не запрашивает. Со счётчиком кадров ещё строже: его сессия трассировки закрывается полностью, а не остаётся висеть. Значок в трее и главная страница читают температуры по своему расписанию независимо от этих галочек.</value>
+  </data>
+  <data name="Monitor_FrameCounter" xml:space="preserve">
+    <value>Счётчик кадров</value>
+  </data>
+  <data name="Monitor_FrameCounter_Hint" xml:space="preserve">
+    <value>Считает кадры через трассировку событий Windows — так же, как PresentMon и Xbox Game Bar. В игру ничего не внедряется. Пока он работает, открыта сессия трассировки, а для её запуска нужны права администратора, поэтому по умолчанию он выключен.</value>
+  </data>
+  <data name="Monitor_KeepInBackground" xml:space="preserve">
+    <value>Продолжать считать после закрытия страницы</value>
+  </data>
+  <data name="Monitor_KeepInBackground_Hint" xml:space="preserve">
+    <value>Оставьте включённым, чтобы свернуться в игру и посмотреть цифры по возвращении. Выключите — и сессия трассировки остановится сразу при уходе со страницы.</value>
+  </data>
+  <data name="Monitor_Show_CpuLoad" xml:space="preserve">
+    <value>Загрузка процессора</value>
+  </data>
+  <data name="Monitor_Show_CpuTemperature" xml:space="preserve">
+    <value>Температура процессора</value>
+  </data>
+  <data name="Monitor_Show_GpuLoad" xml:space="preserve">
+    <value>Загрузка видеокарты</value>
+  </data>
+  <data name="Monitor_Show_GpuTemperature" xml:space="preserve">
+    <value>Температура видеокарты</value>
+  </data>
+  <data name="Monitor_Show_GpuFan" xml:space="preserve">
+    <value>Вентилятор видеокарты</value>
+  </data>
+  <data name="Monitor_Show_Memory" xml:space="preserve">
+    <value>Память</value>
+  </data>
+  <data name="Monitor_Show_Processes" xml:space="preserve">
+    <value>Число процессов</value>
+  </data>
+  <data name="Monitor_Empty_Title" xml:space="preserve">
+    <value>Ничего не измеряется</value>
+  </data>
+  <data name="Monitor_Empty_Message" xml:space="preserve">
+    <value>Откройте «Что измерять» выше и отметьте, что показывать.</value>
+  </data>
+  <data name="Monitor_Fps_Off" xml:space="preserve">
+    <value>Счётчик кадров выключен. Включите его выше, чтобы начать замер.</value>
+  </data>
 </root>

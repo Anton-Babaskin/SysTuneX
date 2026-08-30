@@ -3,6 +3,41 @@
 Every released version, newest first. The release workflow publishes only the section
 for the version being released, so a release page shows that version and nothing else.
 
+## v2.7.0
+
+The monitor now measures what you ask it to, and nothing else.
+
+### The frame counter is a switch
+
+It used to start itself the first time anyone opened the monitor page, and then stay running for
+the life of the app. An Event Tracing session is a machine-wide resource that keeps consuming
+kernel buffers for as long as it is open — leaving one running for a counter nobody is reading is
+the opposite of what a tuning tool is for.
+
+It is off until switched on, and switching it off closes the session rather than just hiding the
+number. A second tick decides whether it keeps running after you leave the page: on, so you can
+alt-tab into a game and read the numbers when you come back; off, and it stops the moment the page
+does.
+
+Starting a session takes long enough to be felt, so the switch shows that it is working, and a
+refusal — usually missing administrator rights — is reported on the switch itself rather than only
+as an empty tile.
+
+### Tick what you want to see
+
+A panel on the monitor page, folded away because it is set once: CPU load and temperature, GPU
+load, temperature and fan, memory, process count. Tiles you switch off are not drawn, and the row
+closes up rather than leaving a hole. When nothing is ticked the page says so instead of showing
+a blank screen.
+
+The sensor sample — a WMI query and a call into the vendor's driver library — is skipped entirely
+when no reading on the page needs it, rather than taken and thrown away.
+
+Worth being precise about, since the panel says so too: this governs the monitor page. The tray
+icon and the dashboard read temperatures on their own schedule regardless of these ticks.
+
+---
+
 ## v2.6.0
 
 A review release. No new buttons — a code review of everything that went into 2.5.0 turned up

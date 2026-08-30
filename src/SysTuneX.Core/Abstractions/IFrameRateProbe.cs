@@ -31,6 +31,15 @@ public interface IFrameRateProbe : IDisposable
     void Start();
 
     /// <summary>
+    /// Stops tracing and releases the trace session, leaving the probe able to start again.
+    ///
+    /// An ETW session is a machine-wide resource that keeps consuming kernel buffers for as long
+    /// as it is open, so it is switched off rather than left running for a counter nobody is
+    /// reading. Safe to call when it is not running.
+    /// </summary>
+    void Stop();
+
+    /// <summary>
     /// The current reading, or null when no frames have been presented recently - a desktop with
     /// no game running is the normal case, not an error.
     /// </summary>

@@ -233,6 +233,24 @@ public sealed class EtwFrameRateProbe : IFrameRateProbe
         }
     }
 
+    public void Stop()
+    {
+        lock (_gate)
+        {
+            if (!IsRunning)
+            {
+                return;
+            }
+
+            Cleanup();
+
+            // Not a failure, so no reason is recorded: the counter is off because it was asked to
+            // be, and the interface says that rather than reporting something went wrong.
+            UnavailableReason = string.Empty;
+            _logger.LogInformation("Frame rate tracing stopped");
+        }
+    }
+
     public void Dispose()
     {
         lock (_gate)
@@ -275,5 +293,11 @@ public sealed class EtwFrameRateProbe : IFrameRateProbe
         _session = null;
         _pump = null;
         _frames.Clear();
+
+        // Forget which process was being watched. Without this a restart would keep attributing
+        // frames to whatever was in the foreground when it was last switched off, and the target
+        // watch only reassigns when the foreground *changes*.
+        _targetProcessId = 0;
+        _targetProcessName = string.Empty;
     }
 }
