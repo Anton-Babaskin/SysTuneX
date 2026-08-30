@@ -93,7 +93,7 @@ SysTuneX requests elevation automatically because system tuning requires access 
 | Area            | What SysTuneX does                                                                                                       |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | **Dashboard**   | Live CPU and memory monitoring, tuning status, Quick Optimize and full restore                                           |
-| **Monitor**     | Frame rate with its 1% low and frame time, CPU and GPU load and temperature, memory — measured without touching the game |
+| **Monitor**     | Frame rate with its 1% low and frame time, CPU and GPU load and temperature, memory — measured without touching the game, and only what you tick |
 | **Profiles**    | Ready-made tuning profiles for different gaming and workload scenarios                                                   |
 | **Gaming**      | Game Bar, Game DVR, fullscreen optimizations, mouse acceleration, CPU scheduling and more                                |
 | **Windows 11**  | VBS, HVCI, hypervisor, Recall, Copilot, widgets, search features and other build-aware settings                          |
@@ -164,7 +164,7 @@ The cost of that choice is stated rather than hidden: there is **no overlay** ov
 
 Alongside the average, the Monitor shows the **1% low** — the frame rate of the worst one percent of frames. An average of 144 with a 1% low of 40 stutters, and a steady 90 does not; an average on its own hides the exact problem this tool exists to fix.
 
-Starting a trace session needs administrator rights. Where it cannot start, the page says so instead of showing a blank number.
+The counter is a switch rather than something that starts itself: an Event Tracing session is a machine-wide resource, so it runs when asked and closes when switched off. Starting one needs administrator rights, and where it cannot start the page says so instead of showing a blank number.
 
 ---
 
