@@ -12,6 +12,15 @@
                     d:DataContext="{d:DesignInstance Type=vm:MonitorViewModel}"
                     Title="Monitor">
 
+    <pages:SysTuneXPage.Resources>
+        <!-- Grouped by the catalogue's own grouping, so adding a reading needs no XAML at all. -->
+        <CollectionViewSource x:Key="GroupedOptions" Source="{Binding Options}">
+            <CollectionViewSource.GroupDescriptions>
+                <PropertyGroupDescription PropertyName="GroupName" />
+            </CollectionViewSource.GroupDescriptions>
+        </CollectionViewSource>
+    </pages:SysTuneXPage.Resources>
+
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="{StaticResource PagePadding}">
         <StackPanel MaxWidth="{StaticResource MaxContentWidth}" HorizontalAlignment="Left">
 
@@ -21,9 +30,9 @@
             </StackPanel>
 
             <!--
-                What to measure. Folded away, because it is set once and then left alone - but the
-                frame counter's switch is duplicated on the header row so the one control people
-                reach for repeatedly does not need the panel opened first.
+                What to measure. Folded away because it is set once and left alone - but the frame
+                counter's switch sits on the header row, since that is the one control people reach
+                for repeatedly and it should not need the panel opened first.
             -->
             <ui:CardExpander Icon="{ui:SymbolIcon Options24}" Margin="{StaticResource StackGap}" IsExpanded="False">
                 <ui:CardExpander.Header>
@@ -36,7 +45,10 @@
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock Text="{loc:Loc Monitor_Settings}" FontWeight="SemiBold"
                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
-                            <TextBlock Text="{loc:Loc Monitor_Settings_Hint}" Style="{StaticResource CaptionText}" />
+                            <TextBlock Text="{Binding Preview}"
+                                       Style="{StaticResource MonoText}"
+                                       Margin="0,2,12,0"
+                                       TextTrimming="CharacterEllipsis" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"
@@ -65,26 +77,51 @@
 
                     <Border Style="{StaticResource Divider}" />
 
-                    <TextBlock Text="{loc:Loc Monitor_Settings_Readings}"
-                               Style="{StaticResource CaptionText}"
-                               Margin="0,0,0,10" />
+                    <Grid Margin="0,0,0,10">
+                        <TextBlock Text="{loc:Loc Monitor_Settings_Readings}" Style="{StaticResource CaptionText}" />
+                        <!-- The cap, visible before it is reached rather than only when it refuses. -->
+                        <TextBlock Text="{Binding SelectionCount}"
+                                   Style="{StaticResource CaptionText}"
+                                   HorizontalAlignment="Right" />
+                    </Grid>
 
-                    <UniformGrid Columns="2">
-                        <CheckBox Content="{loc:Loc Monitor_Show_CpuLoad}" Margin="0,0,0,8"
-                                  IsChecked="{Binding ShowCpuLoad, Mode=TwoWay}" />
-                        <CheckBox Content="{loc:Loc Monitor_Show_GpuLoad}" Margin="0,0,0,8"
-                                  IsChecked="{Binding ShowGpuLoad, Mode=TwoWay}" />
-                        <CheckBox Content="{loc:Loc Monitor_Show_CpuTemperature}" Margin="0,0,0,8"
-                                  IsChecked="{Binding ShowCpuTemperature, Mode=TwoWay}" />
-                        <CheckBox Content="{loc:Loc Monitor_Show_GpuTemperature}" Margin="0,0,0,8"
-                                  IsChecked="{Binding ShowGpuTemperature, Mode=TwoWay}" />
-                        <CheckBox Content="{loc:Loc Monitor_Show_Memory}" Margin="0,0,0,8"
-                                  IsChecked="{Binding ShowMemory, Mode=TwoWay}" />
-                        <CheckBox Content="{loc:Loc Monitor_Show_GpuFan}" Margin="0,0,0,8"
-                                  IsChecked="{Binding ShowGpuFan, Mode=TwoWay}" />
-                        <CheckBox Content="{loc:Loc Monitor_Show_Processes}" Margin="0,0,0,8"
-                                  IsChecked="{Binding ShowProcessCount, Mode=TwoWay}" />
-                    </UniformGrid>
+                    <ItemsControl ItemsSource="{Binding Source={StaticResource GroupedOptions}}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:MonitorMetricOption}">
+                                <CheckBox Content="{Binding Name}"
+                                          IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                          IsEnabled="{Binding CanToggle}"
+                                          Margin="0,0,20,8" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+
+                        <ItemsControl.GroupStyle>
+                            <GroupStyle>
+                                <GroupStyle.ContainerStyle>
+                                    <Style TargetType="GroupItem">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="GroupItem">
+                                                    <StackPanel Margin="0,0,0,10">
+                                                        <TextBlock Text="{Binding Name}"
+                                                                   FontWeight="SemiBold"
+                                                                   Margin="0,0,0,6"
+                                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                                        <ItemsPresenter />
+                                                    </StackPanel>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </GroupStyle.ContainerStyle>
+                                <GroupStyle.Panel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </GroupStyle.Panel>
+                            </GroupStyle>
+                        </ItemsControl.GroupStyle>
+                    </ItemsControl>
 
                     <TextBlock Text="{loc:Loc Monitor_Settings_Cost}"
                                Style="{StaticResource CaptionText}"
@@ -92,7 +129,6 @@
                 </StackPanel>
             </ui:CardExpander>
 
-            <!-- Nothing ticked is a state worth naming, not a blank page. -->
             <ui:InfoBar Severity="Informational"
                         IsOpen="{Binding ShowNothing, Mode=OneWay}"
                         IsClosable="False"
@@ -105,7 +141,7 @@
                 number someone opens this page to read; everything below it exists to explain it.
             -->
             <Border Style="{StaticResource Card}" Margin="{StaticResource StackGap}"
-                    Visibility="{Binding FrameCounterEnabled, Converter={StaticResource BoolToVisibility}}">
+                    Visibility="{Binding ShowFrameCard, Converter={StaticResource BoolToVisibility}}">
                 <Grid Height="148">
                     <controls:Sparkline Values="{Binding FpsHistory}"
                                         Maximum="{Binding FpsScale}"
@@ -125,7 +161,7 @@
                             <TextBlock Text="{loc:Loc Monitor_FrameRate}" Style="{StaticResource CaptionText}" />
 
                             <StackPanel Orientation="Horizontal"
-                                        Visibility="{Binding HasFrameRate, Converter={StaticResource BoolToVisibility}}">
+                                        Visibility="{Binding DisplayFps, Converter={StaticResource BoolToVisibility}}">
                                 <TextBlock Text="{Binding Fps}"
                                            FontSize="64"
                                            FontWeight="SemiBold"
@@ -154,27 +190,27 @@
                                        Visibility="{Binding HasFrameRate, Converter={StaticResource InverseBoolToVisibility}}" />
                         </StackPanel>
 
-                        <StackPanel Grid.Column="2"
-                                    VerticalAlignment="Top"
-                                    MinWidth="150"
-                                    Visibility="{Binding HasFrameRate, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel Grid.Column="2" VerticalAlignment="Top" MinWidth="150">
                             <!--
                                 The 1% low sits next to the average because on its own the average
                                 lies. 144 with a 1% low of 40 stutters; a steady 90 does not.
                             -->
-                            <TextBlock Text="{loc:Loc Monitor_OnePercentLow}" Style="{StaticResource CaptionText}" />
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding OnePercentLowFps}" Style="{StaticResource MetricValue}" />
-                                <TextBlock Text="FPS" Style="{StaticResource MetricUnit}" />
+                            <StackPanel Visibility="{Binding DisplayOnePercentLow, Converter={StaticResource BoolToVisibility}}">
+                                <TextBlock Text="{loc:Loc Monitor_OnePercentLow}" Style="{StaticResource CaptionText}" />
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding OnePercentLowFps}" Style="{StaticResource MetricValue}" />
+                                    <TextBlock Text="FPS" Style="{StaticResource MetricUnit}" />
+                                </StackPanel>
                             </StackPanel>
 
-                            <TextBlock Text="{loc:Loc Monitor_FrameTime}"
-                                       Style="{StaticResource CaptionText}"
-                                       Margin="0,12,0,0" />
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding FrameTimeMs, StringFormat={}{0:F1}}"
-                                           Style="{StaticResource MetricValue}" />
-                                <TextBlock Text="ms" Style="{StaticResource MetricUnit}" />
+                            <StackPanel Margin="0,12,0,0"
+                                        Visibility="{Binding DisplayFrameTime, Converter={StaticResource BoolToVisibility}}">
+                                <TextBlock Text="{loc:Loc Monitor_FrameTime}" Style="{StaticResource CaptionText}" />
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding FrameTimeMs, StringFormat={}{0:F1}}"
+                                               Style="{StaticResource MetricValue}" />
+                                    <TextBlock Text="ms" Style="{StaticResource MetricUnit}" />
+                                </StackPanel>
                             </StackPanel>
                         </StackPanel>
                     </Grid>
@@ -182,18 +218,14 @@
             </Border>
 
             <!--
-                What the machine is doing while it renders that. A Grid rather than a UniformGrid
-                so a hidden tile gives its width back to the others instead of leaving a hole.
+                What the machine is doing while it renders that. Columns bound to the visible count:
+                a UniformGrid ignores collapsed children, so the cards on screen fill the width
+                instead of leaving a gap where a switched-off one used to be.
             -->
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+            <UniformGrid Columns="{Binding VisibleCardCount}" Margin="-3,0">
 
-                <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,6,0"
-                        Visibility="{Binding ShowCpuLoad, Converter={StaticResource BoolToVisibility}}">
+                <Border Style="{StaticResource Card}" Margin="3,0"
+                        Visibility="{Binding ShowCpuCard, Converter={StaticResource BoolToVisibility}}">
                     <Grid Height="110">
                         <controls:Sparkline Values="{Binding CpuHistory}"
                                             Maximum="100"
@@ -205,16 +237,19 @@
                         <StackPanel VerticalAlignment="Top">
                             <TextBlock Text="{loc:Loc Monitor_Cpu}" Style="{StaticResource CaptionText}" />
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding CpuUsage, StringFormat={}{0:F0}}"
-                                           Style="{StaticResource MetricValue}" />
-                                <TextBlock Text="%" Style="{StaticResource MetricUnit}" />
+                                <StackPanel Orientation="Horizontal"
+                                            Visibility="{Binding DisplayCpuLoad, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Text="{Binding CpuUsage, StringFormat={}{0:F0}}"
+                                               Style="{StaticResource MetricValue}" />
+                                    <TextBlock Text="%" Style="{StaticResource MetricUnit}" />
+                                </StackPanel>
 
                                 <TextBlock Style="{StaticResource MetricValue}"
                                            FontSize="18"
                                            Margin="14,0,0,3"
                                            VerticalAlignment="Bottom"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                           Visibility="{Binding ShowCpuTemperature, Converter={StaticResource BoolToVisibility}}">
+                                           Visibility="{Binding DisplayCpuTemperature, Converter={StaticResource BoolToVisibility}}">
                                     <Run Text="{Binding CpuTemperature, Mode=OneWay}" /><Run Text="°C" />
                                 </TextBlock>
                             </StackPanel>
@@ -225,7 +260,7 @@
                     </Grid>
                 </Border>
 
-                <Border Grid.Column="1" Style="{StaticResource Card}" Margin="6,0,6,0"
+                <Border Style="{StaticResource Card}" Margin="3,0"
                         Visibility="{Binding ShowGpuCard, Converter={StaticResource BoolToVisibility}}">
                     <Grid Height="110">
                         <controls:Sparkline Values="{Binding GpuHistory}"
@@ -242,7 +277,7 @@
                                 <!-- Load and temperature share a line: a hot card at 40% and a hot
                                      card at 99% mean completely different things. -->
                                 <StackPanel Orientation="Horizontal"
-                                            Visibility="{Binding ShowGpuLoad, Converter={StaticResource BoolToVisibility}}">
+                                            Visibility="{Binding DisplayGpuLoad, Converter={StaticResource BoolToVisibility}}">
                                     <TextBlock Text="{Binding GpuUsage}" Style="{StaticResource MetricValue}" />
                                     <TextBlock Text="%" Style="{StaticResource MetricUnit}" />
                                 </StackPanel>
@@ -252,7 +287,7 @@
                                            Margin="14,0,0,3"
                                            VerticalAlignment="Bottom"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                           Visibility="{Binding ShowGpuTemperature, Converter={StaticResource BoolToVisibility}}">
+                                           Visibility="{Binding DisplayGpuTemperature, Converter={StaticResource BoolToVisibility}}">
                                     <Run Text="{Binding GpuTemperature, Mode=OneWay}" /><Run Text="°C" />
                                 </TextBlock>
 
@@ -261,7 +296,7 @@
                                            Margin="14,0,0,3"
                                            VerticalAlignment="Bottom"
                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                           Visibility="{Binding ShowGpuFan, Converter={StaticResource BoolToVisibility}}">
+                                           Visibility="{Binding DisplayGpuFan, Converter={StaticResource BoolToVisibility}}">
                                     <Run Text="{Binding GpuFan, Mode=OneWay}" /><Run Text="%" />
                                 </TextBlock>
                             </StackPanel>
@@ -273,8 +308,8 @@
                     </Grid>
                 </Border>
 
-                <Border Grid.Column="2" Style="{StaticResource Card}" Margin="6,0,0,0"
-                        Visibility="{Binding ShowMemory, Converter={StaticResource BoolToVisibility}}">
+                <Border Style="{StaticResource Card}" Margin="3,0"
+                        Visibility="{Binding ShowMemoryCard, Converter={StaticResource BoolToVisibility}}">
                     <Grid Height="110">
                         <controls:Sparkline Values="{Binding RamHistory}"
                                             Maximum="100"
@@ -285,26 +320,44 @@
 
                         <StackPanel VerticalAlignment="Top">
                             <TextBlock Text="{loc:Loc Monitor_Memory}" Style="{StaticResource CaptionText}" />
-                            <StackPanel Orientation="Horizontal">
+
+                            <StackPanel Orientation="Horizontal"
+                                        Visibility="{Binding DisplayMemory, Converter={StaticResource BoolToVisibility}}">
                                 <TextBlock Text="{Binding RamUsedMb, Converter={StaticResource MegabytesToSize}}"
                                            Style="{StaticResource MetricValue}" />
                                 <TextBlock Style="{StaticResource MetricUnit}">
                                     <Run Text="{loc:Loc Common_Of}" /><Run Text=" " /><Run Text="{Binding RamTotalMb, Converter={StaticResource MegabytesToSize}, Mode=OneWay}" />
                                 </TextBlock>
                             </StackPanel>
+
                             <TextBlock Style="{StaticResource CaptionText}"
-                                       Visibility="{Binding ShowProcessCount, Converter={StaticResource BoolToVisibility}}">
+                                       Visibility="{Binding DisplayStandby, Converter={StaticResource BoolToVisibility}}">
+                                <Run Text="{loc:Loc Metric_StandbyMemory}" /><Run Text=": " /><Run Text="{Binding StandbyMb, Converter={StaticResource MegabytesToSize}, Mode=OneWay}" />
+                            </TextBlock>
+
+                            <TextBlock Style="{StaticResource CaptionText}"
+                                       Visibility="{Binding DisplayDiskFree, Converter={StaticResource BoolToVisibility}}">
+                                <Run Text="{loc:Loc Metric_DiskFree}" /><Run Text=": " /><Run Text="{Binding DriveFreeMb, Converter={StaticResource MegabytesToSize}, Mode=OneWay}" />
+                            </TextBlock>
+
+                            <TextBlock Style="{StaticResource CaptionText}"
+                                       Visibility="{Binding DisplayProcessCount, Converter={StaticResource BoolToVisibility}}">
                                 <Run Text="{loc:Loc Monitor_Label_Processes}" />
                                 <Run Text="{Binding ProcessCount, Mode=OneWay}" />
+                            </TextBlock>
+
+                            <TextBlock Style="{StaticResource CaptionText}"
+                                       Visibility="{Binding DisplayUptime, Converter={StaticResource BoolToVisibility}}">
+                                <Run Text="{loc:Loc Metric_Uptime}" /><Run Text=": " /><Run Text="{Binding Uptime, Converter={StaticResource TimeSpanToUptime}, Mode=OneWay}" />
                             </TextBlock>
                         </StackPanel>
                     </Grid>
                 </Border>
 
-            </Grid>
+            </UniformGrid>
 
-            <!-- Only once both temperatures have actually come back empty, and then with the
-                 reason: a blank number where a temperature should be reads as a broken app. -->
+            <!-- Only once every temperature that was asked for has come back empty, and then with
+                 the reason: a blank where a temperature should be reads as a broken app. -->
             <TextBlock Text="{loc:Loc Dashboard_NoSensors}"
                        Style="{StaticResource CaptionText}"
                        Margin="0,14,0,0"

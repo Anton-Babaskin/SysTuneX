@@ -1811,9 +1811,6 @@
   <data name="Monitor_Settings" xml:space="preserve">
     <value>Что измерять</value>
   </data>
-  <data name="Monitor_Settings_Hint" xml:space="preserve">
-    <value>Отметьте нужные показания. Остальное не трогается.</value>
-  </data>
   <data name="Monitor_Settings_Readings" xml:space="preserve">
     <value>Показывать на этой странице</value>
   </data>
@@ -1832,34 +1829,64 @@
   <data name="Monitor_KeepInBackground_Hint" xml:space="preserve">
     <value>Оставьте включённым, чтобы свернуться в игру и посмотреть цифры по возвращении. Выключите — и сессия трассировки остановится сразу при уходе со страницы.</value>
   </data>
-  <data name="Monitor_Show_CpuLoad" xml:space="preserve">
-    <value>Загрузка процессора</value>
-  </data>
-  <data name="Monitor_Show_CpuTemperature" xml:space="preserve">
-    <value>Температура процессора</value>
-  </data>
-  <data name="Monitor_Show_GpuLoad" xml:space="preserve">
-    <value>Загрузка видеокарты</value>
-  </data>
-  <data name="Monitor_Show_GpuTemperature" xml:space="preserve">
-    <value>Температура видеокарты</value>
-  </data>
-  <data name="Monitor_Show_GpuFan" xml:space="preserve">
-    <value>Вентилятор видеокарты</value>
-  </data>
-  <data name="Monitor_Show_Memory" xml:space="preserve">
-    <value>Память</value>
-  </data>
-  <data name="Monitor_Show_Processes" xml:space="preserve">
-    <value>Число процессов</value>
-  </data>
   <data name="Monitor_Empty_Title" xml:space="preserve">
     <value>Ничего не измеряется</value>
   </data>
   <data name="Monitor_Empty_Message" xml:space="preserve">
     <value>Откройте «Что измерять» выше и отметьте, что показывать.</value>
   </data>
-  <data name="Monitor_Fps_Off" xml:space="preserve">
-    <value>Счётчик кадров выключен. Включите его выше, чтобы начать замер.</value>
+  <data name="Metric_Fps" xml:space="preserve">
+    <value>Частота кадров</value>
+  </data>
+  <data name="Metric_FrameTime" xml:space="preserve">
+    <value>Время кадра</value>
+  </data>
+  <data name="Metric_OnePercentLow" xml:space="preserve">
+    <value>1% низких</value>
+  </data>
+  <data name="Metric_CpuLoad" xml:space="preserve">
+    <value>Загрузка CPU</value>
+  </data>
+  <data name="Metric_CpuTemperature" xml:space="preserve">
+    <value>Температура CPU</value>
+  </data>
+  <data name="Metric_GpuLoad" xml:space="preserve">
+    <value>Загрузка GPU</value>
+  </data>
+  <data name="Metric_GpuTemperature" xml:space="preserve">
+    <value>Температура GPU</value>
+  </data>
+  <data name="Metric_GpuFan" xml:space="preserve">
+    <value>Вентилятор GPU</value>
+  </data>
+  <data name="Metric_MemoryUsed" xml:space="preserve">
+    <value>Занято памяти</value>
+  </data>
+  <data name="Metric_StandbyMemory" xml:space="preserve">
+    <value>Резерв памяти</value>
+  </data>
+  <data name="Metric_DiskFree" xml:space="preserve">
+    <value>Свободно на диске</value>
+  </data>
+  <data name="Metric_ProcessCount" xml:space="preserve">
+    <value>Процессов</value>
+  </data>
+  <data name="Metric_Uptime" xml:space="preserve">
+    <value>Аптайм</value>
+  </data>
+  <data name="MetricGroup_Frames" xml:space="preserve">
+    <value>Кадры</value>
+  </data>
+  <data name="MetricGroup_Cpu" xml:space="preserve">
+    <value>Процессор</value>
+  </data>
+  <data name="MetricGroup_Gpu" xml:space="preserve">
+    <value>Видеокарта</value>
+  </data>
+  <data name="MetricGroup_Memory" xml:space="preserve">
+    <value>Память</value>
+  </data>
+  <data name="MetricGroup_System" xml:space="preserve">
+    <value>Система</value>
   </data>
 </root>

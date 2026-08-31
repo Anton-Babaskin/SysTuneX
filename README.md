@@ -77,21 +77,99 @@ SysTuneX is published as a **self-contained win-x64 single-file executable**.
 
 You do not need to install .NET.
 
-### 2. Verify the file
+### 2. Verify what you downloaded
 
-Each release includes `SHA256SUMS.txt`.
+Every release ships `SHA256SUMS.txt` beside the executable.
 
 ```powershell
 Get-FileHash .\SysTuneX.exe -Algorithm SHA256
 ```
 
-Compare the result with the checksum included in the release.
+That number should match the one in `SHA256SUMS.txt` — **and** the one printed in the public build
+log that produced the file. See [Trust and safety](#trust-and-safety) for why that second check is
+the one that actually proves something.
 
 ### 3. Run as Administrator
 
-SysTuneX requests elevation automatically because system tuning requires access to the registry, Windows services, networking, power configuration and boot settings.
+SysTuneX asks for elevation on launch. It cannot do its job without it: the registry keys it writes
+live under `HKEY_LOCAL_MACHINE`, changing a service's start type goes through the service control
+manager, and the frame counter needs an Event Tracing session. All three refuse a standard token.
 
-> The executable is currently not code-signed, so Windows SmartScreen may display a warning.
+Windows SmartScreen will warn, because the executable is not code-signed. The section below
+explains exactly what that warning means and how to check the file yourself rather than taking
+anyone's word for it.
+
+---
+
+## Trust and safety
+
+You are about to run an **unsigned executable as administrator** on your own machine. That is a
+real thing to be careful about, and "it's fine, trust me" is not an answer. Here is what you can
+actually check.
+
+### Why it is not signed
+
+A code-signing certificate that stops SmartScreen warning on day one is an EV certificate — several
+hundred dollars a year, tied to a registered company. SysTuneX is a free tool with no company
+behind it. Signing is worth doing and is not ruled out; it has simply not happened yet.
+
+Worth being precise about what a signature would and would not tell you: it proves the file came
+from whoever holds the certificate and has not been altered since. It says **nothing** about
+whether the program is safe. Plenty of signed software is hostile. The checks below tell you more
+than a signature would.
+
+### The chain you can actually verify
+
+The executable is not built on anyone's laptop. Every release is built by GitHub Actions, in
+public, from a commit you can read:
+
+1. Open the [Actions tab](https://github.com/Anton-Babaskin/SysTuneX/actions) and find the run for
+   the release tag.
+2. The **Checksum** step prints the SHA-256 of the file it just built, into a log nobody can edit
+   after the fact.
+3. Compare that to `Get-FileHash` on your download and to `SHA256SUMS.txt`.
+
+If all three agree, the file on your disk is the one that machine built from that source. Nobody —
+including whoever controls the release page — can substitute a different binary without the numbers
+disagreeing.
+
+You can also build it yourself and compare; see [Build from source](#build-from-source).
+
+### Getting past SmartScreen
+
+The warning says "Windows protected your PC" and hides the run button behind a link. That is the
+default for any executable without an established reputation — it is a statement about how many
+people have run this file, not about what the file does.
+
+**More info → Run anyway.** If you would rather not, verify the checksum first, or upload the file
+to [VirusTotal](https://www.virustotal.com/) and see what seventy engines make of it.
+
+### What it actually does to your machine
+
+Every change SysTuneX makes is **recorded before it is made** and can be undone from the change
+journal — that is the rule the whole codebase is built around, and there are tests that fail if it
+is broken. Specifically, it writes to:
+
+| What | Where | Undo |
+| ---- | ----- | ---- |
+| Tweaks | Registry values under `HKLM` and `HKCU` | Previous value restored exactly, or deleted if it did not exist |
+| Services | Start type via the service control manager | Original start type and running state restored |
+| Power | Active power scheme | Previous scheme restored |
+| Network | DNS servers, hosts file | Previous servers or DHCP restored; hosts entries removed |
+| Cleanup | Temporary files, caches, crash dumps | **Not undoable** — files are deleted, and the app says so before doing it |
+
+It does **not** install a driver, a service, or a background agent. It does not phone home; there is
+no telemetry and no network call except the DNS latency test you start yourself. Closing the app
+leaves nothing running except the tray icon, if you asked for one.
+
+### If you want to read the code first
+
+That is the point of it being open. The parts worth reading, in order: `TweakEngine` for how a
+change is journalled before it is written, `BackupService` for what the journal holds, and the
+catalogs under `src/SysTuneX.Core/Tweaks/` for every registry value the app will ever touch —
+there is no hidden list.
+
+Security reports go through [SECURITY.md](SECURITY.md), privately, rather than a public issue.
 
 ---
 

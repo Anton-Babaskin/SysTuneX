@@ -1223,9 +1223,6 @@
   <data name="Monitor_Settings" xml:space="preserve">
     <value>What to measure</value>
   </data>
-  <data name="Monitor_Settings_Hint" xml:space="preserve">
-    <value>Pick the readings you want. Everything else is left alone.</value>
-  </data>
   <data name="Monitor_Settings_Readings" xml:space="preserve">
     <value>Show on this page</value>
   </data>
@@ -1244,34 +1241,64 @@
   <data name="Monitor_KeepInBackground_Hint" xml:space="preserve">
     <value>Leave this on to alt-tab into a game and read the numbers when you come back. Turn it off and the trace session stops the moment you leave the page.</value>
   </data>
-  <data name="Monitor_Show_CpuLoad" xml:space="preserve">
-    <value>CPU load</value>
-  </data>
-  <data name="Monitor_Show_CpuTemperature" xml:space="preserve">
-    <value>CPU temperature</value>
-  </data>
-  <data name="Monitor_Show_GpuLoad" xml:space="preserve">
-    <value>GPU load</value>
-  </data>
-  <data name="Monitor_Show_GpuTemperature" xml:space="preserve">
-    <value>GPU temperature</value>
-  </data>
-  <data name="Monitor_Show_GpuFan" xml:space="preserve">
-    <value>GPU fan</value>
-  </data>
-  <data name="Monitor_Show_Memory" xml:space="preserve">
-    <value>Memory</value>
-  </data>
-  <data name="Monitor_Show_Processes" xml:space="preserve">
-    <value>Process count</value>
-  </data>
   <data name="Monitor_Empty_Title" xml:space="preserve">
     <value>Nothing is being measured</value>
   </data>
   <data name="Monitor_Empty_Message" xml:space="preserve">
     <value>Open "What to measure" above and tick what you want to see.</value>
   </data>
-  <data name="Monitor_Fps_Off" xml:space="preserve">
-    <value>The frame counter is off. Turn it on above to start measuring.</value>
+  <data name="Metric_Fps" xml:space="preserve">
+    <value>Frame rate</value>
+  </data>
+  <data name="Metric_FrameTime" xml:space="preserve">
+    <value>Frame time</value>
+  </data>
+  <data name="Metric_OnePercentLow" xml:space="preserve">
+    <value>1% low</value>
+  </data>
+  <data name="Metric_CpuLoad" xml:space="preserve">
+    <value>CPU load</value>
+  </data>
+  <data name="Metric_CpuTemperature" xml:space="preserve">
+    <value>CPU temperature</value>
+  </data>
+  <data name="Metric_GpuLoad" xml:space="preserve">
+    <value>GPU load</value>
+  </data>
+  <data name="Metric_GpuTemperature" xml:space="preserve">
+    <value>GPU temperature</value>
+  </data>
+  <data name="Metric_GpuFan" xml:space="preserve">
+    <value>GPU fan</value>
+  </data>
+  <data name="Metric_MemoryUsed" xml:space="preserve">
+    <value>Memory used</value>
+  </data>
+  <data name="Metric_StandbyMemory" xml:space="preserve">
+    <value>Standby memory</value>
+  </data>
+  <data name="Metric_DiskFree" xml:space="preserve">
+    <value>Disk free</value>
+  </data>
+  <data name="Metric_ProcessCount" xml:space="preserve">
+    <value>Processes</value>
+  </data>
+  <data name="Metric_Uptime" xml:space="preserve">
+    <value>Uptime</value>
+  </data>
+  <data name="MetricGroup_Frames" xml:space="preserve">
+    <value>Frames</value>
+  </data>
+  <data name="MetricGroup_Cpu" xml:space="preserve">
+    <value>Processor</value>
+  </data>
+  <data name="MetricGroup_Gpu" xml:space="preserve">
+    <value>Graphics</value>
+  </data>
+  <data name="MetricGroup_Memory" xml:space="preserve">
+    <value>Memory</value>
+  </data>
+  <data name="MetricGroup_System" xml:space="preserve">
+    <value>System</value>
   </data>
 </root>

@@ -28,6 +28,12 @@ public sealed partial class MonitorViewModel : PageViewModel
     private readonly IFrameRateProbe _frameRate;
     private readonly ILocalizationService _localization;
     private readonly IAppSettingsService _settings;
+
+    /// <summary>Which readings are on. The single source of truth the whole page reads from.</summary>
+    private MonitorSelection _selection = new();
+
+    /// <summary>Serialises starting the trace session against stopping it.</summary>
+    private readonly SemaphoreSlim _frameCounterGate = new(1, 1);
     private readonly DispatcherTimer _timer;
 
     private int _tickCount;
@@ -92,38 +98,23 @@ public sealed partial class MonitorViewModel : PageViewModel
     [ObservableProperty]
     private int _processCount;
 
-    // ── What the monitor measures ────────────────────────────────────────────
-    //
-    // Each of these is a real cost rather than a preference about clutter, so each is a switch:
-    // the frame counter holds an ETW session open, and the temperatures cost a WMI query or a call
-    // into the vendor's driver library on every sample.
+    [ObservableProperty]
+    private long _standbyMb;
+
+    [ObservableProperty]
+    private long _driveFreeMb;
+
+    [ObservableProperty]
+    private long _driveTotalMb;
+
+    [ObservableProperty]
+    private TimeSpan _uptime;
 
     [ObservableProperty]
     private bool _frameCounterEnabled;
 
     [ObservableProperty]
     private bool _keepFrameCounterInBackground = true;
-
-    [ObservableProperty]
-    private bool _showCpuLoad = true;
-
-    [ObservableProperty]
-    private bool _showCpuTemperature = true;
-
-    [ObservableProperty]
-    private bool _showGpuLoad = true;
-
-    [ObservableProperty]
-    private bool _showGpuTemperature = true;
-
-    [ObservableProperty]
-    private bool _showGpuFan;
-
-    [ObservableProperty]
-    private bool _showMemory = true;
-
-    [ObservableProperty]
-    private bool _showProcessCount;
 
     /// <summary>True while the trace session is being created, so the switch can show it is working.</summary>
     [ObservableProperty]
@@ -145,6 +136,18 @@ public sealed partial class MonitorViewModel : PageViewModel
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _timer.Tick += OnTick;
     }
+
+    /// <summary>The tick list, built from the catalogue so a new reading needs no code here.</summary>
+    public ObservableCollection<MonitorMetricOption> Options { get; } = [];
+
+    /// <summary>"9 / 12", so the cap is visible before it is hit rather than only when it refuses.</summary>
+    public string SelectionCount => $"{_selection.Count} / {MonitorMetrics.MaxSelected}";
+
+    /// <summary>
+    /// A sample of the readout with the current ticks applied, so the effect of a tick is visible
+    /// without closing the panel and looking at the cards behind it.
+    /// </summary>
+    public string Preview => string.Join("   ", _selection.ToList().Select(PreviewPart));
 
     public ObservableCollection<double> FpsHistory { get; } = [];
 
@@ -186,21 +189,75 @@ public sealed partial class MonitorViewModel : PageViewModel
 
     public bool HasGpuFan => GpuFan is not null;
 
+    // Asked for *and* obtainable. Binding a tile to the tick alone was the audit's first finding:
+    // a machine whose firmware exposes no temperature drew a bare "°C" with no number in front of
+    // it, which is exactly the plausible-looking wrong reading this project refuses everywhere
+    // else. Every one of these is "the user wants it" AND "the machine can supply it".
+
+    public bool DisplayFps => Selected(MonitorMetric.Fps) && HasFrameRate;
+
+    public bool DisplayFrameTime => Selected(MonitorMetric.FrameTime) && HasFrameRate;
+
+    public bool DisplayOnePercentLow => Selected(MonitorMetric.OnePercentLow) && HasFrameRate;
+
+    public bool DisplayCpuLoad => Selected(MonitorMetric.CpuLoad);
+
+    public bool DisplayCpuTemperature => Selected(MonitorMetric.CpuTemperature) && HasCpuTemperature;
+
+    public bool DisplayGpuLoad => Selected(MonitorMetric.GpuLoad) && HasGpuUsage;
+
+    public bool DisplayGpuTemperature => Selected(MonitorMetric.GpuTemperature) && HasGpuTemperature;
+
+    public bool DisplayGpuFan => Selected(MonitorMetric.GpuFan) && HasGpuFan;
+
+    public bool DisplayMemory => Selected(MonitorMetric.MemoryUsed);
+
+    public bool DisplayStandby => Selected(MonitorMetric.StandbyMemory);
+
+    public bool DisplayDiskFree => Selected(MonitorMetric.DiskFree);
+
+    public bool DisplayProcessCount => Selected(MonitorMetric.ProcessCount);
+
+    public bool DisplayUptime => Selected(MonitorMetric.Uptime);
+
+    /// <summary>A card is drawn when its group has anything ticked at all.</summary>
+    public bool ShowFrameCard => FrameCounterEnabled && !_selection.IsGroupEmpty(MonitorGroup.Frames);
+
+    public bool ShowCpuCard => !_selection.IsGroupEmpty(MonitorGroup.Cpu);
+
+    public bool ShowGpuCard => !_selection.IsGroupEmpty(MonitorGroup.Gpu);
+
+    public bool ShowMemoryCard =>
+        !_selection.IsGroupEmpty(MonitorGroup.Memory) || !_selection.IsGroupEmpty(MonitorGroup.System);
+
+    /// <summary>
+    /// How many of the lower cards are on screen, so the row divides itself between exactly those.
+    /// A UniformGrid ignores collapsed children, so giving it the visible count makes them fill the
+    /// width - the fixed three columns this replaces left a hole, despite a comment claiming the
+    /// opposite. The comment was the bug; this is the fix.
+    /// </summary>
+    public int VisibleCardCount =>
+        Math.Max(1, (ShowCpuCard ? 1 : 0) + (ShowGpuCard ? 1 : 0) + (ShowMemoryCard ? 1 : 0));
+
+    public bool ShowNothing => !ShowFrameCard && !ShowCpuCard && !ShowGpuCard && !ShowMemoryCard;
+
+    private bool Selected(MonitorMetric metric) => _selection.IsSelected(metric);
+
     /// <summary>
     /// False only once a sample has actually come back empty. Before that the tiles say nothing
     /// rather than announcing an absence that has not been established yet.
     /// </summary>
+    /// <summary>
+    /// Every temperature that was asked for came back empty. Asking whether *both* were null was
+    /// wrong: with GPU temperature ticked off and readable, a missing CPU temperature that was
+    /// ticked on had its explanation suppressed by a number nobody had asked to see.
+    /// </summary>
     public bool HasNoTemperature =>
         _sensorsChecked &&
-        (ShowCpuTemperature || ShowGpuTemperature) &&
-        CpuTemperature is null &&
-        GpuTemperature is null;
+        (Selected(MonitorMetric.CpuTemperature) || Selected(MonitorMetric.GpuTemperature)) &&
+        !DisplayCpuTemperature &&
+        !DisplayGpuTemperature;
 
-    /// <summary>The GPU card is worth drawing only if at least one of its readings is wanted.</summary>
-    public bool ShowGpuCard => ShowGpuLoad || ShowGpuTemperature || ShowGpuFan;
-
-    /// <summary>Nothing ticked at all, which is a state worth naming rather than showing a blank page.</summary>
-    public bool ShowNothing => !FrameCounterEnabled && !ShowCpuLoad && !ShowGpuCard && !ShowMemory;
 
     private bool _loading;
 
@@ -211,23 +268,85 @@ public sealed partial class MonitorViewModel : PageViewModel
         _loading = true;
         try
         {
+            _selection = MonitorSelection.FromNames(monitor.Metrics);
             FrameCounterEnabled = monitor.FrameCounter;
             KeepFrameCounterInBackground = monitor.KeepFrameCounterInBackground;
-            ShowCpuLoad = monitor.ShowCpuLoad;
-            ShowCpuTemperature = monitor.ShowCpuTemperature;
-            ShowGpuLoad = monitor.ShowGpuLoad;
-            ShowGpuTemperature = monitor.ShowGpuTemperature;
-            ShowGpuFan = monitor.ShowGpuFan;
-            ShowMemory = monitor.ShowMemory;
-            ShowProcessCount = monitor.ShowProcessCount;
         }
         finally
         {
             _loading = false;
         }
+
+        BuildOptions();
     }
 
-    /// <summary>Writes the switches back. Called from every one of them, so it stays cheap and idempotent.</summary>
+    /// <summary>
+    /// One tickable row per catalogue entry, grouped for the panel. Built once: the catalogue does
+    /// not change at run time, so only the ticks and the enabled state move afterwards.
+    /// </summary>
+    private void BuildOptions()
+    {
+        Options.Clear();
+
+        foreach (MonitorMetricDefinition definition in MonitorMetrics.All)
+        {
+            Options.Add(new MonitorMetricOption(
+                definition,
+                _localization[definition.NameKey],
+                _localization[$"MetricGroup_{definition.Group}"],
+                _selection.IsSelected(definition.Metric),
+                OnOptionToggled));
+        }
+
+        RefreshOptionAvailability();
+    }
+
+    /// <summary>
+    /// A tick the cap would refuse is disabled rather than silently doing nothing when clicked.
+    /// Anything already on stays clickable so it can always be turned back off.
+    /// </summary>
+    private void RefreshOptionAvailability()
+    {
+        bool room = _selection.CanSelectMore;
+
+        foreach (MonitorMetricOption option in Options)
+        {
+            option.CanToggle = room || option.IsSelected;
+        }
+    }
+
+    private void OnOptionToggled(MonitorMetricOption option, bool wanted)
+    {
+        if (!_selection.Set(option.Definition.Metric, wanted))
+        {
+            // Refused by the cap. Put the tick back so the interface matches the state.
+            option.RestoreTo(_selection.IsSelected(option.Definition.Metric));
+            return;
+        }
+
+        RefreshOptionAvailability();
+        RefreshVisibility();
+        SaveSettings();
+    }
+
+    /// <summary>Every derived flag the page draws from. Raised together because a tick moves several.</summary>
+    private void RefreshVisibility()
+    {
+        foreach (string name in (string[])
+        [
+            nameof(SelectionCount), nameof(Preview), nameof(ShowNothing), nameof(VisibleCardCount),
+            nameof(ShowFrameCard), nameof(ShowCpuCard), nameof(ShowGpuCard), nameof(ShowMemoryCard),
+            nameof(DisplayFps), nameof(DisplayFrameTime), nameof(DisplayOnePercentLow),
+            nameof(DisplayCpuLoad), nameof(DisplayCpuTemperature),
+            nameof(DisplayGpuLoad), nameof(DisplayGpuTemperature), nameof(DisplayGpuFan),
+            nameof(DisplayMemory), nameof(DisplayStandby), nameof(DisplayDiskFree),
+            nameof(DisplayProcessCount), nameof(DisplayUptime), nameof(HasNoTemperature),
+        ])
+        {
+            OnPropertyChanged(name);
+        }
+    }
+
     private void SaveSettings()
     {
         if (_loading)
@@ -236,106 +355,77 @@ public sealed partial class MonitorViewModel : PageViewModel
         }
 
         MonitorSettings monitor = _settings.Current.Monitor;
-
         monitor.FrameCounter = FrameCounterEnabled;
         monitor.KeepFrameCounterInBackground = KeepFrameCounterInBackground;
-        monitor.ShowCpuLoad = ShowCpuLoad;
-        monitor.ShowCpuTemperature = ShowCpuTemperature;
-        monitor.ShowGpuLoad = ShowGpuLoad;
-        monitor.ShowGpuTemperature = ShowGpuTemperature;
-        monitor.ShowGpuFan = ShowGpuFan;
-        monitor.ShowMemory = ShowMemory;
-        monitor.ShowProcessCount = ShowProcessCount;
+        monitor.Metrics = [.. _selection.ToList().Select(m => m.ToString())];
 
         _ = _settings.SaveAsync();
     }
 
-    /// <summary>
-    /// The switch that owns the trace session. Creating one takes long enough to be felt, so it
-    /// happens off the interface thread with the switch showing that it is working.
-    /// </summary>
-    async partial void OnFrameCounterEnabledChanged(bool value)
+    private string PreviewPart(MonitorMetric metric)
     {
-        OnPropertyChanged(nameof(ShowNothing));
-        SaveSettings();
+        MonitorMetricDefinition definition = MonitorMetrics.Find(metric);
+        string label = _localization[definition.NameKey];
 
-        if (_loading)
+        string value = metric switch
         {
-            return;
-        }
+            MonitorMetric.Fps => Fps?.ToString() ?? "--",
+            MonitorMetric.FrameTime => FrameTimeMs > 0 ? FrameTimeMs.ToString("F1") : "--",
+            MonitorMetric.OnePercentLow => OnePercentLowFps > 0 ? OnePercentLowFps.ToString() : "--",
+            MonitorMetric.CpuLoad => CpuUsage.ToString("F0"),
+            MonitorMetric.CpuTemperature => CpuTemperature?.ToString() ?? "--",
+            MonitorMetric.GpuLoad => GpuUsage?.ToString() ?? "--",
+            MonitorMetric.GpuTemperature => GpuTemperature?.ToString() ?? "--",
+            MonitorMetric.GpuFan => GpuFan?.ToString() ?? "--",
+            MonitorMetric.MemoryUsed => $"{RamUsedMb / 1024.0:0.#} GB",
+            MonitorMetric.StandbyMemory => $"{StandbyMb / 1024.0:0.#} GB",
+            MonitorMetric.DiskFree => $"{DriveFreeMb / 1024.0:0.#} GB",
+            MonitorMetric.ProcessCount => ProcessCount.ToString(),
+            MonitorMetric.Uptime => Uptime.ToString(@"d\.hh\:mm"),
+            _ => "--",
+        };
 
-        if (value)
-        {
-            await StartFrameCounterAsync().ConfigureAwait(true);
-            return;
-        }
-
-        _frameRate.Stop();
-        Fps = null;
-        GameName = string.Empty;
-        FpsHistory.Clear();
-        FrameRateHint = _localization["Monitor_Fps_Off"];
+        return definition.Unit.Length > 0 ? $"{label} {value}{definition.Unit}" : $"{label} {value}";
     }
 
     private async Task StartFrameCounterAsync()
     {
-        FrameCounterStarting = true;
+        // Serialised against itself and against Stop. Without this, switching off while a start
+        // was still in flight lost the stop: the session came up afterwards and kept running with
+        // the switch showing off - a machine-wide ETW session nobody could see or close.
+        await _frameCounterGate.WaitAsync().ConfigureAwait(true);
         try
         {
-            await Task.Run(_frameRate.Start, PageToken).ConfigureAwait(true);
+            FrameCounterStarting = true;
+            await Task.Run(_frameRate.Start).ConfigureAwait(true);
         }
-        catch (OperationCanceledException)
+        catch (Exception)
         {
-            // Navigated away while the session was being created.
+            // Start reports its own refusals through IsRunning; nothing here is fatal to the page.
         }
         finally
         {
             FrameCounterStarting = false;
+            _frameCounterGate.Release();
         }
 
-        // A refusal is reported on the switch itself rather than only in the empty tile, because
-        // the person who just flipped it is owed an answer about why nothing happened.
+        // The switch may have been turned off while the session was coming up. Honour the state
+        // the user left it in, not the one it had when the start began.
+        if (!FrameCounterEnabled)
+        {
+            _frameRate.Stop();
+            return;
+        }
+
         if (!_frameRate.IsRunning)
         {
             FrameRateHint = _localization.Format("Monitor_Fps_Unavailable", _frameRate.UnavailableReason);
         }
+
+        RefreshVisibility();
     }
 
     partial void OnKeepFrameCounterInBackgroundChanged(bool value) => SaveSettings();
-
-    partial void OnShowCpuLoadChanged(bool value)
-    {
-        OnPropertyChanged(nameof(ShowNothing));
-        SaveSettings();
-    }
-
-    partial void OnShowCpuTemperatureChanged(bool value)
-    {
-        OnPropertyChanged(nameof(HasNoTemperature));
-        SaveSettings();
-    }
-
-    partial void OnShowGpuLoadChanged(bool value) => OnGpuSwitchChanged();
-
-    partial void OnShowGpuTemperatureChanged(bool value) => OnGpuSwitchChanged();
-
-    partial void OnShowGpuFanChanged(bool value) => OnGpuSwitchChanged();
-
-    private void OnGpuSwitchChanged()
-    {
-        OnPropertyChanged(nameof(ShowGpuCard));
-        OnPropertyChanged(nameof(HasNoTemperature));
-        OnPropertyChanged(nameof(ShowNothing));
-        SaveSettings();
-    }
-
-    partial void OnShowMemoryChanged(bool value)
-    {
-        OnPropertyChanged(nameof(ShowNothing));
-        SaveSettings();
-    }
-
-    partial void OnShowProcessCountChanged(bool value) => SaveSettings();
 
     protected override async Task OnEnterAsync()
     {
@@ -358,8 +448,15 @@ public sealed partial class MonitorViewModel : PageViewModel
 
         _timer.Start();
 
-        await SampleSensorsAsync().ConfigureAwait(true);
+        // Gated like the tick is. Sampling unconditionally here meant every page visit paid for a
+        // WMI query and a driver call even with every temperature switched off.
+        if (_selection.NeedsSensors)
+        {
+            await SampleSensorsAsync().ConfigureAwait(true);
+        }
+
         Sample();
+        RefreshVisibility();
     }
 
     protected override Task OnLeaveAsync()
@@ -382,7 +479,7 @@ public sealed partial class MonitorViewModel : PageViewModel
         // Skipped outright when nothing on screen needs it. A WMI query and a call into the
         // vendor's driver library are not free, and taking them for a tile that is switched off
         // is exactly the kind of background work this app exists to remove.
-        if (_tickCount++ % SensorTickInterval == 0 && _settings.Current.Monitor.NeedsSensors)
+        if (_tickCount++ % SensorTickInterval == 0 && _selection.NeedsSensors)
         {
             _ = SampleSensorsAsync();
         }
@@ -399,6 +496,10 @@ public sealed partial class MonitorViewModel : PageViewModel
         RamTotalMb = snapshot.RamTotalMb;
         RamUsagePercent = Math.Round(snapshot.RamUsagePercent, 1);
         ProcessCount = snapshot.ProcessCount;
+        StandbyMb = snapshot.StandbyMemoryMb;
+        DriveFreeMb = snapshot.SystemDriveFreeMb;
+        DriveTotalMb = snapshot.SystemDriveTotalMb;
+        Uptime = snapshot.Uptime;
 
         Append(CpuHistory, snapshot.CpuUsagePercent);
         Append(RamHistory, snapshot.RamUsagePercent);
@@ -412,6 +513,9 @@ public sealed partial class MonitorViewModel : PageViewModel
         }
 
         SampleFrameRate();
+
+        // The preview shows live numbers, so it moves with them.
+        OnPropertyChanged(nameof(Preview));
     }
 
     private void SampleFrameRate()
