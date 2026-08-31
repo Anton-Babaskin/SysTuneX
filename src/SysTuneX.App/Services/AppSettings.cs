@@ -50,43 +50,31 @@ public sealed class AppSettings
 }
 
 /// <summary>
-/// Which readings the monitor takes, and whether it takes them at all.
+/// What the monitor measures, and whether it measures at all.
 ///
-/// Every one of these is a real cost, not a preference about clutter. The frame counter holds an
-/// Event Tracing session open for as long as it runs, and that is a machine-wide resource paid for
-/// by the whole system - so it is off until asked for, rather than started quietly the first time
-/// someone opens the page. Temperatures cost a WMI query or a call into the vendor's driver
-/// library. A tuning tool that leaves all of that running for numbers nobody is reading is doing
-/// the opposite of its job.
+/// The readings themselves are a list of names rather than a field each. That is not tidiness:
+/// the previous shape was nine booleans with nine change handlers and two nine-line blocks copying
+/// them in and out of this file, and adding a tenth reading meant touching all of it. A name that
+/// this build does not recognise is skipped on load, so a file written by a newer version still
+/// opens.
 /// </summary>
 public sealed class MonitorSettings
 {
     /// <summary>
-    /// The frame counter. Off by default: it needs administrator rights and a trace session, and
-    /// it should be a deliberate act rather than something that happens on a page visit.
+    /// The frame counter. Off by default: it needs administrator rights and holds an Event
+    /// Tracing session open, and that should be a deliberate act rather than something that
+    /// happens on a page visit.
     /// </summary>
     public bool FrameCounter { get; set; }
 
     /// <summary>Keep the counter running after leaving the page, so a game can be measured while it is in front.</summary>
     public bool KeepFrameCounterInBackground { get; set; } = true;
 
-    public bool ShowCpuLoad { get; set; } = true;
-
-    public bool ShowCpuTemperature { get; set; } = true;
-
-    public bool ShowGpuLoad { get; set; } = true;
-
-    public bool ShowGpuTemperature { get; set; } = true;
-
-    public bool ShowGpuFan { get; set; }
-
-    public bool ShowMemory { get; set; } = true;
-
-    public bool ShowProcessCount { get; set; }
-
-    /// <summary>True when any reading that needs a sensor is switched on, so the slow sample can be skipped entirely.</summary>
-    [JsonIgnore]
-    public bool NeedsSensors => ShowCpuTemperature || ShowGpuLoad || ShowGpuTemperature || ShowGpuFan;
+    /// <summary>
+    /// Selected readings by name. Null means this file predates the feature and the defaults
+    /// apply; an empty list is a deliberate "show nothing", which is a different thing.
+    /// </summary>
+    public List<string>? Metrics { get; set; }
 }
 
 public interface IAppSettingsService

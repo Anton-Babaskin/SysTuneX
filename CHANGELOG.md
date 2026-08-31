@@ -3,6 +3,51 @@
 Every released version, newest first. The release workflow publishes only the section
 for the version being released, so a release page shows that version and nothing else.
 
+## v2.8.0
+
+An audit of 2.7.0 found nine defects in it. This fixes all of them and rebuilds the monitor's
+settings around a catalogue instead of a row of booleans.
+
+### Nine defects in the release before this one
+
+Four of them showed numbers that were not there. Binding a tile to its tick alone — without also
+asking whether the machine can supply the reading — drew a bare `°C` or `%` with nothing in front
+of it on any machine whose firmware exposes no temperature. That is the plausible-looking wrong
+reading this project refuses everywhere else, and it shipped.
+
+The rest: switching the frame counter off while its trace session was still starting lost the
+stop, leaving a machine-wide ETW session running with the switch showing off. The "no sensors"
+explanation was suppressed by a reading nobody had asked to see. Ticking the process count with
+memory switched off showed nothing, because it lived inside the memory card. The sensor sample ran
+unconditionally on every page visit, ignoring the gate that was the point of the feature. And the
+three cards sat in a grid with fixed columns that did **not** give a hidden tile's width back —
+with a comment claiming they did. The comment was the bug.
+
+### The readings are a catalogue now
+
+Nine booleans, nine change handlers and two nine-line blocks copying them in and out of the
+settings file, all replaced by one list. Adding a reading is an entry in the catalogue plus its two
+strings; the ticks, the persistence, the grouping and the count all follow.
+
+The point is not tidiness. All of it lived in a view model, where nothing is reachable from a test
+that runs without Windows — which is exactly why a wrong answer sat on the page unnoticed. The
+selection is in the core now, with fourteen tests on it.
+
+### The panel
+
+Readings are grouped — frames, processor, graphics, memory, system — rather than listed flat, and
+the header carries a live preview of the readout so the effect of a tick is visible without
+closing the panel. A selection count sits beside the list, and a reading the cap would refuse is
+disabled rather than silently ignoring the click.
+
+Four new readings while the plumbing was open: frame time and 1% low as separate ticks, standby
+memory, free disk space and uptime.
+
+A settings file naming a reading this build does not know is skipped rather than refused, so a
+file written by a newer version still opens.
+
+---
+
 ## v2.7.0
 
 The monitor now measures what you ask it to, and nothing else.
