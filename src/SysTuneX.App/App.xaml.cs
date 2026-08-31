@@ -224,7 +224,19 @@ public partial class App : Application
 
         try
         {
-            _host.Services.GetRequiredService<IUserInteraction>().ShowError(e.Exception.Message);
+            // "Object reference not set to an instance of an object" names nothing a person can
+            // act on and nothing a bug report can be written from. The root cause's type says
+            // which kind of failure it was, and the path says where the stack trace already is -
+            // it has been written to errors.log by the line above, and without that pointer
+            // nobody knows to look.
+            var environment = _host.Services.GetService<IEnvironmentService>();
+            Exception cause = ExceptionReport.RootCause(e.Exception);
+
+            string detail = environment is null
+                ? $"{cause.GetType().Name}: {cause.Message}"
+                : $"{cause.GetType().Name}: {cause.Message}\n{Path.Combine(environment.DataDirectory, "errors.log")}";
+
+            _host.Services.GetRequiredService<IUserInteraction>().ShowError(detail);
         }
         catch
         {
