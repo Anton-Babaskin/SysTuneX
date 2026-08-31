@@ -1,20 +1,18 @@
-# SysTuneX
-
-*[Русская версия](README.ru.md)*
-
 <div align="center">
 
-<img src="src/SysTuneX.App/Assets/SysTuneX.png" width="110" alt="SysTuneX logo">
+<img src="src/SysTuneX.App/Assets/SysTuneX.png" width="112" alt="SysTuneX Windows gaming optimizer logo">
 
 # SysTuneX
 
-### Fast Windows tuning. No guesswork. Fully reversible.
+### Windows 10/11 Gaming Optimizer & Custom FPS Monitor
 
-Optimize performance, reduce latency and clean up Windows 10/11 with a few clicks.
+**Optimize Windows. Track every frame. Keep every change reversible.**
 
-SysTuneX shows exactly what it changes, saves your original settings and lets you roll everything back.
+A free, open-source Windows optimizer for gamers. Apply smart performance profiles, reduce background load, monitor **FPS, 1% lows, frame time, CPU, GPU, RAM and temperatures**, and restore the exact settings you started with.
 
-[Русская версия](README.ru.md) · [Download](https://github.com/Anton-Babaskin/SysTuneX/releases) · [Build from source](#build-from-source) · [Contributing](CONTRIBUTING.md) · [Report an issue](https://github.com/Anton-Babaskin/SysTuneX/issues)
+[English](README.md) · [Русский](README.ru.md) · [Українська](README.uk.md) · [Español](README.es.md)
+
+[⬇️ **Download SysTuneX**](https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SysTuneX.exe) · [Latest release](https://github.com/Anton-Babaskin/SysTuneX/releases/latest) · [SHA-256](https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SHA256SUMS.txt) · [Report an issue](https://github.com/Anton-Babaskin/SysTuneX/issues)
 
 <br>
 
@@ -22,14 +20,23 @@ SysTuneX shows exactly what it changes, saves your original settings and lets yo
 [![Release](https://img.shields.io/github/v/release/Anton-Babaskin/SysTuneX?include_prereleases\&sort=semver)](https://github.com/Anton-Babaskin/SysTuneX/releases)
 [![Downloads](https://img.shields.io/github/downloads/Anton-Babaskin/SysTuneX/total?label=downloads)](https://github.com/Anton-Babaskin/SysTuneX/releases)
 [![License](https://img.shields.io/github/license/Anton-Babaskin/SysTuneX)](LICENSE)
-
 ![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows11\&logoColor=white)
-![.NET 10](https://img.shields.io/badge/.NET-10.0%20LTS-512BD4?logo=dotnet\&logoColor=white)
-![WPF UI](https://img.shields.io/badge/WPF%20UI-4.3-5C2D91)
-![MVVM Toolkit](https://img.shields.io/badge/MVVM%20Toolkit-8.4-5C2D91)
-![xUnit](https://img.shields.io/badge/xUnit-2.9-512BD4)
+![x64](https://img.shields.io/badge/x64-single--file-5C2D91)
 
 </div>
+
+## Push your setup further
+
+- 🎮 **Gaming optimizer:** competitive FPS, battle royale, open-world, racing, streaming and maximum-performance profiles.
+- 📈 **Your performance dashboard:** enable only the readings you want—FPS, 1% low, frame time, CPU/GPU load and temperature, memory, fan and process count.
+- ⚡ **Game Mode:** temporarily stops safe background services, raises the power scheme and restores the session when you are done.
+- 🔎 **Measure, do not guess:** compare configuration before and after, watch frame-time behaviour and see real errors.
+- ↩️ **Exact rollback:** SysTuneX records the real previous state before supported changes instead of writing an invented "default".
+- 🛡️ **Built with anti-cheat in mind:** the frame counter uses Windows ETW and does not inject code into the game.
+
+![SysTuneX customizable FPS, CPU, GPU, RAM and temperature monitor](docs/images/systunex-monitor-ru.png)
+
+> **Full power, honest limits.** SysTuneX can help remove bottlenecks and improve consistency, but no optimizer can guarantee the same FPS gain on every PC. The current monitor is a configurable second-screen dashboard, not an in-game overlay.
 
 ---
 
