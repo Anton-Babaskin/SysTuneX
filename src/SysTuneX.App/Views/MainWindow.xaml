@@ -187,12 +187,23 @@
                 </ui:NavigationView.FooterMenuItems>
             </ui:NavigationView>
 
-            <!-- Dialog and snackbar hosts float above the page content. The wrapper is
-                 hit-test transparent so the page underneath stays clickable. -->
-            <Grid IsHitTestVisible="False">
-                <ui:ContentDialogHost x:Name="DialogHost" IsHitTestVisible="True" />
+            <!--
+                Dialog and snackbar hosts float above the page content.
+
+                No IsHitTestVisible here, and that is the point. The wrapper used to be marked
+                hit-test transparent so the page underneath stayed clickable, with the two hosts
+                marked visible again - but hit testing walks up the tree, and a false ancestor
+                stops it dead. Setting it back to true on a child does nothing. Every dialog in the
+                app rendered and then ignored the mouse entirely; only the keyboard worked, so
+                "Apply profile" could be confirmed with Enter and by no other means.
+
+                Nothing is needed in its place. A Grid with no Background is not hit-testable in
+                WPF, and a ContentDialogHost with no dialog in it is empty, so neither intercepts
+                anything while idle.
+            -->
+            <Grid>
+                <ui:ContentDialogHost x:Name="DialogHost" />
                 <ui:SnackbarPresenter x:Name="SnackbarHost"
-                                      IsHitTestVisible="True"
                                       VerticalAlignment="Bottom"
                                       HorizontalAlignment="Center"
                                       Margin="0,0,0,24" />
