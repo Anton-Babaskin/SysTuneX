@@ -1889,4 +1889,7 @@
   <data name="MetricGroup_System" xml:space="preserve">
     <value>Система</value>
   </data>
+  <data name="Settings_Backdrop_NeedsRestart" xml:space="preserve">
+    <value>Фон сохранён и применится при следующем запуске SysTuneX — эта версия оконного фреймворка не умеет менять его на лету.</value>
+  </data>
 </root>

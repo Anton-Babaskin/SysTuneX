@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 using SysTuneX.App.Localization;
 using SysTuneX.App.Services;
 using SysTuneX.Core.Abstractions;
@@ -28,6 +29,7 @@ public sealed partial class SettingsViewModel : PageViewModel
     private readonly GameModeAutomation _automation;
     private readonly ITrayIconService _tray;
     private readonly GameModeScheduler _scheduler;
+    private readonly ILogger<SettingsViewModel> _logger;
 
     private bool _isLoading = true;
 
@@ -98,7 +100,8 @@ public sealed partial class SettingsViewModel : PageViewModel
         IGameWatcher watcher,
         GameModeAutomation automation,
         ITrayIconService tray,
-        GameModeScheduler scheduler)
+        GameModeScheduler scheduler,
+        ILogger<SettingsViewModel> logger)
     {
         _settings = settings;
         _localization = localization;
@@ -110,6 +113,7 @@ public sealed partial class SettingsViewModel : PageViewModel
         _automation = automation;
         _tray = tray;
         _scheduler = scheduler;
+        _logger = logger;
 
         Languages = localization.AvailableLanguages;
     }
@@ -271,9 +275,24 @@ public sealed partial class SettingsViewModel : PageViewModel
 
         _settings.Current.Backdrop = backdrop;
 
-        if (System.Windows.Application.Current.MainWindow is FluentWindow window)
+        if (System.Windows.Application.Current.MainWindow is FluentWindow window &&
+            window.WindowBackdropType != backdrop)
         {
-            window.WindowBackdropType = backdrop;
+            try
+            {
+                window.WindowBackdropType = backdrop;
+            }
+            catch (Exception ex)
+            {
+                // WPF-UI rebuilds the window chrome on this change, and replacing a WindowChrome
+                // that already has an inheritance context throws from inside WPF. Picking a
+                // backdrop here was where that first happened - and because the choice was saved
+                // before it was applied, it then threw again on every launch, leaving the window
+                // with no content at all. The preference is still saved; only the live change is
+                // allowed to fail, and it takes effect on the next start.
+                _logger.LogWarning(ex, "Could not switch the window backdrop to {Backdrop} live", backdrop);
+                _interaction.ShowInfo(_localization["Settings_Backdrop_NeedsRestart"]);
+            }
         }
 
         Save();

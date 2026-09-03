@@ -12,15 +12,6 @@
                     d:DataContext="{d:DesignInstance Type=vm:MonitorViewModel}"
                     Title="Monitor">
 
-    <pages:SysTuneXPage.Resources>
-        <!-- Grouped by the catalogue's own grouping, so adding a reading needs no XAML at all. -->
-        <CollectionViewSource x:Key="GroupedOptions" Source="{Binding Options}">
-            <CollectionViewSource.GroupDescriptions>
-                <PropertyGroupDescription PropertyName="GroupName" />
-            </CollectionViewSource.GroupDescriptions>
-        </CollectionViewSource>
-    </pages:SysTuneXPage.Resources>
-
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="{StaticResource PagePadding}">
         <StackPanel MaxWidth="{StaticResource MaxContentWidth}" HorizontalAlignment="Left">
 
@@ -85,7 +76,7 @@
                                    HorizontalAlignment="Right" />
                     </Grid>
 
-                    <ItemsControl ItemsSource="{Binding Source={StaticResource GroupedOptions}}">
+                    <ItemsControl ItemsSource="{Binding GroupedOptions}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type vm:MonitorMetricOption}">
                                 <CheckBox Content="{Binding Name}"

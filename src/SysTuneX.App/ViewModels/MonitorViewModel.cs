@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Windows.Data;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using SysTuneX.App.Localization;
@@ -133,12 +135,25 @@ public sealed partial class MonitorViewModel : PageViewModel
         _localization = localization;
         _settings = settings;
 
+        GroupedOptions = CollectionViewSource.GetDefaultView(Options);
+        GroupedOptions.GroupDescriptions.Add(new PropertyGroupDescription(nameof(MonitorMetricOption.GroupName)));
+
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _timer.Tick += OnTick;
     }
 
     /// <summary>The tick list, built from the catalogue so a new reading needs no code here.</summary>
     public ObservableCollection<MonitorMetricOption> Options { get; } = [];
+
+    /// <summary>
+    /// The same list, grouped for the panel.
+    ///
+    /// Built here rather than as a CollectionViewSource in the page's resources. A Binding inside a
+    /// ResourceDictionary has no DataContext to resolve against - it can appear to work through
+    /// WPF's inheritance context and then quietly resolve to nothing, which would leave the panel
+    /// with no ticks at all and no error to explain why.
+    /// </summary>
+    public ICollectionView GroupedOptions { get; }
 
     /// <summary>"9 / 12", so the cap is visible before it is hit rather than only when it refuses.</summary>
     public string SelectionCount => $"{_selection.Count} / {MonitorMetrics.MaxSelected}";

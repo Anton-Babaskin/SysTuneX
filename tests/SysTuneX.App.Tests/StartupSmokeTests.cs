@@ -2,8 +2,10 @@ using Xunit;
 using System.Reflection;
 using System.Resources;
 using System.Windows;
+using Wpf.Ui.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using SysTuneX.App.Diagnostics;
+using SysTuneX.App.Services;
 using SysTuneX.App.Views;
 using SysTuneX.App.Views.Pages;
 
@@ -146,6 +148,55 @@ public sealed class StartupSmokeTests(WpfApplicationFixture host)
             window.Measure(new Size(1240, 800));
             window.Arrange(new Rect(0, 0, 1240, 800));
             window.UpdateLayout();
+        });
+    }
+
+    /// <summary>
+    /// The window reaches a usable state whatever backdrop is saved.
+    ///
+    /// This is the test that was missing, and the bug it pins made the app unusable. Applying a
+    /// backdrop other than the one the XAML declares makes WPF-UI rebuild the window chrome, and
+    /// replacing a WindowChrome that already carries an inheritance context throws from inside WPF.
+    /// That assignment sat at the *top* of the window's Loaded handler, so the throw took the rest
+    /// of it with it - including the navigation on the line below. Anyone who picked Acrylic or
+    /// None in settings got an empty window on every launch afterwards, plus a second crash from
+    /// the title bar's close button, which had never finished initialising either.
+    ///
+    /// Nothing caught it. The existing MainWindow test uses default settings, which say Mica -
+    /// the same value the XAML declares - so no change ever fired; and a window that is never
+    /// shown never raises Loaded, so the handler itself ran in no test at all.
+    ///
+    /// The assertion is deliberately about navigation, not about the backdrop: WPF-UI may well
+    /// still refuse the change, and that is its business. What matters is that a decorative
+    /// setting cannot stop the window showing its content.
+    /// </summary>
+    [Theory]
+    [InlineData(WindowBackdropType.Mica)]
+    [InlineData(WindowBackdropType.Acrylic)]
+    [InlineData(WindowBackdropType.Tabbed)]
+    [InlineData(WindowBackdropType.None)]
+    [InlineData(WindowBackdropType.Auto)]
+    public void The_window_navigates_whatever_backdrop_is_saved(WindowBackdropType backdrop)
+    {
+        if (!host.IsSupported)
+        {
+            return;
+        }
+
+        host.OnUiThread(() =>
+        {
+            App.Services.GetRequiredService<IAppSettingsService>().Current.Backdrop = backdrop;
+
+            var window = App.Services.GetRequiredService<MainWindow>();
+            window.Measure(new Size(1240, 800));
+            window.Arrange(new Rect(0, 0, 1240, 800));
+            window.UpdateLayout();
+
+            Exception? failure = Record.Exception(window.ApplyStartupState);
+
+            Assert.True(
+                failure is null,
+                $"Startup threw with {backdrop}: {failure?.GetType().Name}: {failure?.Message}");
         });
     }
 
