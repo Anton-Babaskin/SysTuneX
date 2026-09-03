@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Microsoft.Extensions.Logging;
 using System.Windows;
 using SysTuneX.App.Localization;
 using SysTuneX.App.Services;
@@ -18,6 +19,7 @@ public partial class MainWindow : FluentWindow
     private readonly ITrayIconService _tray;
     private readonly IGlobalSearch _search;
     private readonly INavigationService _navigation;
+    private readonly ILogger<MainWindow> _logger;
 
     /// <summary>Results behind the suggestions currently on screen, keyed by their display text.</summary>
     private readonly Dictionary<string, SearchHit> _hits = new(StringComparer.Ordinal);
@@ -31,7 +33,8 @@ public partial class MainWindow : FluentWindow
         IAppSettingsService settings,
         ILocalizationService localization,
         ITrayIconService tray,
-        IGlobalSearch search)
+        IGlobalSearch search,
+        ILogger<MainWindow> logger)
     {
         ViewModel = viewModel;
         _settings = settings;
@@ -39,6 +42,7 @@ public partial class MainWindow : FluentWindow
         _tray = tray;
         _search = search;
         _navigation = navigationService;
+        _logger = logger;
 
         DataContext = viewModel;
         InitializeComponent();
@@ -60,17 +64,55 @@ public partial class MainWindow : FluentWindow
 
     public MainWindowViewModel ViewModel { get; }
 
-    private void OnLoaded(object sender, RoutedEventArgs e)
+    private void OnLoaded(object sender, RoutedEventArgs e) => ApplyStartupState();
+
+    /// <summary>
+    /// What the window does once it exists. Split out of the Loaded handler so a test can run it:
+    /// a window that is never shown never raises Loaded, which is why the ordering bug this
+    /// contains was invisible to every test in the suite.
+    /// </summary>
+    internal void ApplyStartupState()
     {
-        // Mica needs the window handle, so the backdrop is applied once the window exists.
-        WindowBackdropType = _settings.Current.Backdrop;
+        // Navigation first. This used to run last, after the backdrop was applied - and when that
+        // assignment threw, the exception took the whole handler with it: no page was ever
+        // navigated to, so the window opened with an empty content area, and the title bar never
+        // finished initialising, so its close button threw a second time on every click. One
+        // cosmetic setting made the app unusable. Nothing decorative gets to run before the thing
+        // the window exists to show.
+        RootNavigation.Navigate(typeof(DashboardPage));
 
         if (_settings.Current.Theme == ApplicationTheme.Unknown)
         {
             SystemThemeWatcher.Watch(this);
         }
 
-        RootNavigation.Navigate(typeof(DashboardPage));
+        ApplyBackdrop(_settings.Current.Backdrop);
+    }
+
+    /// <summary>
+    /// Applies the saved window backdrop, and survives it failing.
+    ///
+    /// Changing this property makes WPF-UI rebuild the window chrome, and replacing a WindowChrome
+    /// that already carries an inheritance context throws ArgumentException from deep inside WPF -
+    /// which is what happened to anyone who picked a backdrop other than the XAML default, on every
+    /// launch afterwards. The look of the window title bar is not worth an unusable app, so a
+    /// refusal here is logged and the default is kept.
+    /// </summary>
+    private void ApplyBackdrop(WindowBackdropType backdrop)
+    {
+        if (WindowBackdropType == backdrop)
+        {
+            return;
+        }
+
+        try
+        {
+            WindowBackdropType = backdrop;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not apply the {Backdrop} window backdrop; keeping the default", backdrop);
+        }
     }
 
     private void OnClosing(object? sender, CancelEventArgs e)

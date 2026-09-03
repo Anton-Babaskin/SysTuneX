@@ -1301,4 +1301,7 @@
   <data name="MetricGroup_System" xml:space="preserve">
     <value>System</value>
   </data>
+  <data name="Settings_Backdrop_NeedsRestart" xml:space="preserve">
+    <value>The backdrop is saved and will be used the next time SysTuneX starts — this build of the window framework cannot change it while the window is open.</value>
+  </data>
 </root>
