@@ -36,6 +36,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- The startup tests drive the window's Loaded work directly. A window that is never shown
+         never raises Loaded, so without a seam that path cannot be tested at all - which is how a
+         crash in it reached users. -->
+    <InternalsVisibleTo Include="SysTuneX.App.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ApplicationDefinition Include="App.xaml" SubType="Designer" Generator="MSBuild:Compile" />
   </ItemGroup>
 
