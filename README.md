@@ -225,6 +225,12 @@ It is deliberately **not** "apply a profile under another name". A profile write
 
 The session is written to disk, so an interrupted one can still be turned off and restored rather than stranding a dozen stopped services.
 
+### It shows its work
+
+While a session is on, the card lists what is in effect right now — every service by the name Windows uses, the power scheme it switched to and the one that comes back, how much memory the trim freed, how long it has been on and what turned it on. Each line says what happens to it on exit, including the one that is not put back: the memory. Windows refills the standby list on its own, and there is nothing to restore.
+
+This replaced a toast that vanished after a few seconds and left no way to tell what the machine was still holding. Something that asks for administrator rights and changes services underneath you should not need to be taken on trust.
+
 ### It can follow the game
 
 Turn on automatic game mode and SysTuneX watches for a game starting: twenty-five are recognised out of the box, and anything else is a one-field addition by executable name.

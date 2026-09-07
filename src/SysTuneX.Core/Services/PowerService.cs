@@ -1,7 +1,9 @@
+using System.IO;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using SysTuneX.Core.Abstractions;
+using SysTuneX.Core.Diagnostics;
 using SysTuneX.Core.Models;
 
 namespace SysTuneX.Core.Services;
@@ -107,11 +109,25 @@ public sealed partial class PowerService : IPowerService
         Guid? target = schemes.FirstOrDefault(s => s.Guid == PowerScheme.UltimatePerformance)?.Guid
                        ?? schemes.FirstOrDefault(s => s.Guid == PowerScheme.HighPerformance)?.Guid;
 
-        // Windows hides Ultimate Performance until it is duplicated into the machine's scheme list.
-        // duplicatescheme mints a brand new GUID, so the old code's "setactive e9a42b02-..." only
-        // ever worked on machines that already had the scheme.
-        target ??= await DuplicateSchemeAsync(PowerScheme.UltimatePerformance, cancellationToken).ConfigureAwait(false);
-        target ??= await DuplicateSchemeAsync(PowerScheme.HighPerformance, cancellationToken).ConfigureAwait(false);
+        // A duplicate this app made on an earlier run, before minting another one.
+        //
+        // Windows hides Ultimate Performance until it is duplicated into the machine's scheme
+        // list, and duplicatescheme mints a brand new GUID every time - so looking only for the
+        // canonical GUID never found last run's copy and simply made another. Real logs show three
+        // in a single day of use, from one source scheme: SysTuneX was littering the machine's
+        // power settings with a new entry per game mode session and never removing any of them.
+        target ??= RememberedDuplicate(schemes);
+
+        if (target is null)
+        {
+            target = await DuplicateSchemeAsync(PowerScheme.UltimatePerformance, cancellationToken).ConfigureAwait(false)
+                     ?? await DuplicateSchemeAsync(PowerScheme.HighPerformance, cancellationToken).ConfigureAwait(false);
+
+            if (target is not null)
+            {
+                RememberDuplicate(target.Value);
+            }
+        }
 
         if (target is null)
         {
@@ -258,6 +274,52 @@ public sealed partial class PowerService : IPowerService
             ? OperationResult.Ok()
             : OperationResult.Fail(CoreMessages.PowerHibernationFailed, result.Output.Trim());
     }
+
+    /// <summary>
+    /// The scheme this app duplicated last time, if it is still on the machine.
+    ///
+    /// Matching by name would have to guess at a localised string; remembering the GUID we were
+    /// given works in every language. A scheme the user has since deleted simply is not in the
+    /// list, and a fresh one is made.
+    /// </summary>
+    private Guid? RememberedDuplicate(IReadOnlyList<PowerScheme> schemes)
+    {
+        try
+        {
+            if (!File.Exists(DuplicateNotePath))
+            {
+                return null;
+            }
+
+            string text = File.ReadAllText(DuplicateNotePath).Trim();
+
+            return Guid.TryParse(text, out Guid remembered) && schemes.Any(s => s.Guid == remembered)
+                ? remembered
+                : null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Could not read the remembered power scheme");
+            return null;
+        }
+    }
+
+    private void RememberDuplicate(Guid created)
+    {
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(DuplicateNotePath)!);
+            File.WriteAllText(DuplicateNotePath, created.ToString("D"));
+        }
+        catch (Exception ex)
+        {
+            // Worst case this is forgotten and one more duplicate is made later; not worth failing over.
+            _logger.LogDebug(ex, "Could not record the duplicated power scheme");
+        }
+    }
+
+    private static string DuplicateNotePath =>
+        Path.Combine(AppPaths.DataDirectory, "powerscheme.txt");
 
     private async Task<Guid?> DuplicateSchemeAsync(Guid source, CancellationToken cancellationToken)
     {

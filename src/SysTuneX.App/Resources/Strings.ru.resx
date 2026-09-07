@@ -1387,8 +1387,47 @@
   <data name="GameMode_Hint" xml:space="preserve">
     <value>Останавливает фоновые службы, переключает схему питания на высокую производительность и освобождает память. Всё, что он делает, отменяется при выключении — без перезагрузки и без следов в реестре.</value>
   </data>
-  <data name="GameMode_Detail" xml:space="preserve">
-    <value>Остановлено служб: {0}, освобождено {1} МБ, включён с {2}.</value>
+  <data name="GameMode_Tray_Detail" xml:space="preserve">
+    <value>остановлено служб: {0}, освобождено {1} МБ</value>
+  </data>
+  <data name="GameMode_InEffect" xml:space="preserve">
+    <value>Действует сейчас</value>
+  </data>
+  <data name="GameMode_InEffect_Footer" xml:space="preserve">
+    <value>Всё перечисленное вернётся при выключении режима. Без перезагрузки и без следов в реестре.</value>
+  </data>
+  <data name="GameMode_Effect_Power" xml:space="preserve">
+    <value>Схема питания — {0}</value>
+  </data>
+  <data name="GameMode_Effect_Power_Unnamed" xml:space="preserve">
+    <value>Схема питания — высокая производительность</value>
+  </data>
+  <data name="GameMode_Effect_Power_Restores" xml:space="preserve">
+    <value>вернётся «{0}»</value>
+  </data>
+  <data name="GameMode_Effect_Service_Restores" xml:space="preserve">
+    <value>запустится снова</value>
+  </data>
+  <data name="GameMode_Effect_Memory" xml:space="preserve">
+    <value>освобождено {0} МБ памяти</value>
+  </data>
+  <data name="GameMode_Effect_Memory_Note" xml:space="preserve">
+    <value>не возвращается — Windows заполнит сама</value>
+  </data>
+  <data name="GameMode_Elapsed_Hours" xml:space="preserve">
+    <value>включён {0} ч {1} мин</value>
+  </data>
+  <data name="GameMode_Elapsed_Minutes" xml:space="preserve">
+    <value>включён {0} мин</value>
+  </data>
+  <data name="GameMode_TriggeredBy_User" xml:space="preserve">
+    <value>Включён вручную.</value>
+  </data>
+  <data name="GameMode_TriggeredBy_Game" xml:space="preserve">
+    <value>Включён автоматически при запуске игры.</value>
+  </data>
+  <data name="GameMode_TriggeredBy_Schedule" xml:space="preserve">
+    <value>Включён по расписанию.</value>
   </data>
   <data name="GameMode_Starting" xml:space="preserve">
     <value>Включаю игровой режим…</value>
@@ -1888,5 +1927,8 @@
   </data>
   <data name="MetricGroup_System" xml:space="preserve">
     <value>Система</value>
+  </data>
+  <data name="Settings_Backdrop_NeedsRestart" xml:space="preserve">
+    <value>Фон сохранён и применится при следующем запуске SysTuneX — эта версия оконного фреймворка не умеет менять его на лету.</value>
   </data>
 </root>
