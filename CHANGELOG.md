@@ -3,6 +3,29 @@
 Every released version, newest first. The release workflow publishes only the section
 for the version being released, so a release page shows that version and nothing else.
 
+## v2.10.2
+
+### The executable now says which version it is
+
+`SysTuneX.exe` reported **2.0.0.0** in its file properties. It had said that since 2.0, through ten
+releases — the number was written by hand in the build configuration and nobody thought to change
+it, because nothing reads it and nothing checked.
+
+The version is now read from `release.version`, the same file the release workflow tags from. One
+source, so the two cannot disagree again.
+
+### The build no longer lets a warning through
+
+Warnings are errors now. The build has carried zero of them for a long time on discipline alone,
+and discipline is what a build stops having the week somebody is in a hurry.
+
+The obvious risk is a future toolchain inventing a warning and blocking a release nobody broke, so
+two things are pinned to stop the ground moving: the C# language version (it was "latest", which
+means whatever the installed compiler feels like) and the analyzer level, which now follows the
+target framework rather than whichever SDK patch the runner installed.
+
+---
+
 ## v2.10.1
 
 ### A power scheme that changed is no longer reported as a failure
