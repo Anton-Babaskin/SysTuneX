@@ -185,7 +185,7 @@ public sealed partial class DashboardViewModel : PageViewModel
 
             // The change list is built from resources once, so it would otherwise stay in the
             // language it was built in until game mode was switched off and on again.
-            UpdateGameMode();
+            RefreshGameMode();
         };
     }
 
@@ -476,7 +476,37 @@ public sealed partial class DashboardViewModel : PageViewModel
             }).ConfigureAwait(true);
     }
 
-    private void OnGameModeChanged(object? sender, EventArgs e) => UpdateGameMode();
+    private void OnGameModeChanged(object? sender, EventArgs e) => RefreshGameMode();
+
+    /// <summary>
+    /// Rebuilds the card, from whichever thread the news arrived on.
+    ///
+    /// The event always arrives on a thread-pool thread. <c>GameModeService</c> raises it after
+    /// <c>await _gate.WaitAsync().ConfigureAwait(false)</c>, so even pressing the switch by hand
+    /// resumes off the UI thread - and the schedule and the game watcher tick on their own timers
+    /// to begin with.
+    ///
+    /// That was harmless while this only assigned scalar properties, which the binding engine
+    /// marshals by itself. It stopped being harmless when the card gained a bound collection:
+    /// changing one off the UI thread throws NotSupportedException out of the collection view.
+    /// Worse, the throw lands in the service's own catch, so game mode would come on for real
+    /// while the user was shown an error saying it had not. The tray icon already guards the same
+    /// event the same way.
+    /// </summary>
+    internal void RefreshGameMode()
+    {
+        Dispatcher? dispatcher = System.Windows.Application.Current?.Dispatcher;
+
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            UpdateGameMode();
+            return;
+        }
+
+        // Posted rather than blocking: this is a redraw, nothing waits on it, and Invoke from a
+        // thread the UI may be waiting on is a deadlock waiting to be discovered.
+        dispatcher.BeginInvoke(UpdateGameMode);
+    }
 
     private void UpdateGameMode()
     {

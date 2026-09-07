@@ -109,9 +109,6 @@
   <data name="Common_Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="Common_Close" xml:space="preserve">
-    <value>Close</value>
-  </data>
   <data name="Common_Continue" xml:space="preserve">
     <value>Continue</value>
   </data>
@@ -120,9 +117,6 @@
   </data>
   <data name="Common_Search" xml:space="preserve">
     <value>Search</value>
-  </data>
-  <data name="Common_All" xml:space="preserve">
-    <value>All</value>
   </data>
   <data name="Common_Loading" xml:space="preserve">
     <value>Loading…</value>
@@ -157,32 +151,14 @@
   <data name="Common_RequiresRestart" xml:space="preserve">
     <value>Restart required</value>
   </data>
-  <data name="Common_RequiresSignOut" xml:space="preserve">
-    <value>Sign out required</value>
-  </data>
   <data name="Common_RequiresExplorerRestart" xml:space="preserve">
     <value>Explorer restart</value>
   </data>
   <data name="Common_RestartNow" xml:space="preserve">
     <value>Restart now</value>
   </data>
-  <data name="Common_Later" xml:space="preserve">
-    <value>Later</value>
-  </data>
   <data name="Common_Of" xml:space="preserve">
     <value>of</value>
-  </data>
-  <data name="Common_Enabled" xml:space="preserve">
-    <value>On</value>
-  </data>
-  <data name="Common_Disabled" xml:space="preserve">
-    <value>Off</value>
-  </data>
-  <data name="Common_Never" xml:space="preserve">
-    <value>never</value>
-  </data>
-  <data name="Common_Copy" xml:space="preserve">
-    <value>Copy</value>
   </data>
   <data name="Risk_Safe" xml:space="preserve">
     <value>Safe</value>
@@ -192,12 +168,6 @@
   </data>
   <data name="Risk_Advanced" xml:space="preserve">
     <value>Advanced</value>
-  </data>
-  <data name="Filter_Risk" xml:space="preserve">
-    <value>Risk</value>
-  </data>
-  <data name="Filter_Status" xml:space="preserve">
-    <value>Status</value>
   </data>
   <data name="Filter_OnlyApplied" xml:space="preserve">
     <value>Applied</value>
@@ -304,9 +274,6 @@
   <data name="Dashboard_Label_Motherboard" xml:space="preserve">
     <value>Motherboard</value>
   </data>
-  <data name="Dashboard_Label_Drive" xml:space="preserve">
-    <value>System drive</value>
-  </data>
   <data name="Dashboard_Label_PowerPlan" xml:space="preserve">
     <value>Power scheme</value>
   </data>
@@ -315,9 +282,6 @@
   </data>
   <data name="Dashboard_Label_Processes" xml:space="preserve">
     <value>Processes</value>
-  </data>
-  <data name="Dashboard_Label_Driver" xml:space="preserve">
-    <value>Driver</value>
   </data>
   <data name="Dashboard_Elevated" xml:space="preserve">
     <value>Administrator</value>
@@ -351,9 +315,6 @@
   </data>
   <data name="Profiles_CreateRestorePoint" xml:space="preserve">
     <value>Create a restore point first</value>
-  </data>
-  <data name="Profiles_NoAdvanced" xml:space="preserve">
-    <value>This profile contains no advanced changes.</value>
   </data>
   <data name="Gaming_Title" xml:space="preserve">
     <value>Gaming</value>
@@ -442,9 +403,6 @@
   <data name="Services_Disable" xml:space="preserve">
     <value>Turn off</value>
   </data>
-  <data name="Services_Restore" xml:space="preserve">
-    <value>Restore</value>
-  </data>
   <data name="Services_StartMode" xml:space="preserve">
     <value>Start type</value>
   </data>
@@ -501,9 +459,6 @@
   </data>
   <data name="Network_Dns_Flush" xml:space="preserve">
     <value>Flush DNS cache</value>
-  </data>
-  <data name="Network_Latency" xml:space="preserve">
-    <value>Round trip</value>
   </data>
   <data name="Network_Measure" xml:space="preserve">
     <value>Measure</value>
@@ -640,9 +595,6 @@
   <data name="Settings_Language" xml:space="preserve">
     <value>Language</value>
   </data>
-  <data name="Settings_Language_System" xml:space="preserve">
-    <value>Follow Windows</value>
-  </data>
   <data name="Settings_Behaviour" xml:space="preserve">
     <value>Behaviour</value>
   </data>
@@ -703,9 +655,6 @@
   <data name="Msg_Reverted" xml:space="preserve">
     <value>{0} reverted</value>
   </data>
-  <data name="Msg_Failed" xml:space="preserve">
-    <value>{0} failed</value>
-  </data>
   <data name="Msg_BatchDone" xml:space="preserve">
     <value>{0} applied, {1} failed, {2} skipped</value>
   </data>
@@ -717,9 +666,6 @@
   </data>
   <data name="Msg_MemoryTrimmed" xml:space="preserve">
     <value>Trimmed {0} processes</value>
-  </data>
-  <data name="Msg_RestorePointCreated" xml:space="preserve">
-    <value>Restore point created</value>
   </data>
   <data name="Msg_CleanupDone" xml:space="preserve">
     <value>Freed {0}</value>
@@ -1107,12 +1053,6 @@
   </data>
   <data name="Snapshot_Differences" xml:space="preserve">
     <value>{0} differences.</value>
-  </data>
-  <data name="Snapshot_Before" xml:space="preserve">
-    <value>Before</value>
-  </data>
-  <data name="Snapshot_After" xml:space="preserve">
-    <value>After</value>
   </data>
   <data name="Snapshot_Empty" xml:space="preserve">
     <value>No snapshots yet.</value>
