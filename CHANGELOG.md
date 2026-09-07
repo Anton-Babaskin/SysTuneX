@@ -32,6 +32,17 @@ pixels in one corner — present, but too small to read as anything but an artef
 gives its chart a band of its own along the bottom, edge to edge, with a stronger fill. The cards
 also size to their content rather than being pinned to a fixed height that cropped it.
 
+### A power scheme that changed is no longer reported as a failure
+
+Reported from a real machine: switching the scheme took longer than the ten seconds SysTuneX
+allowed, so it killed `powercfg` and said it could not activate the scheme — while the scheme was
+in fact active.
+
+The wait is thirty seconds now, and more to the point a timeout is no longer taken as failure on
+its own. The active scheme is read back afterwards and believed over the stopwatch. A scheme that
+cannot be read back still counts as a failure: an unanswered question is not evidence, and guessing
+in the app's favour there would be the same lie in the other direction.
+
 ## v2.9.1
 
 A defect in 2.9.0's own headline feature, found by auditing it rather than by hitting it, plus two
