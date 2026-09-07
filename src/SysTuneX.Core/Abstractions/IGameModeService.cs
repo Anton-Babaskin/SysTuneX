@@ -36,45 +36,6 @@ public interface IGameModeService
     Task<GameModeResult> DisableAsync(IProgress<string>? progress = null, CancellationToken cancellationToken = default);
 }
 
-/// <param name="StoppedServices">Services that were running and were stopped, to be started again on exit.</param>
-/// <param name="PreviousPowerScheme">Scheme that was active before, restored on exit.</param>
-public sealed record GameModeSession
-{
-    public DateTimeOffset StartedAt { get; init; } = DateTimeOffset.Now;
-
-    public IReadOnlyList<string> StoppedServices { get; init; } = [];
-
-    public Guid? PreviousPowerScheme { get; init; }
-
-    public string PreviousPowerSchemeName { get; init; } = string.Empty;
-
-    /// <summary>Megabytes the memory trim freed when the session started, for the UI to report.</summary>
-    public long FreedMemoryMb { get; init; }
-
-    /// <summary>
-    /// Something other than the user turned this on. Only an automatic session is turned off
-    /// automatically — switching it on by hand and having a game exit undo it would be rude.
-    /// </summary>
-    public bool AutoStarted { get; init; }
-
-    /// <summary>Game that triggered an automatic session, for the interface to name. Empty for the schedule.</summary>
-    public string TriggeredBy { get; init; } = string.Empty;
-
-    /// <summary>
-    /// What turned it on. Kept beside <see cref="AutoStarted"/> rather than replacing it so a
-    /// session file written by an older build still reads back with its behaviour intact.
-    /// </summary>
-    public GameModeTriggerKind TriggerKind { get; init; } = GameModeTriggerKind.User;
-}
-
-/// <summary>Who asked for game mode. The distinction decides what may turn it off again.</summary>
-public enum GameModeTriggerKind
-{
-    User,
-    Game,
-    Schedule,
-}
-
 /// <summary>
 /// What started a session.
 ///

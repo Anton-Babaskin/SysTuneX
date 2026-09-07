@@ -200,9 +200,15 @@ public sealed class TrayIconService : ITrayIconService
                 parts.Add($"{_localization["Dashboard_GpuTemp"]} {gpu.Rounded}°C");
             }
 
-            if (_gameMode.IsActive)
+            if (_gameMode.Session is { } session)
             {
-                parts.Add(_localization["GameMode_Title"]);
+                // The tooltip used to say only "Game mode", which answers whether it is on and
+                // nothing about what that costs the machine. The counts fit and are the whole
+                // question when the window is closed.
+                parts.Add(_localization["GameMode_Title"] + " · " + _localization.Format(
+                    "GameMode_Tray_Detail",
+                    session.StoppedServices.Count,
+                    session.FreedMemoryMb));
             }
 
             string text = "SysTuneX\n" + string.Join("\n", parts);

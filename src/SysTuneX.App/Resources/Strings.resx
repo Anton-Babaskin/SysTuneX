@@ -799,8 +799,47 @@
   <data name="GameMode_Hint" xml:space="preserve">
     <value>Stops background services, switches to a high performance power scheme and frees memory. Everything it does is undone when you switch it off — no reboot, no registry changes left behind.</value>
   </data>
-  <data name="GameMode_Detail" xml:space="preserve">
-    <value>{0} services stopped, {1} MB freed, on since {2}.</value>
+  <data name="GameMode_Tray_Detail" xml:space="preserve">
+    <value>{0} services stopped, {1} MB freed</value>
+  </data>
+  <data name="GameMode_InEffect" xml:space="preserve">
+    <value>In effect now</value>
+  </data>
+  <data name="GameMode_InEffect_Footer" xml:space="preserve">
+    <value>Switching game mode off puts all of this back. No reboot, nothing left in the registry.</value>
+  </data>
+  <data name="GameMode_Effect_Power" xml:space="preserve">
+    <value>Power plan — {0}</value>
+  </data>
+  <data name="GameMode_Effect_Power_Unnamed" xml:space="preserve">
+    <value>Power plan — high performance</value>
+  </data>
+  <data name="GameMode_Effect_Power_Restores" xml:space="preserve">
+    <value>back to {0}</value>
+  </data>
+  <data name="GameMode_Effect_Service_Restores" xml:space="preserve">
+    <value>starts again</value>
+  </data>
+  <data name="GameMode_Effect_Memory" xml:space="preserve">
+    <value>{0} MB of memory freed</value>
+  </data>
+  <data name="GameMode_Effect_Memory_Note" xml:space="preserve">
+    <value>not put back — Windows refills it</value>
+  </data>
+  <data name="GameMode_Elapsed_Hours" xml:space="preserve">
+    <value>on for {0} h {1} min</value>
+  </data>
+  <data name="GameMode_Elapsed_Minutes" xml:space="preserve">
+    <value>on for {0} min</value>
+  </data>
+  <data name="GameMode_TriggeredBy_User" xml:space="preserve">
+    <value>Switched on by hand.</value>
+  </data>
+  <data name="GameMode_TriggeredBy_Game" xml:space="preserve">
+    <value>Switched on automatically when a game started.</value>
+  </data>
+  <data name="GameMode_TriggeredBy_Schedule" xml:space="preserve">
+    <value>Switched on by the schedule.</value>
   </data>
   <data name="GameMode_Starting" xml:space="preserve">
     <value>Turning game mode on…</value>
@@ -1016,7 +1055,7 @@
     <value>Remove</value>
   </data>
   <data name="GameMode_TriggeredBy" xml:space="preserve">
-    <value>Started automatically for {0}.</value>
+    <value>Switched on automatically for {0}.</value>
   </data>
   <data name="Tray_Open" xml:space="preserve">
     <value>Open SysTuneX</value>
