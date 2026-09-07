@@ -18,6 +18,13 @@
     <Thickness x:Key="StackGap">0,0,0,12</Thickness>
     <Thickness x:Key="SectionGap">0,0,0,20</Thickness>
 
+    <!--
+        The band a card gives its chart, at the bottom and bleeding to the card's edges. Named
+        rather than repeated so the three monitor cards and the dashboard cannot drift apart, and
+        so changing how much room a chart gets is one edit.
+    -->
+    <GridLength x:Key="ChartBandHeight">56</GridLength>
+
     <CornerRadius x:Key="CardCornerRadius">8</CornerRadius>
     <CornerRadius x:Key="PillCornerRadius">10</CornerRadius>
 
@@ -87,6 +94,28 @@
         <Setter Property="FontSize" Value="14" />
         <Setter Property="Margin" Value="3,0,0,4" />
         <Setter Property="VerticalAlignment" Value="Bottom" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+    </Style>
+
+    <!--
+        A second reading beside the headline one - a temperature next to a load, a total next to
+        a used figure. Deliberately smaller: two numbers at the same size read as equally
+        important, and on the monitor page they are not. The load is what the page is about and
+        the temperature is context for it.
+    -->
+    <Style x:Key="MetricValueSecondary" TargetType="TextBlock" BasedOn="{StaticResource MetricValue}">
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+    </Style>
+
+    <!--
+        Says which reading a number is. Without it "8 % 28°C" asks the reader to remember that the
+        first figure is load and the second is temperature, every time they glance at the page -
+        which is the opposite of what a glanceable page is for.
+    -->
+    <Style x:Key="MetricCaption" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Margin" Value="0,-2,0,0" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
     </Style>
 

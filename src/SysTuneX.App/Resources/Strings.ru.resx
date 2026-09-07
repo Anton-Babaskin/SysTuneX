@@ -1871,4 +1871,16 @@
   <data name="Settings_Backdrop_NeedsRestart" xml:space="preserve">
     <value>Фон сохранён и применится при следующем запуске SysTuneX — эта версия оконного фреймворка не умеет менять его на лету.</value>
   </data>
+  <data name="Monitor_Caption_Load" xml:space="preserve">
+    <value>нагрузка</value>
+  </data>
+  <data name="Monitor_Caption_Temperature" xml:space="preserve">
+    <value>температура</value>
+  </data>
+  <data name="Monitor_Caption_Fan" xml:space="preserve">
+    <value>кулер</value>
+  </data>
+  <data name="Monitor_Caption_Used" xml:space="preserve">
+    <value>занято</value>
+  </data>
 </root>

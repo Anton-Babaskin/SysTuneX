@@ -83,6 +83,37 @@ public sealed class RiskToBrushConverter : OneWayConverter
     }
 }
 
+/// <summary>
+/// Colours a temperature by how close the part is to throttling.
+///
+/// It resolves to the same three brushes the risk pills use rather than inventing a second
+/// palette, so "this needs attention" looks the same wherever it appears. The parameter names the
+/// part - "gpu" reads on the graphics scale, anything else on the processor's - because the same
+/// number means different things on the two, which is the whole reason <see cref="TemperatureScale"/>
+/// has two of them.
+///
+/// A reading in the normal band gets the ordinary text colour, not a green one. Painting every
+/// temperature would make the page look like a warning light permanently stuck on.
+/// </summary>
+public sealed class TemperatureToBrushConverter : OneWayConverter
+{
+    public override object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        TemperatureScale scale = string.Equals(parameter as string, "gpu", StringComparison.OrdinalIgnoreCase)
+            ? TemperatureScale.Gpu
+            : TemperatureScale.Cpu;
+
+        string key = scale.Band(value as int?) switch
+        {
+            TemperatureBand.Hot => "RiskAdvancedBrush",
+            TemperatureBand.Warm => "RiskModerateBrush",
+            _ => "TextFillColorSecondaryBrush",
+        };
+
+        return Application.Current?.TryFindResource(key) as Brush ?? Brushes.Gray;
+    }
+}
+
 public sealed class StatusToBrushConverter : OneWayConverter
 {
     public override object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)

@@ -1283,4 +1283,16 @@
   <data name="Settings_Backdrop_NeedsRestart" xml:space="preserve">
     <value>The backdrop is saved and will be used the next time SysTuneX starts — this build of the window framework cannot change it while the window is open.</value>
   </data>
+  <data name="Monitor_Caption_Load" xml:space="preserve">
+    <value>load</value>
+  </data>
+  <data name="Monitor_Caption_Temperature" xml:space="preserve">
+    <value>temperature</value>
+  </data>
+  <data name="Monitor_Caption_Fan" xml:space="preserve">
+    <value>fan</value>
+  </data>
+  <data name="Monitor_Caption_Used" xml:space="preserve">
+    <value>used</value>
+  </data>
 </root>

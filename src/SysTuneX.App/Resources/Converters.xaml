@@ -15,6 +15,7 @@
     <converters:NullToVisibilityConverter x:Key="NullToVisibility" />
     <converters:RiskToBrushConverter x:Key="RiskToBrush" />
     <converters:StatusToBrushConverter x:Key="StatusToBrush" />
+    <converters:TemperatureToBrushConverter x:Key="TemperatureToBrush" />
     <converters:HexToBrushConverter x:Key="HexToBrush" />
     <converters:BytesToSizeConverter x:Key="BytesToSize" />
     <converters:MegabytesToSizeConverter x:Key="MegabytesToSize" />
