@@ -20,6 +20,10 @@ env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
+# Actions are pinned to a major tag so they pick up their own patches. They were all on v4,
+# which targets Node.js 20 - deprecated by GitHub, already force-run on Node 24, and warned
+# about on every single run. A warning today is a failed build the day the runners stop
+# carrying the shim, and this repository publishes its releases from that build.
 jobs:
   test:
     name: Build and test
@@ -27,10 +31,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
 
@@ -60,10 +64,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
 
@@ -88,7 +92,7 @@ jobs:
           "SHA256: $hash" | Write-Host
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: SysTuneX-win-x64
           path: |
@@ -112,10 +116,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Download the built executable
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: SysTuneX-win-x64
           path: publish
