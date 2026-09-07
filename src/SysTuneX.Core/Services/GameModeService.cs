@@ -97,8 +97,8 @@ public sealed class GameModeService : IGameModeService
             var notes = new List<string>();
 
             progress?.Report("power");
-            (Guid? previousScheme, string previousName) = await SwitchPowerSchemeAsync(notes, cancellationToken)
-                .ConfigureAwait(false);
+            (Guid? previousScheme, string previousName, string activeName) =
+                await SwitchPowerSchemeAsync(notes, cancellationToken).ConfigureAwait(false);
 
             progress?.Report("services");
             IReadOnlyList<string> stopped = await StopSafeServicesAsync(notes, cancellationToken).ConfigureAwait(false);
@@ -112,6 +112,7 @@ public sealed class GameModeService : IGameModeService
                 StoppedServices = stopped,
                 PreviousPowerScheme = previousScheme,
                 PreviousPowerSchemeName = previousName,
+                ActivePowerSchemeName = activeName,
                 FreedMemoryMb = freedMb,
                 AutoStarted = startedBy is not null,
                 TriggeredBy = startedBy?.Name ?? string.Empty,
@@ -201,7 +202,7 @@ public sealed class GameModeService : IGameModeService
         }
     }
 
-    private async Task<(Guid? Guid, string Name)> SwitchPowerSchemeAsync(
+    private async Task<(Guid? Guid, string Name, string ActiveName)> SwitchPowerSchemeAsync(
         List<string> notes,
         CancellationToken cancellationToken)
     {
@@ -213,17 +214,23 @@ public sealed class GameModeService : IGameModeService
             if (!result.Success)
             {
                 notes.Add($"Power scheme: {result.Message}");
-                return (null, string.Empty);
+                return (null, string.Empty, string.Empty);
             }
+
+            // Asked for rather than assumed. Which scheme "high performance" turns out to be
+            // depends on the edition of Windows and on whether Ultimate Performance had to be
+            // duplicated into the list first, so the only way to name it is to read it back.
+            PowerScheme? now = await _power.GetActiveSchemeAsync(cancellationToken).ConfigureAwait(false);
+            string activeName = now?.Name ?? string.Empty;
 
             // Only worth restoring if we know what it was; otherwise leave the field null so
             // turning game mode off does not switch the machine to a scheme it never had.
-            return active is null ? (null, string.Empty) : (active.Guid, active.Name);
+            return active is null ? (null, string.Empty, activeName) : (active.Guid, active.Name, activeName);
         }
         catch (Exception ex)
         {
             notes.Add($"Power scheme: {ex.Message}");
-            return (null, string.Empty);
+            return (null, string.Empty, string.Empty);
         }
     }
 

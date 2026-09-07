@@ -133,7 +133,20 @@ public sealed class FakePowerService : IPowerService
         Task.FromResult<IReadOnlyList<PowerScheme>>([BalancedScheme]);
 
     public Task<PowerScheme?> GetActiveSchemeAsync(CancellationToken cancellationToken = default) =>
-        Task.FromResult<PowerScheme?>(new PowerScheme(ActiveScheme, ActiveScheme == PowerScheme.Balanced ? "Balanced" : "Other", true));
+        Task.FromResult<PowerScheme?>(new PowerScheme(ActiveScheme, NameOf(ActiveScheme), true));
+
+    /// <summary>
+    /// Names the well known schemes rather than calling everything "Other". The session records
+    /// the name of the scheme it switched to so the dashboard can show it, and a fake that
+    /// answers with a placeholder cannot tell a real name from a missing one.
+    /// </summary>
+    private static string NameOf(Guid scheme) => scheme switch
+    {
+        _ when scheme == PowerScheme.Balanced => "Balanced",
+        _ when scheme == PowerScheme.UltimatePerformance => "Ultimate Performance",
+        _ when scheme == PowerScheme.HighPerformance => "High performance",
+        _ => "Other",
+    };
 
     public Task<OperationResult> ActivateHighPerformanceAsync(CancellationToken cancellationToken = default)
     {

@@ -167,10 +167,74 @@
                                                    Style="{StaticResource PillText}"
                                                    Foreground="{StaticResource RiskSafeBrush}" />
                                     </Border>
+                                    <TextBlock Text="{Binding GameModeElapsed}"
+                                               Style="{StaticResource CaptionText}"
+                                               Margin="10,0,0,0"
+                                               VerticalAlignment="Center" />
                                 </StackPanel>
                                 <TextBlock Text="{Binding GameModeDetail}"
                                            Style="{StaticResource BodyText}"
                                            Margin="0,6,12,0" />
+
+                                <!--
+                                    What is in effect, for as long as it is in effect.
+
+                                    Game mode used to announce itself in a toast and then say
+                                    nothing: a minute later there was no way to tell whether the
+                                    machine was still holding two stopped services and a different
+                                    power scheme. Something that asks for administrator rights and
+                                    changes the machine underneath you has to show its work.
+                                -->
+                                <Border Style="{StaticResource SubtleCard}"
+                                        Margin="0,12,12,0"
+                                        Visibility="{Binding IsGameModeOn, Converter={StaticResource BoolToVisibility}}">
+                                    <StackPanel>
+                                        <TextBlock Text="{loc:Loc GameMode_InEffect}"
+                                                   Style="{StaticResource CaptionText}"
+                                                   Margin="0,0,0,8" />
+
+                                        <ItemsControl ItemsSource="{Binding GameModeChanges}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="0,0,0,6">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <ui:SymbolIcon Grid.Column="0"
+                                                                       Symbol="{Binding Icon}"
+                                                                       FontSize="15"
+                                                                       Margin="0,0,10,0"
+                                                                       VerticalAlignment="Center"
+                                                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding Text}"
+                                                                   Style="{StaticResource BodyText}"
+                                                                   Margin="0"
+                                                                   VerticalAlignment="Center"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   ToolTip="{Binding Text}" />
+
+                                                        <!-- The half that matters most: what the
+                                                             switch gives back. -->
+                                                        <TextBlock Grid.Column="2"
+                                                                   Text="{Binding Restores}"
+                                                                   Style="{StaticResource CaptionText}"
+                                                                   Margin="12,0,0,0"
+                                                                   VerticalAlignment="Center" />
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <TextBlock Text="{loc:Loc GameMode_InEffect_Footer}"
+                                                   Style="{StaticResource CaptionText}"
+                                                   Margin="0,4,0,0" />
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
 
                             <ui:ToggleSwitch Grid.Column="2"

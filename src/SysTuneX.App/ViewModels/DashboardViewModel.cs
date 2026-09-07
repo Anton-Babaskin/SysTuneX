@@ -8,8 +8,20 @@ using SysTuneX.Core.Abstractions;
 using SysTuneX.Core.Models;
 using SysTuneX.Core.Tweaks;
 using Wpf.Ui;
+using Wpf.Ui.Controls;
 
 namespace SysTuneX.App.ViewModels;
+
+/// <summary>
+/// One line of "here is what game mode is doing to your machine right now".
+///
+/// The icon is chosen here rather than in a template selector because the choice is a property of
+/// the kind of change, and three kinds do not justify three templates.
+/// </summary>
+/// <param name="Icon">Glyph for the kind of change.</param>
+/// <param name="Text">What is changed, with the name Windows uses for it.</param>
+/// <param name="Restores">What happens to it when game mode is switched off.</param>
+public sealed record GameModeChangeRow(SymbolRegular Icon, string Text, string Restores);
 
 public sealed partial class DashboardViewModel : PageViewModel
 {
@@ -129,6 +141,10 @@ public sealed partial class DashboardViewModel : PageViewModel
     [ObservableProperty]
     private string _gameModeDetail = string.Empty;
 
+    /// <summary>How long the session has been on, refreshed on the tick like any other reading.</summary>
+    [ObservableProperty]
+    private string _gameModeElapsed = string.Empty;
+
     public DashboardViewModel(
         ISystemInfoService systemInfo,
         ITweakEngine tweaks,
@@ -163,12 +179,29 @@ public sealed partial class DashboardViewModel : PageViewModel
         _timer = new DispatcherTimer(DispatcherPriority.Background) { Interval = TimeSpan.FromSeconds(1) };
         _timer.Tick += OnTick;
 
-        localization.LanguageChanged += (_, _) => OnPropertyChanged(nameof(ScoreCaption));
+        localization.LanguageChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(ScoreCaption));
+
+            // The change list is built from resources once, so it would otherwise stay in the
+            // language it was built in until game mode was switched off and on again.
+            UpdateGameMode();
+        };
     }
 
     public ObservableCollection<double> CpuHistory { get; } = [];
 
     public ObservableCollection<double> RamHistory { get; } = [];
+
+    /// <summary>
+    /// What game mode is holding right now, one line per change.
+    ///
+    /// The switch used to say what it had done in a toast that disappeared after a few seconds,
+    /// and nothing afterwards. It stops services, replaces the power scheme and frees gigabytes -
+    /// all of it invisible a minute later, which is a poor way to earn trust from something asking
+    /// for administrator rights. The list stays on screen for as long as the session does.
+    /// </summary>
+    public ObservableCollection<GameModeChangeRow> GameModeChanges { get; } = [];
 
     public bool IsElevated => _environment.IsElevated;
 
@@ -448,26 +481,92 @@ public sealed partial class DashboardViewModel : PageViewModel
     private void UpdateGameMode()
     {
         IsGameModeOn = _gameMode.IsActive;
+        GameModeChanges.Clear();
 
         if (_gameMode.Session is not { } session)
         {
             GameModeDetail = _localization["GameMode_Hint"];
+            GameModeElapsed = string.Empty;
             return;
         }
 
-        string detail = string.Format(
-            _localization["GameMode_Detail"],
-            session.StoppedServices.Count,
-            session.FreedMemoryMb,
-            session.StartedAt.ToLocalTime().ToString("HH:mm"));
-
-        // Worth naming: a switch that moved on its own is confusing unless it says what moved it.
-        if (session is { AutoStarted: true, TriggeredBy.Length: > 0 })
+        foreach (GameModeEffect effect in GameModeEffects.Describe(session, ServiceCatalog.All))
         {
-            detail += " " + string.Format(_localization["GameMode_TriggeredBy"], session.TriggeredBy);
+            GameModeChanges.Add(Describe(effect));
         }
 
-        GameModeDetail = detail;
+        // Worth naming: a switch that moved on its own is confusing unless it says what moved it.
+        //
+        // AutoStarted is consulted as well as the kind because a session file written before
+        // TriggerKind existed carries the default, User - and reading back a game's session as
+        // "switched on by hand" would be worse than the toast this replaces.
+        bool byGame = session.TriggerKind == GameModeTriggerKind.Game ||
+                      (session.AutoStarted && session.TriggerKind == GameModeTriggerKind.User);
+
+        if (byGame)
+        {
+            GameModeDetail = session.TriggeredBy.Length > 0
+                ? _localization.Format("GameMode_TriggeredBy", session.TriggeredBy)
+                : _localization["GameMode_TriggeredBy_Game"];
+        }
+        else
+        {
+            GameModeDetail = _localization[session.TriggerKind == GameModeTriggerKind.Schedule
+                ? "GameMode_TriggeredBy_Schedule"
+                : "GameMode_TriggeredBy_User"];
+        }
+
+        UpdateGameModeElapsed();
+    }
+
+    /// <summary>
+    /// Puts a resource string around the names Core recorded.
+    ///
+    /// The names themselves stay as Windows wrote them - translating "Connected User Experiences
+    /// and Telemetry" into Russian would leave the user searching services.msc for a service that
+    /// is not called that.
+    /// </summary>
+    private GameModeChangeRow Describe(GameModeEffect effect) => effect.Kind switch
+    {
+        GameModeEffectKind.PowerScheme => new GameModeChangeRow(
+            SymbolRegular.BatteryCharge20,
+            effect.Subject.Length > 0
+                ? _localization.Format("GameMode_Effect_Power", effect.Subject)
+                : _localization["GameMode_Effect_Power_Unnamed"],
+            effect.Previous.Length > 0
+                ? _localization.Format("GameMode_Effect_Power_Restores", effect.Previous)
+                : string.Empty),
+
+        GameModeEffectKind.Memory => new GameModeChangeRow(
+            SymbolRegular.Ram20,
+            _localization.Format("GameMode_Effect_Memory", effect.AmountMb),
+            _localization["GameMode_Effect_Memory_Note"]),
+
+        _ => new GameModeChangeRow(
+            SymbolRegular.Server20,
+            effect.Subject,
+            _localization["GameMode_Effect_Service_Restores"]),
+    };
+
+    private void UpdateGameModeElapsed()
+    {
+        if (_gameMode.Session is not { } session)
+        {
+            GameModeElapsed = string.Empty;
+            return;
+        }
+
+        // Clamped at zero: the clock, or a session file carried over a time zone change, can
+        // otherwise put the start in the future and produce "on for -3 min".
+        TimeSpan elapsed = DateTimeOffset.Now - session.StartedAt;
+        if (elapsed < TimeSpan.Zero)
+        {
+            elapsed = TimeSpan.Zero;
+        }
+
+        GameModeElapsed = elapsed.TotalHours >= 1
+            ? _localization.Format("GameMode_Elapsed_Hours", (int)elapsed.TotalHours, elapsed.Minutes)
+            : _localization.Format("GameMode_Elapsed_Minutes", (int)elapsed.TotalMinutes);
     }
 
     private async Task SampleSensorsAsync()
@@ -497,6 +596,11 @@ public sealed partial class DashboardViewModel : PageViewModel
         if (_tickCount++ % 5 == 0)
         {
             _ = SampleSensorsAsync();
+        }
+
+        if (IsGameModeOn)
+        {
+            UpdateGameModeElapsed();
         }
 
         SystemSnapshot snapshot = _systemInfo.GetSnapshot();

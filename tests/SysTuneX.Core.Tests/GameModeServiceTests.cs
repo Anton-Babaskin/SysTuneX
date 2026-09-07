@@ -69,6 +69,40 @@ public sealed class GameModeServiceTests : IDisposable
         Assert.Equal(PowerScheme.Balanced, power.ActiveScheme);
     }
 
+    /// <summary>
+    /// Both names are recorded, because the card names both: which scheme is running now, and
+    /// which one comes back. "High performance" is not one fixed scheme - it is Ultimate where
+    /// Windows offers it and High Performance where it does not - so the name is read back from
+    /// the machine rather than assumed.
+    /// </summary>
+    [Fact]
+    public async Task The_session_records_the_scheme_it_switched_to_and_the_one_it_replaced()
+    {
+        var power = new FakePowerService { ActiveScheme = PowerScheme.Balanced };
+        GameModeService gameMode = Service(new FakeServiceManager(), power);
+
+        await gameMode.EnableAsync();
+
+        Assert.Equal("Ultimate Performance", gameMode.Session!.ActivePowerSchemeName);
+        Assert.Equal("Balanced", gameMode.Session!.PreviousPowerSchemeName);
+    }
+
+    /// <summary>
+    /// An edition with neither scheme available records neither name, so the dashboard shows no
+    /// power row at all rather than one claiming a switch that was refused.
+    /// </summary>
+    [Fact]
+    public async Task A_refused_power_switch_records_no_scheme_name()
+    {
+        var power = new FakePowerService { HighPerformanceAvailable = false };
+        GameModeService gameMode = Service(new FakeServiceManager(), power);
+
+        await gameMode.EnableAsync();
+
+        Assert.Equal(string.Empty, gameMode.Session!.ActivePowerSchemeName);
+        Assert.Equal(string.Empty, gameMode.Session!.PreviousPowerSchemeName);
+    }
+
     [Fact]
     public async Task Memory_is_trimmed_once_per_session()
     {
