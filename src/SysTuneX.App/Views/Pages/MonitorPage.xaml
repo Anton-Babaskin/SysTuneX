@@ -215,113 +215,155 @@
             -->
             <UniformGrid Columns="{Binding VisibleCardCount}" Margin="-3,0">
 
+                <!--
+                    Two rows rather than one: the readings sit in the top row and the chart gets a
+                    band of its own at the bottom, bleeding to the card's edges. Before this the
+                    chart was laid over the whole card with a top margin, which left it drawing a
+                    few pixels in one corner - present, but too small to read as data.
+                -->
                 <Border Style="{StaticResource Card}" Margin="3,0"
                         Visibility="{Binding ShowCpuCard, Converter={StaticResource BoolToVisibility}}">
-                    <Grid Height="110">
-                        <controls:Sparkline Values="{Binding CpuHistory}"
-                                            Maximum="100"
-                                            Capacity="60"
-                                            Margin="-20,52,-20,-20"
-                                            Stroke="{StaticResource BrandBrush}"
-                                            Fill="#227C5CFF" />
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="{StaticResource ChartBandHeight}" />
+                        </Grid.RowDefinitions>
 
-                        <StackPanel VerticalAlignment="Top">
+                        <StackPanel Grid.Row="0">
                             <TextBlock Text="{loc:Loc Monitor_Cpu}" Style="{StaticResource CaptionText}" />
-                            <StackPanel Orientation="Horizontal">
-                                <StackPanel Orientation="Horizontal"
+
+                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                <StackPanel VerticalAlignment="Bottom"
                                             Visibility="{Binding DisplayCpuLoad, Converter={StaticResource BoolToVisibility}}">
-                                    <TextBlock Text="{Binding CpuUsage, StringFormat={}{0:F0}}"
-                                               Style="{StaticResource MetricValue}" />
-                                    <TextBlock Text="%" Style="{StaticResource MetricUnit}" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding CpuUsage, StringFormat={}{0:F0}}"
+                                                   Style="{StaticResource MetricValue}" />
+                                        <TextBlock Text="%" Style="{StaticResource MetricUnit}" />
+                                    </StackPanel>
+                                    <TextBlock Text="{loc:Loc Monitor_Caption_Load}" Style="{StaticResource MetricCaption}" />
                                 </StackPanel>
 
-                                <TextBlock Style="{StaticResource MetricValue}"
-                                           FontSize="18"
-                                           Margin="14,0,0,3"
-                                           VerticalAlignment="Bottom"
-                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                           Visibility="{Binding DisplayCpuTemperature, Converter={StaticResource BoolToVisibility}}">
-                                    <Run Text="{Binding CpuTemperature, Mode=OneWay}" /><Run Text="°C" />
-                                </TextBlock>
+                                <StackPanel Margin="18,0,0,0" VerticalAlignment="Bottom"
+                                            Visibility="{Binding DisplayCpuTemperature, Converter={StaticResource BoolToVisibility}}">
+                                    <!-- Coloured by how close the part is to throttling, on the
+                                         processor's own scale. See TemperatureScale. -->
+                                    <TextBlock Style="{StaticResource MetricValueSecondary}"
+                                               Foreground="{Binding CpuTemperature, Converter={StaticResource TemperatureToBrush}, ConverterParameter=cpu, Mode=OneWay}">
+                                        <Run Text="{Binding CpuTemperature, Mode=OneWay}" /><Run Text="°C" />
+                                    </TextBlock>
+                                    <TextBlock Text="{loc:Loc Monitor_Caption_Temperature}" Style="{StaticResource MetricCaption}" />
+                                </StackPanel>
                             </StackPanel>
+
                             <TextBlock Text="{Binding CpuName}"
                                        Style="{StaticResource CaptionText}"
+                                       Margin="0,8,0,0"
                                        TextTrimming="CharacterEllipsis" />
                         </StackPanel>
+
+                        <controls:Sparkline Grid.Row="1"
+                                            Values="{Binding CpuHistory}"
+                                            Maximum="100"
+                                            Capacity="60"
+                                            Margin="-20,10,-20,-20"
+                                            Stroke="{StaticResource BrandBrush}"
+                                            Fill="#3D7C5CFF" />
                     </Grid>
                 </Border>
 
                 <Border Style="{StaticResource Card}" Margin="3,0"
                         Visibility="{Binding ShowGpuCard, Converter={StaticResource BoolToVisibility}}">
-                    <Grid Height="110">
-                        <controls:Sparkline Values="{Binding GpuHistory}"
-                                            Maximum="100"
-                                            Capacity="60"
-                                            Margin="-20,52,-20,-20"
-                                            Stroke="{StaticResource BrandSecondaryBrush}"
-                                            Fill="#2222B8E6" />
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="{StaticResource ChartBandHeight}" />
+                        </Grid.RowDefinitions>
 
-                        <StackPanel VerticalAlignment="Top">
+                        <StackPanel Grid.Row="0">
                             <TextBlock Text="{loc:Loc Monitor_Gpu}" Style="{StaticResource CaptionText}" />
 
-                            <StackPanel Orientation="Horizontal">
-                                <!-- Load and temperature share a line: a hot card at 40% and a hot
-                                     card at 99% mean completely different things. -->
-                                <StackPanel Orientation="Horizontal"
+                            <!-- Load and temperature sit together: a hot card at 40% and a hot card
+                                 at 99% mean completely different things. -->
+                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                <StackPanel VerticalAlignment="Bottom"
                                             Visibility="{Binding DisplayGpuLoad, Converter={StaticResource BoolToVisibility}}">
-                                    <TextBlock Text="{Binding GpuUsage}" Style="{StaticResource MetricValue}" />
-                                    <TextBlock Text="%" Style="{StaticResource MetricUnit}" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding GpuUsage}" Style="{StaticResource MetricValue}" />
+                                        <TextBlock Text="%" Style="{StaticResource MetricUnit}" />
+                                    </StackPanel>
+                                    <TextBlock Text="{loc:Loc Monitor_Caption_Load}" Style="{StaticResource MetricCaption}" />
                                 </StackPanel>
 
-                                <TextBlock Style="{StaticResource MetricValue}"
-                                           FontSize="18"
-                                           Margin="14,0,0,3"
-                                           VerticalAlignment="Bottom"
-                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                           Visibility="{Binding DisplayGpuTemperature, Converter={StaticResource BoolToVisibility}}">
-                                    <Run Text="{Binding GpuTemperature, Mode=OneWay}" /><Run Text="°C" />
-                                </TextBlock>
+                                <StackPanel Margin="18,0,0,0" VerticalAlignment="Bottom"
+                                            Visibility="{Binding DisplayGpuTemperature, Converter={StaticResource BoolToVisibility}}">
+                                    <!-- The graphics scale, which reads earlier than the processor's:
+                                         these parts throttle at a lower temperature. -->
+                                    <TextBlock Style="{StaticResource MetricValueSecondary}"
+                                               Foreground="{Binding GpuTemperature, Converter={StaticResource TemperatureToBrush}, ConverterParameter=gpu, Mode=OneWay}">
+                                        <Run Text="{Binding GpuTemperature, Mode=OneWay}" /><Run Text="°C" />
+                                    </TextBlock>
+                                    <TextBlock Text="{loc:Loc Monitor_Caption_Temperature}" Style="{StaticResource MetricCaption}" />
+                                </StackPanel>
 
-                                <TextBlock Style="{StaticResource MetricValue}"
-                                           FontSize="18"
-                                           Margin="14,0,0,3"
-                                           VerticalAlignment="Bottom"
-                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                           Visibility="{Binding DisplayGpuFan, Converter={StaticResource BoolToVisibility}}">
-                                    <Run Text="{Binding GpuFan, Mode=OneWay}" /><Run Text="%" />
-                                </TextBlock>
+                                <StackPanel Margin="18,0,0,0" VerticalAlignment="Bottom"
+                                            Visibility="{Binding DisplayGpuFan, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Style="{StaticResource MetricValueSecondary}"
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}">
+                                        <Run Text="{Binding GpuFan, Mode=OneWay}" /><Run Text="%" />
+                                    </TextBlock>
+                                    <TextBlock Text="{loc:Loc Monitor_Caption_Fan}" Style="{StaticResource MetricCaption}" />
+                                </StackPanel>
                             </StackPanel>
 
                             <TextBlock Text="{Binding GpuName}"
                                        Style="{StaticResource CaptionText}"
+                                       Margin="0,8,0,0"
                                        TextTrimming="CharacterEllipsis" />
                         </StackPanel>
+
+                        <controls:Sparkline Grid.Row="1"
+                                            Values="{Binding GpuHistory}"
+                                            Maximum="100"
+                                            Capacity="60"
+                                            Margin="-20,10,-20,-20"
+                                            Stroke="{StaticResource BrandSecondaryBrush}"
+                                            Fill="#3D22B8E6" />
                     </Grid>
                 </Border>
 
                 <Border Style="{StaticResource Card}" Margin="3,0"
                         Visibility="{Binding ShowMemoryCard, Converter={StaticResource BoolToVisibility}}">
-                    <Grid Height="110">
-                        <controls:Sparkline Values="{Binding RamHistory}"
-                                            Maximum="100"
-                                            Capacity="60"
-                                            Margin="-20,52,-20,-20"
-                                            Stroke="{StaticResource BrandSecondaryBrush}"
-                                            Fill="#2222B8E6" />
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="{StaticResource ChartBandHeight}" />
+                        </Grid.RowDefinitions>
 
-                        <StackPanel VerticalAlignment="Top">
+                        <StackPanel Grid.Row="0">
                             <TextBlock Text="{loc:Loc Monitor_Memory}" Style="{StaticResource CaptionText}" />
 
-                            <StackPanel Orientation="Horizontal"
+                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0"
                                         Visibility="{Binding DisplayMemory, Converter={StaticResource BoolToVisibility}}">
-                                <TextBlock Text="{Binding RamUsedMb, Converter={StaticResource MegabytesToSize}}"
-                                           Style="{StaticResource MetricValue}" />
-                                <TextBlock Style="{StaticResource MetricUnit}">
-                                    <Run Text="{loc:Loc Common_Of}" /><Run Text=" " /><Run Text="{Binding RamTotalMb, Converter={StaticResource MegabytesToSize}, Mode=OneWay}" />
-                                </TextBlock>
+                                <StackPanel VerticalAlignment="Bottom">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding RamUsedMb, Converter={StaticResource MegabytesToSize}}"
+                                                   Style="{StaticResource MetricValue}" />
+                                    </StackPanel>
+                                    <TextBlock Style="{StaticResource MetricCaption}">
+                                        <Run Text="{loc:Loc Common_Of}" /><Run Text=" " /><Run Text="{Binding RamTotalMb, Converter={StaticResource MegabytesToSize}, Mode=OneWay}" />
+                                    </TextBlock>
+                                </StackPanel>
+
+                                <StackPanel Margin="18,0,0,0" VerticalAlignment="Bottom">
+                                    <TextBlock Style="{StaticResource MetricValueSecondary}">
+                                        <Run Text="{Binding RamUsagePercent, StringFormat={}{0:F0}, Mode=OneWay}" /><Run Text="%" />
+                                    </TextBlock>
+                                    <TextBlock Text="{loc:Loc Monitor_Caption_Used}" Style="{StaticResource MetricCaption}" />
+                                </StackPanel>
                             </StackPanel>
 
                             <TextBlock Style="{StaticResource CaptionText}"
+                                       Margin="0,8,0,0"
                                        Visibility="{Binding DisplayStandby, Converter={StaticResource BoolToVisibility}}">
                                 <Run Text="{loc:Loc Metric_StandbyMemory}" /><Run Text=": " /><Run Text="{Binding StandbyMb, Converter={StaticResource MegabytesToSize}, Mode=OneWay}" />
                             </TextBlock>
@@ -342,6 +384,14 @@
                                 <Run Text="{loc:Loc Metric_Uptime}" /><Run Text=": " /><Run Text="{Binding Uptime, Converter={StaticResource TimeSpanToUptime}, Mode=OneWay}" />
                             </TextBlock>
                         </StackPanel>
+
+                        <controls:Sparkline Grid.Row="1"
+                                            Values="{Binding RamHistory}"
+                                            Maximum="100"
+                                            Capacity="60"
+                                            Margin="-20,10,-20,-20"
+                                            Stroke="{StaticResource RiskSafeBrush}"
+                                            Fill="#3316A34A" />
                     </Grid>
                 </Border>
 

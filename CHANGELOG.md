@@ -3,6 +3,35 @@
 Every released version, newest first. The release workflow publishes only the section
 for the version being released, so a release page shows that version and nothing else.
 
+## v2.10.0
+
+The monitor page reads at a glance instead of asking you to remember what each number was.
+
+### Every reading says what it is
+
+`8 % 28°C` was two different measurements at the same size with nothing to tell them apart, so the
+page only worked for someone who already knew which figure was which. Each number now carries its
+own caption, and the temperature is set smaller than the load — they are not equally important, and
+the type should say so.
+
+### Temperature is coloured by how close the part is to throttling
+
+Amber and red, from the same three brushes the risk pills use rather than a second palette. The
+thresholds are per part and deliberately different: a laptop processor at 85 °C is having an
+ordinary afternoon, a graphics card at 85 °C is already losing clocks. One shared limit would have
+to be wrong about one of them, and a monitor that cries wolf gets ignored.
+
+A reading in the normal range is **not** coloured. Painting every temperature would leave the page
+looking like a warning light stuck on. A sensor that did not answer is not coloured either — that
+would be inventing a fact about a machine that never replied.
+
+### The charts are readable
+
+Each card's chart was laid over the whole card with a top margin, which left it drawing a few
+pixels in one corner — present, but too small to read as anything but an artefact. Each card now
+gives its chart a band of its own along the bottom, edge to edge, with a stronger fill. The cards
+also size to their content rather than being pinned to a fixed height that cropped it.
+
 ## v2.9.1
 
 A defect in 2.9.0's own headline feature, found by auditing it rather than by hitting it, plus two
