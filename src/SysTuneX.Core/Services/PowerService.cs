@@ -23,6 +23,16 @@ public sealed partial class PowerService : IPowerService
 
     private const string OwnerId = "power:scheme";
 
+    /// <summary>
+    /// How long to let a scheme switch take.
+    ///
+    /// Normally it is under a second. Ten seconds looked generous and was not: a real machine
+    /// timed out on it, and killing powercfg mid-switch is the worst moment to give up. Thirty is
+    /// long enough that a slow machine finishes and short enough that a genuinely stuck call still
+    /// returns while the user is watching.
+    /// </summary>
+    private static readonly TimeSpan SetActiveTimeout = TimeSpan.FromSeconds(30);
+
     private readonly ILogger<PowerService> _logger;
     private readonly IBackupService _backup;
 
@@ -161,20 +171,59 @@ public sealed partial class PowerService : IPowerService
         return result;
     }
 
+    /// <summary>
+    /// Switches the active scheme, and checks before saying it failed.
+    ///
+    /// Two changes from the version that reported a timeout to a user whose scheme had in fact
+    /// changed. The wait is longer, because ten seconds is fine on an idle desktop and not on a
+    /// machine that is busy or has the setting under policy - and `powercfg /setactive` is a
+    /// user-initiated action, so waiting is cheaper than being wrong.
+    ///
+    /// More importantly, a timeout is no longer taken as failure on its own. The run is killed
+    /// when the clock runs out, but the switch may already have happened, so the active scheme is
+    /// read back and believed over the stopwatch. Reporting "could not activate the scheme" about
+    /// a machine that did activate it is the same class of lie this project refuses everywhere
+    /// else, and it is the one the user actually hit.
+    /// </summary>
     public async Task<OperationResult> SetActiveSchemeAsync(Guid schemeGuid, CancellationToken cancellationToken = default)
     {
         ProcessRunResult result = await ProcessRunner
-            .RunAsync("powercfg.exe", $"/setactive {schemeGuid:D}", TimeSpan.FromSeconds(10), cancellationToken)
+            .RunAsync("powercfg.exe", $"/setactive {schemeGuid:D}", SetActiveTimeout, cancellationToken)
             .ConfigureAwait(false);
 
-        if (!result.Success)
+        if (result.Success)
         {
-            return OperationResult.Fail(CoreMessages.PowerActivateFailed, result.Output.Trim());
+            _logger.LogInformation("Active power scheme set to {Guid}", schemeGuid);
+            return OperationResult.Ok();
         }
 
-        _logger.LogInformation("Active power scheme set to {Guid}", schemeGuid);
-        return OperationResult.Ok();
+        PowerScheme? active = await GetActiveSchemeAsync(cancellationToken).ConfigureAwait(false);
+
+        if (Activated(commandSucceeded: false, active?.Guid, schemeGuid))
+        {
+            _logger.LogInformation(
+                "powercfg reported no success for {Guid} ({Output}), but the scheme is active - taking the machine's word for it",
+                schemeGuid,
+                result.Output.Trim());
+
+            return OperationResult.Ok();
+        }
+
+        return OperationResult.Fail(CoreMessages.PowerActivateFailed, result.Output.Trim());
     }
+
+    /// <summary>
+    /// Whether the scheme ended up active, deciding between what the command said and what the
+    /// machine says.
+    ///
+    /// Separated out because it is the judgement the timeout bug turned on, and because
+    /// <see cref="ProcessRunner"/> is static, so the method around it cannot be tested. The rule:
+    /// a command that succeeded is believed, and a command that did not is overruled only by the
+    /// machine reporting the scheme we asked for. A scheme that could not be read back
+    /// (<paramref name="activeAfterwards"/> null) is not evidence of anything and does not count.
+    /// </summary>
+    internal static bool Activated(bool commandSucceeded, Guid? activeAfterwards, Guid target) =>
+        commandSucceeded || (activeAfterwards is { } actual && actual == target);
 
     public async Task<OperationResult> SetCoreParkingAsync(bool enabled, CancellationToken cancellationToken = default)
     {

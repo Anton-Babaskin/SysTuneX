@@ -3,6 +3,23 @@
 Every released version, newest first. The release workflow publishes only the section
 for the version being released, so a release page shows that version and nothing else.
 
+## v2.10.1
+
+### A power scheme that changed is no longer reported as a failure
+
+Reported from a real machine: switching the scheme took longer than the ten seconds SysTuneX
+allowed, so it killed `powercfg` and said it could not activate the scheme — while the scheme was
+in fact active. Being told a change did not happen when it did sends you looking for a problem that
+is not there.
+
+The wait is thirty seconds now, and more to the point a timeout is no longer taken as failure on
+its own: the active scheme is read back afterwards and believed over the stopwatch.
+
+A scheme that cannot be read back still counts as a failure. An unanswered question is not
+evidence, and guessing in the app's favour there would be the same lie pointing the other way.
+
+---
+
 ## v2.10.0
 
 The monitor page reads at a glance instead of asking you to remember what each number was.
@@ -31,6 +48,8 @@ Each card's chart was laid over the whole card with a top margin, which left it 
 pixels in one corner — present, but too small to read as anything but an artefact. Each card now
 gives its chart a band of its own along the bottom, edge to edge, with a stronger fill. The cards
 also size to their content rather than being pinned to a fixed height that cropped it.
+
+---
 
 ## v2.9.1
 
