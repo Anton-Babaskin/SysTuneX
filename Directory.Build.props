@@ -1,18 +1,71 @@
 <Project>
 
+  <!--
+    One version, read from one file.
+
+    These were hard-coded at 2.0.0 and stayed there for ten releases: 2.10.1 shipped an executable
+    whose file properties said 2.0.0.0. Nobody noticed because nothing reads them in CI - which is
+    exactly how a build lies for a year. release.version is what the release workflow tags from, so
+    it is the honest source, and deriving from it makes the drift impossible rather than unlikely.
+  -->
   <PropertyGroup>
-    <LangVersion>latest</LangVersion>
+    <_VersionFile>$(MSBuildThisFileDirectory)release.version</_VersionFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="Exists('$(_VersionFile)')">
+    <!-- The file holds the git tag, "v2.10.2"; assembly attributes want it without the v. -->
+    <Version>$([System.IO.File]::ReadAllText('$(_VersionFile)').Trim().Replace('v', ''))</Version>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- A checkout with no release.version still has to build. -->
+    <Version Condition="'$(Version)' == ''">0.0.0</Version>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      Pinned rather than "latest".
+
+      "latest" means the newest the installed compiler supports, so an SDK update can change what
+      this code compiles as - and, with warnings promoted to errors below, can break a build that
+      nobody touched. 14.0 is what .NET 10 ships and what "latest" resolves to today, so this
+      changes nothing now and makes moving to C# 15 a decision rather than a side effect.
+    -->
+    <LangVersion>14.0</LangVersion>
+
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+
+    <!--
+      Warnings are errors.
+
+      The build has carried zero warnings for a long time, entirely on discipline - and discipline
+      is what a build stops having the week somebody is in a hurry. This is the ratchet: a warning
+      can no longer be scrolled past, because it stops the build.
+
+      The risk this was weighed against is that a future toolchain invents a new warning and blocks
+      a release nobody broke. Two things hold that down. LangVersion is pinned above, so the
+      language cannot move underneath us. AnalysisLevel below follows the target framework rather
+      than the SDK, so a newer SDK on the same framework enables no new analyzers.
+
+      When a warning does have to be lived with, silence that one by id in the project that needs
+      it, with a comment saying why - never by turning this back off.
+    -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!--
+      Tied to the framework, not to whatever SDK the runner happens to have. CI installs 10.0.x, a
+      floating patch, so this is the difference between a reproducible build and a lottery.
+    -->
+    <AnalysisLevel>10.0</AnalysisLevel>
+
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <Product>SysTuneX</Product>
     <Company>SysTuneX</Company>
     <Authors>Anton Babaskin</Authors>
     <Copyright>Copyright (c) Anton Babaskin</Copyright>
-    <Version>2.0.0</Version>
-    <AssemblyVersion>2.0.0.0</AssemblyVersion>
-    <FileVersion>2.0.0.0</FileVersion>
     <NeutralLanguage>en</NeutralLanguage>
     <SatelliteResourceLanguages>en;ru</SatelliteResourceLanguages>
   </PropertyGroup>
