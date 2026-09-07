@@ -3,6 +3,61 @@
 Every released version, newest first. The release workflow publishes only the section
 for the version being released, so a release page shows that version and nothing else.
 
+## v2.9.0
+
+Three things 2.8.0 got wrong on a real desktop, and the switch that changes the most now says what
+it has changed.
+
+### The window opened empty
+
+Picking any backdrop other than the default made the app unusable on every launch afterwards.
+Applying one makes WPF-UI rebuild the window chrome, and replacing chrome that already carries an
+inheritance context throws from inside WPF — from the *first* line of the window's startup handler,
+which took the navigation on the line below it with it. The result was an empty content area, plus
+a second crash from a title bar that had never finished initialising, on every click of the close
+button.
+
+Navigation runs first now: nothing decorative executes before the thing the window exists to show.
+The backdrop is applied afterwards and a refusal is logged instead of thrown. The startup handler
+is reachable from tests, and five of them drive it with every backdrop the settings page offers.
+
+### Dialogs ignored the mouse
+
+Every dialog in the app rendered and then took no clicks — "Apply profile" could be confirmed with
+Enter and by no other means. The wrapper around the dialog host was marked hit-test transparent so
+the page underneath would stay clickable, with the hosts inside marked visible again. Hit testing
+walks up the tree: a false ancestor stops it dead, and setting it back to true on a child does
+nothing at all.
+
+### Game mode was minting a power scheme per session
+
+Windows hides Ultimate Performance until it is duplicated into the machine's scheme list, and
+`powercfg /duplicatescheme` mints a fresh GUID every time — so the lookup for the canonical GUID
+never found last session's copy and simply made another. A day of ordinary use produced three,
+none of them removed. It remembers the GUID it was given and reuses that scheme now, which also
+works on a localised install, where the duplicate is called something else entirely.
+
+### Game mode shows its work
+
+It stops services, replaces the power scheme and frees gigabytes, and it reported all of that in a
+toast that vanished after a few seconds. A minute later there was no way to tell what the machine
+was still holding.
+
+While a session is on, the card now lists what is in effect: every service under the name Windows
+uses, the scheme it switched to and the one that comes back, the memory the trim freed, how long it
+has been on and what turned it on — by hand, by a game, or by the schedule. Each line says what
+happens to it on exit, including the one that is **not** put back: the freed pages are gone and
+Windows refills the standby list on its own, so calling that "restored" would be a comfortable lie.
+
+The session records the name of the scheme it switched to by reading it back from the machine
+rather than assuming it: "high performance" is Ultimate Performance where Windows offers it, a
+duplicate where Windows hides it, and High Performance on the editions with neither.
+
+The tray tooltip said only "Game mode", which answers whether it is on and nothing about what that
+costs. It carries the counts now.
+
+---
+
 ## v2.8.0
 
 An audit of 2.7.0 found nine defects in it. This fixes all of them and rebuilds the monitor's
