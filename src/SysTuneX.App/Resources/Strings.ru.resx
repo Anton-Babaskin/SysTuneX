@@ -109,9 +109,6 @@
   <data name="Common_Cancel" xml:space="preserve">
     <value>Отмена</value>
   </data>
-  <data name="Common_Close" xml:space="preserve">
-    <value>Закрыть</value>
-  </data>
   <data name="Common_Continue" xml:space="preserve">
     <value>Продолжить</value>
   </data>
@@ -120,9 +117,6 @@
   </data>
   <data name="Common_Search" xml:space="preserve">
     <value>Поиск</value>
-  </data>
-  <data name="Common_All" xml:space="preserve">
-    <value>Все</value>
   </data>
   <data name="Common_Loading" xml:space="preserve">
     <value>Загрузка…</value>
@@ -157,32 +151,14 @@
   <data name="Common_RequiresRestart" xml:space="preserve">
     <value>Нужна перезагрузка</value>
   </data>
-  <data name="Common_RequiresSignOut" xml:space="preserve">
-    <value>Нужен повторный вход</value>
-  </data>
   <data name="Common_RequiresExplorerRestart" xml:space="preserve">
     <value>Перезапуск проводника</value>
   </data>
   <data name="Common_RestartNow" xml:space="preserve">
     <value>Перезагрузить</value>
   </data>
-  <data name="Common_Later" xml:space="preserve">
-    <value>Позже</value>
-  </data>
   <data name="Common_Of" xml:space="preserve">
     <value>из</value>
-  </data>
-  <data name="Common_Enabled" xml:space="preserve">
-    <value>Вкл</value>
-  </data>
-  <data name="Common_Disabled" xml:space="preserve">
-    <value>Выкл</value>
-  </data>
-  <data name="Common_Never" xml:space="preserve">
-    <value>никогда</value>
-  </data>
-  <data name="Common_Copy" xml:space="preserve">
-    <value>Копировать</value>
   </data>
   <data name="Risk_Safe" xml:space="preserve">
     <value>Безопасно</value>
@@ -192,12 +168,6 @@
   </data>
   <data name="Risk_Advanced" xml:space="preserve">
     <value>Рискованно</value>
-  </data>
-  <data name="Filter_Risk" xml:space="preserve">
-    <value>Риск</value>
-  </data>
-  <data name="Filter_Status" xml:space="preserve">
-    <value>Состояние</value>
   </data>
   <data name="Filter_OnlyApplied" xml:space="preserve">
     <value>Применённые</value>
@@ -304,9 +274,6 @@
   <data name="Dashboard_Label_Motherboard" xml:space="preserve">
     <value>Материнская плата</value>
   </data>
-  <data name="Dashboard_Label_Drive" xml:space="preserve">
-    <value>Системный диск</value>
-  </data>
   <data name="Dashboard_Label_PowerPlan" xml:space="preserve">
     <value>Схема питания</value>
   </data>
@@ -315,9 +282,6 @@
   </data>
   <data name="Dashboard_Label_Processes" xml:space="preserve">
     <value>Процессов</value>
-  </data>
-  <data name="Dashboard_Label_Driver" xml:space="preserve">
-    <value>Драйвер</value>
   </data>
   <data name="Dashboard_Elevated" xml:space="preserve">
     <value>Администратор</value>
@@ -351,9 +315,6 @@
   </data>
   <data name="Profiles_CreateRestorePoint" xml:space="preserve">
     <value>Сначала создать точку восстановления</value>
-  </data>
-  <data name="Profiles_NoAdvanced" xml:space="preserve">
-    <value>В этом профиле нет рискованных изменений.</value>
   </data>
   <data name="Gaming_Title" xml:space="preserve">
     <value>Игры</value>
@@ -442,9 +403,6 @@
   <data name="Services_Disable" xml:space="preserve">
     <value>Отключить</value>
   </data>
-  <data name="Services_Restore" xml:space="preserve">
-    <value>Восстановить</value>
-  </data>
   <data name="Services_StartMode" xml:space="preserve">
     <value>Тип запуска</value>
   </data>
@@ -501,9 +459,6 @@
   </data>
   <data name="Network_Dns_Flush" xml:space="preserve">
     <value>Очистить кэш DNS</value>
-  </data>
-  <data name="Network_Latency" xml:space="preserve">
-    <value>Отклик</value>
   </data>
   <data name="Network_Measure" xml:space="preserve">
     <value>Замерить</value>
@@ -640,9 +595,6 @@
   <data name="Settings_Language" xml:space="preserve">
     <value>Язык</value>
   </data>
-  <data name="Settings_Language_System" xml:space="preserve">
-    <value>Как в Windows</value>
-  </data>
   <data name="Settings_Behaviour" xml:space="preserve">
     <value>Поведение</value>
   </data>
@@ -703,9 +655,6 @@
   <data name="Msg_Reverted" xml:space="preserve">
     <value>{0}: откатано</value>
   </data>
-  <data name="Msg_Failed" xml:space="preserve">
-    <value>{0}: ошибка</value>
-  </data>
   <data name="Msg_BatchDone" xml:space="preserve">
     <value>Применено: {0}, ошибок: {1}, пропущено: {2}</value>
   </data>
@@ -717,9 +666,6 @@
   </data>
   <data name="Msg_MemoryTrimmed" xml:space="preserve">
     <value>Обработано процессов: {0}</value>
-  </data>
-  <data name="Msg_RestorePointCreated" xml:space="preserve">
-    <value>Точка восстановления создана</value>
   </data>
   <data name="Msg_CleanupDone" xml:space="preserve">
     <value>Освобождено {0}</value>
@@ -1695,12 +1641,6 @@
   </data>
   <data name="Snapshot_Differences" xml:space="preserve">
     <value>Различий: {0}.</value>
-  </data>
-  <data name="Snapshot_Before" xml:space="preserve">
-    <value>До</value>
-  </data>
-  <data name="Snapshot_After" xml:space="preserve">
-    <value>После</value>
   </data>
   <data name="Snapshot_Empty" xml:space="preserve">
     <value>Снимков пока нет.</value>

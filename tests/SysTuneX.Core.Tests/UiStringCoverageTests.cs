@@ -13,6 +13,7 @@ namespace SysTuneX.Core.Tests;
 public sealed partial class UiStringCoverageTests
 {
     private const string AppRoot = "../../../../../src/SysTuneX.App";
+    private const string CoreRoot = "../../../../../src/SysTuneX.Core";
 
     /// <summary><c>{loc:Loc Some_Key}</c> in XAML.</summary>
     [GeneratedRegex(@"\{loc:Loc\s+([A-Za-z0-9_]+)")]
@@ -23,6 +24,48 @@ public sealed partial class UiStringCoverageTests
     private static partial Regex CodeKey { get; }
 
     public static TheoryData<string> Languages => ["Strings.resx", "Strings.ru.resx"];
+
+    /// <summary>
+    /// Prefixes whose keys are built at run time from an enum member or a catalogue id, so no
+    /// literal ever appears in the source: <c>$"MetricGroup_{definition.Group}"</c> and friends.
+    /// Every entry here is a real call site; adding one to silence a failure rather than to
+    /// describe such a call site would defeat the check below.
+    /// </summary>
+    private static readonly string[] BuiltAtRunTime =
+    [
+        "MetricGroup_",   // MonitorViewModel, from MonitorGroup
+        "Core_",          // OperationResultText, from a CoreMessages code
+        "History_Kind_",  // CatalogText, from BackupKind
+        "Risk_",          // UserInteraction, from RiskLevel
+        "Tweak_",         // CatalogText, from a tweak id
+        "Profile_",       // CatalogText, from a profile id
+        "Service_",       // CatalogText, from a service name
+        "Cleanup_",       // CatalogText, from a cleanup target id
+    ];
+
+    /// <summary>
+    /// The other half of <see cref="Every_key_the_interface_asks_for_exists"/>.
+    ///
+    /// A string nothing asks for still has to be translated, reviewed and carried in both files
+    /// forever. Twenty of them had accumulated before this test existed - left behind by pages
+    /// that were rewritten and features that were renamed, and invisible because the build is
+    /// perfectly happy to carry them.
+    /// </summary>
+    [Fact]
+    public void Every_string_that_is_defined_is_used()
+    {
+        // Both projects, because a key can be asked for by the interface or named by a catalogue
+        // entry in the core - MonitorMetrics and the tweak definitions both carry resource keys.
+        string source = string.Concat(Sources().Concat(CoreSources()).Select(pair => pair.Text));
+
+        List<string> unused = Keys("Strings.resx")
+            .Where(key => !BuiltAtRunTime.Any(prefix => key.StartsWith(prefix, StringComparison.Ordinal)))
+            .Where(key => !source.Contains(key, StringComparison.Ordinal))
+            .Order(StringComparer.Ordinal)
+            .ToList();
+
+        Assert.Empty(unused);
+    }
 
     [Fact]
     public void Every_key_the_interface_asks_for_exists()
@@ -132,9 +175,14 @@ public sealed partial class UiStringCoverageTests
         return highest + 1;
     }
 
-    private static IEnumerable<(string File, string Text)> Sources()
+    private static IEnumerable<(string File, string Text)> Sources() => Sources(AppRoot);
+
+    /// <summary>The core names resource keys too - the metric catalogue and the tweak warnings.</summary>
+    private static IEnumerable<(string File, string Text)> CoreSources() => Sources(CoreRoot);
+
+    private static IEnumerable<(string File, string Text)> Sources(string root)
     {
-        foreach (string file in Directory.EnumerateFiles(AppRoot, "*.*", SearchOption.AllDirectories))
+        foreach (string file in Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories))
         {
             // obj and bin hold generated copies of the same markup; scanning them would double
             // every finding and report file names nobody can open.

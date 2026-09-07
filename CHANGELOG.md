@@ -3,6 +3,39 @@
 Every released version, newest first. The release workflow publishes only the section
 for the version being released, so a release page shows that version and nothing else.
 
+## v2.9.1
+
+A defect in 2.9.0's own headline feature, found by auditing it rather than by hitting it, plus two
+tests for the kinds of mistake this codebase keeps making.
+
+### Turning game mode on reported an error while turning it on
+
+`GameModeService` raises its `Changed` event after `await _gate.WaitAsync().ConfigureAwait(false)`,
+so the event always arrives on a thread-pool thread — even when the user pressed the switch by
+hand, and certainly when the schedule or the game watcher tick on their own timers.
+
+That was harmless while the dashboard's handler only assigned scalar properties, which the binding
+engine marshals by itself. 2.9.0 gave the card a bound collection, and a bound collection cannot be
+changed off the UI thread: it throws. The throw then landed in the service's own `catch`, so game
+mode came on for real — services stopped, power scheme switched, memory freed — while the screen
+showed an error saying it had not.
+
+The handler now hops to the dispatcher, the way the tray icon already did with the same event.
+
+### Two tests for two blind spots
+
+**Bindings.** A `{Binding}` naming a property that does not exist fails silently: WPF writes to the
+debug output and renders nothing. No exception, no warning, no failing test. When 2.8.0 rewrote the
+monitor page, its fifty-four bindings had to be checked by hand for exactly this reason. They are
+checked by a test now.
+
+**Unused strings.** The suite already refused a key the interface asks for and nobody defined. The
+opposite — a key defined and asked for by nobody — was invisible, and twenty had piled up behind
+rewritten pages and renamed features, each one still needing translating and reviewing. They are
+gone, and a test keeps them gone.
+
+---
+
 ## v2.9.0
 
 Three things 2.8.0 got wrong on a real desktop, and the switch that changes the most now says what
