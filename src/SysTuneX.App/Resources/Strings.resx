@@ -1295,4 +1295,49 @@
   <data name="Monitor_Caption_Used" xml:space="preserve">
     <value>used</value>
   </data>
+  <data name="Compact_Open" xml:space="preserve">
+    <value>Compact readout</value>
+  </data>
+  <data name="Compact_Close" xml:space="preserve">
+    <value>Close the readout</value>
+  </data>
+  <data name="Compact_Empty" xml:space="preserve">
+    <value>Nothing is ticked on the monitor page, so there is nothing to show here.</value>
+  </data>
+  <data name="Compact_Hotkey_Hint" xml:space="preserve">
+    <value>{0} opens it from any window</value>
+  </data>
+  <data name="Compact_Hotkey_Off" xml:space="preserve">
+    <value>The hotkey is switched off</value>
+  </data>
+  <data name="Compact_Hotkey_Active" xml:space="preserve">
+    <value>{0} is registered and works while a game has focus.</value>
+  </data>
+  <data name="Compact_Hotkey_Taken" xml:space="preserve">
+    <value>{0} is already taken by another program. Pick a different combination.</value>
+  </data>
+  <data name="Compact_Hotkey_UnknownKey" xml:space="preserve">
+    <value>Windows does not know a key called “{0}”.</value>
+  </data>
+  <data name="Compact_Hotkey_Refused" xml:space="preserve">
+    <value>Windows refused {0} (error {1}).</value>
+  </data>
+  <data name="Compact_Hotkey_Fallback" xml:space="preserve">
+    <value>“{0}” is not a hotkey, so {1} is being used instead.</value>
+  </data>
+  <data name="Settings_Compact" xml:space="preserve">
+    <value>Compact readout</value>
+  </data>
+  <data name="Settings_Compact_Hint" xml:space="preserve">
+    <value>A small window with the same numbers as the monitor page, kept above other windows. It is not an overlay – nothing is injected into the game – so it appears over borderless windowed games but not over one running in exclusive full screen. Drag it anywhere; it reopens where you left it.</value>
+  </data>
+  <data name="Settings_Compact_HotkeyEnabled" xml:space="preserve">
+    <value>Summon it with a hotkey</value>
+  </data>
+  <data name="Settings_Compact_Hotkey" xml:space="preserve">
+    <value>Key combination</value>
+  </data>
+  <data name="Settings_Compact_OpenOnStartup" xml:space="preserve">
+    <value>Open it when SysTuneX starts</value>
+  </data>
 </root>

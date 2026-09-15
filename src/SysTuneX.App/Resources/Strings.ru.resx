@@ -1883,4 +1883,49 @@
   <data name="Monitor_Caption_Used" xml:space="preserve">
     <value>занято</value>
   </data>
+  <data name="Compact_Open" xml:space="preserve">
+    <value>Компактная панель</value>
+  </data>
+  <data name="Compact_Close" xml:space="preserve">
+    <value>Закрыть панель</value>
+  </data>
+  <data name="Compact_Empty" xml:space="preserve">
+    <value>На странице мониторинга ничего не отмечено — показывать нечего.</value>
+  </data>
+  <data name="Compact_Hotkey_Hint" xml:space="preserve">
+    <value>{0} — открыть из любого окна</value>
+  </data>
+  <data name="Compact_Hotkey_Off" xml:space="preserve">
+    <value>Горячая клавиша выключена</value>
+  </data>
+  <data name="Compact_Hotkey_Active" xml:space="preserve">
+    <value>{0} зарегистрирована и работает, пока игра в фокусе.</value>
+  </data>
+  <data name="Compact_Hotkey_Taken" xml:space="preserve">
+    <value>{0} уже занята другой программой. Выберите другое сочетание.</value>
+  </data>
+  <data name="Compact_Hotkey_UnknownKey" xml:space="preserve">
+    <value>Windows не знает клавиши «{0}».</value>
+  </data>
+  <data name="Compact_Hotkey_Refused" xml:space="preserve">
+    <value>Windows отказала в {0} (ошибка {1}).</value>
+  </data>
+  <data name="Compact_Hotkey_Fallback" xml:space="preserve">
+    <value>«{0}» — не горячая клавиша, поэтому используется {1}.</value>
+  </data>
+  <data name="Settings_Compact" xml:space="preserve">
+    <value>Компактная панель</value>
+  </data>
+  <data name="Settings_Compact_Hint" xml:space="preserve">
+    <value>Маленькое окно с теми же показателями, что и на странице мониторинга, поверх других окон. Это не оверлей — в игру ничего не внедряется, — поэтому оно видно над игрой в оконном режиме без рамки, но не над полноэкранной эксклюзивной. Перетаскивается куда угодно и открывается там же, где его оставили.</value>
+  </data>
+  <data name="Settings_Compact_HotkeyEnabled" xml:space="preserve">
+    <value>Вызывать горячей клавишей</value>
+  </data>
+  <data name="Settings_Compact_Hotkey" xml:space="preserve">
+    <value>Сочетание клавиш</value>
+  </data>
+  <data name="Settings_Compact_OpenOnStartup" xml:space="preserve">
+    <value>Открывать при запуске SysTuneX</value>
+  </data>
 </root>

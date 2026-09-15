@@ -29,6 +29,7 @@ A free, open-source Windows optimizer for gamers. Apply smart performance profil
 
 - 🎮 **Gaming optimizer:** competitive FPS, battle royale, open-world, racing, streaming and maximum-performance profiles.
 - 📈 **Your performance dashboard:** enable only the readings you want—FPS, 1% low, frame time, CPU/GPU load and temperature, memory, fan and process count.
+- 🪟 **Compact readout:** the same numbers in a small always-on-top window, one keypress away (**Ctrl+Shift+M**) — over borderless windowed games, without touching the game.
 - ⚡ **Game Mode:** temporarily stops safe background services, raises the power scheme and restores the session when you are done.
 - 🔎 **Measure, do not guess:** compare configuration before and after, watch frame-time behaviour and see real errors.
 - ↩️ **Exact rollback:** SysTuneX records the real previous state before supported changes instead of writing an invented "default".
@@ -36,7 +37,7 @@ A free, open-source Windows optimizer for gamers. Apply smart performance profil
 
 ![SysTuneX customizable FPS, CPU, GPU, RAM and temperature monitor](docs/images/systunex-monitor-ru.png)
 
-> **Full power, honest limits.** SysTuneX can help remove bottlenecks and improve consistency, but no optimizer can guarantee the same FPS gain on every PC. The current monitor is a configurable second-screen dashboard, not an in-game overlay.
+> **Full power, honest limits.** SysTuneX can help remove bottlenecks and improve consistency, but no optimizer can guarantee the same FPS gain on every PC. The monitor is a configurable dashboard with a small always-on-top companion window — not an in-game overlay, so it cannot draw over exclusive fullscreen.
 
 ---
 
@@ -178,7 +179,7 @@ Security reports go through [SECURITY.md](SECURITY.md), privately, rather than a
 | Area            | What SysTuneX does                                                                                                       |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | **Dashboard**   | Live CPU and memory monitoring, tuning status, Quick Optimize and full restore                                           |
-| **Monitor**     | Frame rate with its 1% low and frame time, CPU and GPU load and temperature, memory — measured without touching the game, and only what you tick |
+| **Monitor**     | Frame rate with its 1% low and frame time, CPU and GPU load and temperature, memory — measured without touching the game, and only what you tick. Ctrl+Shift+M puts the same numbers in a small window above everything else |
 | **Profiles**    | Ready-made tuning profiles for different gaming and workload scenarios                                                   |
 | **Gaming**      | Game Bar, Game DVR, fullscreen optimizations, mouse acceleration, CPU scheduling and more                                |
 | **Windows 11**  | VBS, HVCI, hypervisor, Recall, Copilot, widgets, search features and other build-aware settings                          |
@@ -251,7 +252,9 @@ SysTuneX counts frames through **Event Tracing for Windows**, reading the Presen
 
 **Nothing is injected into the game.** RTSS, Afterburner and Fraps hook the graphics API from inside the game process; that is how they draw an overlay, and it is also exactly what anti-cheat looks for. A tool whose whole point is to be run before playing cannot ship something that risks a ban.
 
-The cost of that choice is stated rather than hidden: there is **no overlay** over a fullscreen game. Alt-tab to the Monitor page to read the numbers. The counter deliberately stays pointed at the game when SysTuneX comes to the foreground — retargeting to our own window would show SysTuneX's frame rate, which is worse than useless.
+The cost of that choice is stated rather than hidden: there is **no overlay** over a fullscreen game. The counter deliberately stays pointed at the game when SysTuneX comes to the foreground — retargeting to our own window would show SysTuneX's frame rate, which is worse than useless.
+
+What there *is* instead is a **compact readout**: a small window with the same numbers, kept above other windows and summoned with **Ctrl+Shift+M** from wherever you are. It is an ordinary window with its chrome removed, not an overlay — so it appears over a game running **borderless windowed**, which is how most people play, and it will **not** appear over one running in **exclusive fullscreen**, which owns the display outright. That limit is real and is the price of never touching the game process. Drag it anywhere; it reopens where you left it, and it shows whatever you ticked on the Monitor page. The key can be changed, or switched off, in Settings — and if another program already owns the combination, Settings says so rather than leaving you pressing a key that does nothing.
 
 Alongside the average, the Monitor shows the **1% low** — the frame rate of the worst one percent of frames. An average of 144 with a 1% low of 40 stutters, and a steady 90 does not; an average on its own hides the exact problem this tool exists to fix.
 

@@ -62,6 +62,14 @@ public partial class App : Application
                 services.AddSingleton<IUserInteraction, UserInteraction>();
                 services.AddSingleton<ITrayIconService, TrayIconService>();
                 services.AddSingleton<IGlobalSearch, GlobalSearch>();
+                services.AddSingleton<IGlobalHotkeyService, GlobalHotkeyService>();
+                services.AddSingleton<ICompactMonitorService, CompactMonitorService>();
+
+                // Transient, unlike every page: the compact readout runs a timer while it is open,
+                // and a singleton would keep that timer and its view model alive for the life of
+                // the app after the window had been closed.
+                services.AddTransient<CompactMonitorWindow>();
+                services.AddTransient<CompactMonitorViewModel>();
 
                 services.AddSingleton<MainWindow>();
                 services.AddSingleton<MainWindowViewModel>();

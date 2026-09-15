@@ -3,6 +3,36 @@
 Every released version, newest first. The release workflow publishes only the section
 for the version being released, so a release page shows that version and nothing else.
 
+## v2.11.0
+
+### A compact readout you can call up over a game
+
+The numbers on the Monitor page are only useful while you are looking at them, and while you are
+playing you are not. There is now a small window with the same readings that stays above other
+windows, opened with **Ctrl+Shift+M** from wherever you are — including from inside a game.
+
+It shows whatever you ticked on the Monitor page, and it keeps showing it: change a tick with the
+window open and it follows. Drag it anywhere; it reopens where you left it, on a screen that still
+exists — a position on a monitor that has since been unplugged is quietly corrected rather than
+opening the window somewhere you cannot reach it.
+
+**What it is not.** It is not an overlay. Nothing is injected into the game, nothing hooks its swap
+chain, no driver is loaded — it is an ordinary window with its chrome removed. So it appears over a
+game running **borderless windowed**, and it will **not** appear over one running in **exclusive
+fullscreen**, which owns the display outright. That is a real limit, and it is the same trade this
+project makes everywhere: nothing an anti-cheat could reasonably mistake for a cheat.
+
+The key can be changed or switched off in Settings. If another program already owns the
+combination, Settings says which and asks for a different one, rather than leaving you pressing a
+key that does nothing — which is indistinguishable from a broken application.
+
+Readings the machine cannot supply are still left out rather than drawn as zero, and a frame rate
+counter that is running but has nothing to count shows `--` rather than a number. Ten tests cover
+how the readout is assembled, because the window is small, it sits over a game, and nobody reading
+it has room to wonder whether a zero means zero.
+
+---
+
 ## v2.10.2
 
 ### The executable now says which version it is

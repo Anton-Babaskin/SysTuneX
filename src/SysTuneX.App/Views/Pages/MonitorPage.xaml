@@ -15,10 +15,32 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="{StaticResource PagePadding}">
         <StackPanel MaxWidth="{StaticResource MaxContentWidth}" HorizontalAlignment="Left">
 
-            <StackPanel Margin="{StaticResource SectionGap}">
-                <TextBlock Text="{loc:Loc Monitor_Title}" Style="{StaticResource PageTitle}" />
-                <TextBlock Text="{loc:Loc Monitor_Subtitle}" Style="{StaticResource PageSubtitle}" />
-            </StackPanel>
+            <Grid Margin="{StaticResource SectionGap}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <TextBlock Text="{loc:Loc Monitor_Title}" Style="{StaticResource PageTitle}" />
+                    <TextBlock Text="{loc:Loc Monitor_Subtitle}" Style="{StaticResource PageSubtitle}" />
+                </StackPanel>
+
+                <!--
+                    The compact readout. The key is printed next to the button rather than only
+                    documented, because a hotkey nobody has been told about is a feature nobody has.
+                -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right">
+                    <ui:Button Icon="{ui:SymbolIcon PictureInPicture20}"
+                               Content="{Binding CompactButtonText}"
+                               Command="{Binding ToggleCompactCommand}"
+                               HorizontalAlignment="Right" />
+                    <TextBlock Text="{Binding CompactHotkeyText}"
+                               Style="{StaticResource CaptionText}"
+                               HorizontalAlignment="Right"
+                               Margin="0,4,0,0" />
+                </StackPanel>
+            </Grid>
 
             <!--
                 What to measure. Folded away because it is set once and left alone - but the frame

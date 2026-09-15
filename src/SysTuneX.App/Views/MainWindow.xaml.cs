@@ -19,6 +19,7 @@ public partial class MainWindow : FluentWindow
     private readonly ITrayIconService _tray;
     private readonly IGlobalSearch _search;
     private readonly INavigationService _navigation;
+    private readonly ICompactMonitorService _compactMonitor;
     private readonly ILogger<MainWindow> _logger;
 
     /// <summary>Results behind the suggestions currently on screen, keyed by their display text.</summary>
@@ -34,6 +35,7 @@ public partial class MainWindow : FluentWindow
         ILocalizationService localization,
         ITrayIconService tray,
         IGlobalSearch search,
+        ICompactMonitorService compactMonitor,
         ILogger<MainWindow> logger)
     {
         ViewModel = viewModel;
@@ -42,6 +44,7 @@ public partial class MainWindow : FluentWindow
         _tray = tray;
         _search = search;
         _navigation = navigationService;
+        _compactMonitor = compactMonitor;
         _logger = logger;
 
         DataContext = viewModel;
@@ -87,6 +90,15 @@ public partial class MainWindow : FluentWindow
         }
 
         ApplyBackdrop(_settings.Current.Backdrop);
+
+        // Here rather than in the container: a global hotkey belongs to a window, and the window
+        // has no handle to hang one on until it has been shown.
+        _compactMonitor.AttachHotkey(this);
+
+        if (_settings.Current.CompactMonitor.OpenOnStartup)
+        {
+            _compactMonitor.Show();
+        }
     }
 
     /// <summary>

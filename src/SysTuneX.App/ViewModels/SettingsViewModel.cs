@@ -29,6 +29,7 @@ public sealed partial class SettingsViewModel : PageViewModel
     private readonly GameModeAutomation _automation;
     private readonly ITrayIconService _tray;
     private readonly GameModeScheduler _scheduler;
+    private readonly ICompactMonitorService _compact;
     private readonly ILogger<SettingsViewModel> _logger;
 
     private bool _isLoading = true;
@@ -90,6 +91,19 @@ public sealed partial class SettingsViewModel : PageViewModel
     [NotifyPropertyChangedFor(nameof(ScheduleSummary))]
     private string _scheduleEnd = "23:00";
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CompactSummary))]
+    [NotifyPropertyChangedFor(nameof(CompactHotkeyStatus))]
+    private bool _compactHotkeyEnabled = true;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CompactSummary))]
+    [NotifyPropertyChangedFor(nameof(CompactHotkeyStatus))]
+    private string _compactHotkey = HotkeySpec.Default.ToString();
+
+    [ObservableProperty]
+    private bool _compactOpenOnStartup;
+
     public SettingsViewModel(
         IAppSettingsService settings,
         ILocalizationService localization,
@@ -101,6 +115,7 @@ public sealed partial class SettingsViewModel : PageViewModel
         GameModeAutomation automation,
         ITrayIconService tray,
         GameModeScheduler scheduler,
+        ICompactMonitorService compact,
         ILogger<SettingsViewModel> logger)
     {
         _settings = settings;
@@ -113,7 +128,10 @@ public sealed partial class SettingsViewModel : PageViewModel
         _automation = automation;
         _tray = tray;
         _scheduler = scheduler;
+        _compact = compact;
         _logger = logger;
+
+        _compact.StateChanged += (_, _) => OnPropertyChanged(nameof(CompactHotkeyStatus));
 
         Languages = localization.AvailableLanguages;
     }
@@ -156,6 +174,9 @@ public sealed partial class SettingsViewModel : PageViewModel
         AutoGameMode = current.AutoGameMode;
         ShowTrayIcon = current.ShowTrayIcon;
         MinimizeToTray = current.MinimizeToTray;
+        CompactHotkeyEnabled = current.CompactMonitor.HotkeyEnabled;
+        CompactHotkey = current.CompactMonitor.Hotkey;
+        CompactOpenOnStartup = current.CompactMonitor.OpenOnStartup;
         ScheduleEnabled = current.Schedule.Enabled;
         ScheduleStart = current.Schedule.StartsAt.ToString("HH:mm");
         ScheduleEnd = current.Schedule.EndsAt.ToString("HH:mm");
@@ -336,6 +357,87 @@ public sealed partial class SettingsViewModel : PageViewModel
         _settings.Current.ConfirmAdvancedChanges = value;
         Save();
     }
+
+    // ── The compact readout ──────────────────────────────────────────────────
+
+    partial void OnCompactHotkeyEnabledChanged(bool value)
+    {
+        if (_isLoading)
+        {
+            return;
+        }
+
+        _settings.Current.CompactMonitor.HotkeyEnabled = value;
+        _compact.ReapplyHotkey();
+        Save();
+    }
+
+    /// <summary>
+    /// Stores what the user typed, not what it parsed to.
+    ///
+    /// Rewriting the box as they type takes the cursor with it and makes the field impossible to
+    /// edit - two characters into "Ctrl+Alt+P" the text is already something else. What is stored
+    /// is whatever they wrote; what is registered is what it parses to; and the status line below
+    /// says which one Windows actually got, so a typo is visible rather than silently corrected.
+    /// </summary>
+    partial void OnCompactHotkeyChanged(string value)
+    {
+        if (_isLoading)
+        {
+            return;
+        }
+
+        _settings.Current.CompactMonitor.Hotkey = value;
+        _compact.ReapplyHotkey();
+        Save();
+    }
+
+    partial void OnCompactOpenOnStartupChanged(bool value)
+    {
+        if (_isLoading)
+        {
+            return;
+        }
+
+        _settings.Current.CompactMonitor.OpenOnStartup = value;
+        Save();
+    }
+
+    /// <summary>
+    /// What the key is doing, in words: the combination Windows accepted, or why it did not.
+    /// "Nothing happens when I press it" is the bug report this line exists to prevent.
+    /// </summary>
+    public string CompactHotkeyStatus
+    {
+        get
+        {
+            if (!CompactHotkeyEnabled)
+            {
+                return _localization["Settings_Summary_Off"];
+            }
+
+            bool parsed = HotkeySpec.TryParse(CompactHotkey, out HotkeySpec spec);
+
+            return _compact.HotkeyFailure switch
+            {
+                HotkeyFailure.AlreadyTaken => _localization.Format("Compact_Hotkey_Taken", spec.ToString()),
+                HotkeyFailure.UnknownKey => _localization.Format("Compact_Hotkey_UnknownKey", CompactHotkey),
+                HotkeyFailure.Refused =>
+                    _localization.Format("Compact_Hotkey_Refused", spec.ToString(), _compact.HotkeyErrorCode),
+
+                // WindowNotReady means the window has not been shown yet, which the user never
+                // sees; treat it like success rather than alarming them about a race they cannot
+                // observe.
+                _ => parsed
+                    ? _localization.Format("Compact_Hotkey_Active", spec.ToString())
+                    : _localization.Format("Compact_Hotkey_Fallback", CompactHotkey, spec.ToString()),
+            };
+        }
+    }
+
+    public string CompactSummary => CompactHotkeyEnabled
+        ? CompactHotkey
+        : _localization["Settings_Summary_Off"];
 
 
     // ── Collapsed-row summaries ──────────────────────────────────────────────

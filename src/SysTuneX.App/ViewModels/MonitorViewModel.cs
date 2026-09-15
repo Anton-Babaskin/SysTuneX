@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Data;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using SysTuneX.App.Localization;
 using SysTuneX.App.Services;
 using SysTuneX.Core.Abstractions;
@@ -30,6 +31,7 @@ public sealed partial class MonitorViewModel : PageViewModel
     private readonly IFrameRateProbe _frameRate;
     private readonly ILocalizationService _localization;
     private readonly IAppSettingsService _settings;
+    private readonly ICompactMonitorService _compact;
 
     /// <summary>Which readings are on. The single source of truth the whole page reads from.</summary>
     private MonitorSelection _selection = new();
@@ -127,13 +129,17 @@ public sealed partial class MonitorViewModel : PageViewModel
         ISensorService sensors,
         IFrameRateProbe frameRate,
         ILocalizationService localization,
-        IAppSettingsService settings)
+        IAppSettingsService settings,
+        ICompactMonitorService compact)
     {
         _systemInfo = systemInfo;
         _sensors = sensors;
         _frameRate = frameRate;
         _localization = localization;
         _settings = settings;
+        _compact = compact;
+
+        _compact.StateChanged += OnCompactStateChanged;
 
         GroupedOptions = CollectionViewSource.GetDefaultView(Options);
         GroupedOptions.GroupDescriptions.Add(new PropertyGroupDescription(nameof(MonitorMetricOption.GroupName)));
@@ -163,6 +169,42 @@ public sealed partial class MonitorViewModel : PageViewModel
     /// without closing the panel and looking at the cards behind it.
     /// </summary>
     public string Preview => string.Join("   ", _selection.ToList().Select(PreviewPart));
+
+    /// <summary>
+    /// The small always-on-top readout, from the page that configures what it shows.
+    ///
+    /// Worth a button here rather than only a hotkey: a key combination nobody has been told about
+    /// is a feature nobody has. The caption next to it names the key, so the button teaches it.
+    /// </summary>
+    [RelayCommand]
+    private void ToggleCompact() => _compact.Toggle();
+
+    public bool IsCompactOpen => _compact.IsOpen;
+
+    public string CompactButtonText =>
+        _localization[_compact.IsOpen ? "Compact_Close" : "Compact_Open"];
+
+    /// <summary>The key as the user would write it, so the hint matches whatever they configured.</summary>
+    public string CompactHotkeyText
+    {
+        get
+        {
+            CompactMonitorSettings compact = _settings.Current.CompactMonitor;
+            if (!compact.HotkeyEnabled)
+            {
+                return _localization["Compact_Hotkey_Off"];
+            }
+
+            HotkeySpec.TryParse(compact.Hotkey, out HotkeySpec spec);
+            return _localization.Format("Compact_Hotkey_Hint", spec.ToString());
+        }
+    }
+
+    private void OnCompactStateChanged(object? sender, EventArgs e)
+    {
+        OnPropertyChanged(nameof(IsCompactOpen));
+        OnPropertyChanged(nameof(CompactButtonText));
+    }
 
     public ObservableCollection<double> FpsHistory { get; } = [];
 
@@ -472,6 +514,11 @@ public sealed partial class MonitorViewModel : PageViewModel
 
         Sample();
         RefreshVisibility();
+
+        // The hotkey can have been changed on the settings page since the last visit.
+        OnPropertyChanged(nameof(CompactHotkeyText));
+        OnPropertyChanged(nameof(CompactButtonText));
+        OnPropertyChanged(nameof(IsCompactOpen));
     }
 
     protected override Task OnLeaveAsync()
