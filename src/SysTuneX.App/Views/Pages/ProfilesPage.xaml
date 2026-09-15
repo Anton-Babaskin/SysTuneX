@@ -108,15 +108,59 @@
                                                 </StackPanel>
                                             </StackPanel>
 
-                                            <Border Grid.Column="2"
-                                                    Style="{StaticResource Pill}"
-                                                    VerticalAlignment="Top"
-                                                    Background="{StaticResource RiskAdvancedBackgroundBrush}"
-                                                    Visibility="{Binding HasAdvanced, Converter={StaticResource BoolToVisibility}}">
-                                                <TextBlock Text="{loc:Loc Risk_Advanced}"
-                                                           Style="{StaticResource PillText}"
-                                                           Foreground="{StaticResource RiskAdvancedBrush}" />
-                                            </Border>
+                                            <!--
+                                                Two badges, and the first one is the answer to the
+                                                question this page exists for: which profile is on.
+
+                                                It comes from the recorded decision, not from the
+                                                completion bar below. The bar measures how much of
+                                                a profile the machine holds, and profiles share most
+                                                of their tweaks - so applying any one of them left
+                                                every card reading in the high eighties and nothing
+                                                saying which had been chosen.
+                                            -->
+                                            <StackPanel Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Right">
+                                                <Border Style="{StaticResource Pill}"
+                                                        Background="{StaticResource RiskSafeBackgroundBrush}"
+                                                        Visibility="{Binding IsApplied, Converter={StaticResource BoolToVisibility}}">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <ui:SymbolIcon Symbol="Checkmark20"
+                                                                       FontSize="12"
+                                                                       Margin="0,0,4,0"
+                                                                       VerticalAlignment="Center"
+                                                                       Foreground="{StaticResource RiskSafeBrush}" />
+                                                        <TextBlock Text="{loc:Loc Profiles_ActiveBadge}"
+                                                                   Style="{StaticResource PillText}"
+                                                                   Foreground="{StaticResource RiskSafeBrush}" />
+                                                    </StackPanel>
+                                                </Border>
+
+                                                <!-- Applied, then partly undone by hand. Saying just
+                                                     "on" would be the comfortable half of the truth. -->
+                                                <Border Style="{StaticResource Pill}"
+                                                        Margin="0,4,0,0"
+                                                        Background="{StaticResource RiskModerateBackgroundBrush}"
+                                                        Visibility="{Binding IsPartiallyHeld, Converter={StaticResource BoolToVisibility}}">
+                                                    <TextBlock Text="{loc:Loc Profiles_PartiallyHeldBadge}"
+                                                               Style="{StaticResource PillText}"
+                                                               Foreground="{StaticResource RiskModerateBrush}" />
+                                                </Border>
+
+                                                <Border Style="{StaticResource Pill}"
+                                                        Margin="0,4,0,0"
+                                                        Background="{StaticResource RiskAdvancedBackgroundBrush}"
+                                                        Visibility="{Binding HasAdvanced, Converter={StaticResource BoolToVisibility}}">
+                                                    <TextBlock Text="{loc:Loc Risk_Advanced}"
+                                                               Style="{StaticResource PillText}"
+                                                               Foreground="{StaticResource RiskAdvancedBrush}" />
+                                                </Border>
+
+                                                <TextBlock Text="{Binding StateCaption}"
+                                                           Style="{StaticResource CaptionText}"
+                                                           Margin="0,5,0,0"
+                                                           HorizontalAlignment="Right"
+                                                           Visibility="{Binding IsApplied, Converter={StaticResource BoolToVisibility}}" />
+                                            </StackPanel>
                                         </Grid>
 
                                         <TextBlock Text="{Binding Description}"

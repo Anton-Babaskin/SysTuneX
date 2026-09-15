@@ -1295,4 +1295,10 @@
   <data name="Monitor_Caption_Used" xml:space="preserve">
     <value>used</value>
   </data>
+  <data name="Profiles_ActiveBadge" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="Profiles_PartiallyHeldBadge" xml:space="preserve">
+    <value>Partly held</value>
+  </data>
 </root>
