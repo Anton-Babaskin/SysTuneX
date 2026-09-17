@@ -52,10 +52,6 @@ public sealed partial class PowerService : IPowerService
         RegexOptions.ExplicitCapture)]
     private static partial Regex SchemeRegex();
 
-    /// <summary>Matches the "Current AC Power Setting Index: 0x00000064" line of powercfg -q.</summary>
-    [GeneratedRegex(@"0x(?<value>[0-9a-fA-F]{8})", RegexOptions.ExplicitCapture)]
-    private static partial Regex HexValueRegex();
-
     public async Task<IReadOnlyList<PowerScheme>> GetSchemesAsync(CancellationToken cancellationToken = default)
     {
         ProcessRunResult result = await ProcessRunner
@@ -231,13 +227,55 @@ public sealed partial class PowerService : IPowerService
         // The old build wrote ValueMax straight into the power settings key, which the power
         // manager ignores - the value has to go through powercfg and be re-activated.
         int minimumCores = enabled ? 5 : 100;
+
+        OperationResult result = await SetSchemeSettingAsync(
+                ProcessorSubgroup,
+                MinimumCoresSetting,
+                minimumCores,
+                CoreMessages.PowerCoreParkingRejected,
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!result.Success)
+        {
+            return result;
+        }
+
+        return await SetSchemeSettingAsync(
+                ProcessorSubgroup,
+                MaximumCoresSetting,
+                100,
+                CoreMessages.PowerCoreParkingRejected,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<bool> IsCoreParkingDisabledAsync(CancellationToken cancellationToken = default) =>
+        await GetSchemeSettingAsync(ProcessorSubgroup, MinimumCoresSetting, cancellationToken)
+            .ConfigureAwait(false) is >= 100;
+
+    /// <summary>
+    /// Writes one power setting on the active scheme, on mains and on battery, and re-activates
+    /// the scheme so the new indexes take effect.
+    ///
+    /// Both halves matter. Writing only the AC index leaves a laptop unchanged the moment it is
+    /// unplugged, and skipping the re-activation leaves the value stored and not in force - which
+    /// is the failure the core parking code was written to fix in the first place.
+    /// </summary>
+    public async Task<OperationResult> SetSchemeSettingAsync(
+        string subgroup,
+        string setting,
+        int value,
+        MessageTemplate failureCode,
+        CancellationToken cancellationToken = default)
+    {
         var errors = new List<string>();
 
         foreach (string mode in new[] { "setacvalueindex", "setdcvalueindex" })
         {
             ProcessRunResult run = await ProcessRunner.RunAsync(
                     "powercfg.exe",
-                    $"/{mode} SCHEME_CURRENT {ProcessorSubgroup} {MinimumCoresSetting} {minimumCores}",
+                    $"/{mode} SCHEME_CURRENT {subgroup} {setting} {value}",
                     TimeSpan.FromSeconds(10),
                     cancellationToken)
                 .ConfigureAwait(false);
@@ -246,26 +284,13 @@ public sealed partial class PowerService : IPowerService
             {
                 errors.Add(run.Output.Trim());
             }
-
-            ProcessRunResult maxRun = await ProcessRunner.RunAsync(
-                    "powercfg.exe",
-                    $"/{mode} SCHEME_CURRENT {ProcessorSubgroup} {MaximumCoresSetting} 100",
-                    TimeSpan.FromSeconds(10),
-                    cancellationToken)
-                .ConfigureAwait(false);
-
-            if (!maxRun.Success)
-            {
-                errors.Add(maxRun.Output.Trim());
-            }
         }
 
         if (errors.Count > 0)
         {
-            return OperationResult.Fail(CoreMessages.PowerCoreParkingRejected, string.Join("; ", errors));
+            return OperationResult.Fail(failureCode, string.Join("; ", errors));
         }
 
-        // The scheme has to be re-activated for the new indexes to take effect.
         ProcessRunResult reactivate = await ProcessRunner
             .RunAsync("powercfg.exe", "/setactive SCHEME_CURRENT", TimeSpan.FromSeconds(10), cancellationToken)
             .ConfigureAwait(false);
@@ -275,42 +300,25 @@ public sealed partial class PowerService : IPowerService
             : OperationResult.Fail(CoreMessages.PowerReapplyFailed, reactivate.Output.Trim());
     }
 
-    public async Task<bool> IsCoreParkingDisabledAsync(CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Reads one power setting's current mains value, or null when powercfg will not answer -
+    /// which happens when the setting is hidden on this machine rather than set to zero. The
+    /// parsing lives in <see cref="PowerSettingIndex"/>, where a test can reach it.
+    /// </summary>
+    public async Task<int?> GetSchemeSettingAsync(
+        string subgroup,
+        string setting,
+        CancellationToken cancellationToken = default)
     {
         ProcessRunResult result = await ProcessRunner
             .RunAsync(
                 "powercfg.exe",
-                $"/q SCHEME_CURRENT {ProcessorSubgroup} {MinimumCoresSetting}",
+                $"/q SCHEME_CURRENT {subgroup} {setting}",
                 TimeSpan.FromSeconds(10),
                 cancellationToken)
             .ConfigureAwait(false);
 
-        if (!result.Success)
-        {
-            return false;
-        }
-
-        // The AC index is the first "Current ... Setting Index" hex value in the output.
-        foreach (string line in result.StandardOutput.Split('\n'))
-        {
-            if (!line.Contains("Index", StringComparison.OrdinalIgnoreCase) &&
-                !line.Contains("индекс", StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
-            Match match = HexValueRegex().Match(line);
-            if (match.Success && int.TryParse(
-                    match.Groups["value"].Value,
-                    System.Globalization.NumberStyles.HexNumber,
-                    System.Globalization.CultureInfo.InvariantCulture,
-                    out int value))
-            {
-                return value >= 100;
-            }
-        }
-
-        return false;
+        return result.Success ? PowerSettingIndex.Parse(result.StandardOutput) : null;
     }
 
     public async Task<OperationResult> SetHibernationAsync(bool enabled, CancellationToken cancellationToken = default)

@@ -1355,4 +1355,25 @@
   <data name="Monitor_Fps_NoTarget" xml:space="preserve">
     <value>The counter is running and waiting. Bring a game to the front once and it will stay pointed at it, even while you look at this page.</value>
   </data>
+  <data name="Core_Power_SettingRejected" xml:space="preserve">
+    <value>powercfg rejected the power setting change: {0}</value>
+  </data>
+  <data name="Core_Power_SettingUnavailable" xml:space="preserve">
+    <value>This power setting is not available on this PC.</value>
+  </data>
+  <data name="Core_ScheduledTask_QueryFailed" xml:space="preserve">
+    <value>Windows would not say what state these scheduled tasks are in.</value>
+  </data>
+  <data name="Core_ScheduledTask_ChangeFailed" xml:space="preserve">
+    <value>Some scheduled tasks could not be changed: {0}</value>
+  </data>
+  <data name="Core_ScheduledTask_NeedsAdministrator" xml:space="preserve">
+    <value>Changing Windows scheduled tasks needs administrator rights.</value>
+  </data>
+  <data name="History_Kind_PowerSetting" xml:space="preserve">
+    <value>Power setting</value>
+  </data>
+  <data name="History_Kind_ScheduledTask" xml:space="preserve">
+    <value>Scheduled task</value>
+  </data>
 </root>

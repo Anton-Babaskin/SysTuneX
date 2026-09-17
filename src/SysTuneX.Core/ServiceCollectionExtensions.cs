@@ -30,11 +30,14 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<INetworkService, NetworkService>();
         services.AddSingleton<ICleanupService, CleanupService>();
         services.AddSingleton<IRestorePointService, RestorePointService>();
+        services.AddSingleton<IScheduledTaskService, ScheduledTaskService>();
 
         // Handlers are resolved by TweakEngine through IEnumerable<ISpecialTweakHandler>.
         services.AddSingleton<ISpecialTweakHandler, CoreParkingTweakHandler>();
         services.AddSingleton<ISpecialTweakHandler, HypervisorLaunchTweakHandler>();
         services.AddSingleton<ISpecialTweakHandler, NagleTweakHandler>();
+        services.AddSingleton<ISpecialTweakHandler, PcieAspmTweakHandler>();
+        services.AddSingleton<ISpecialTweakHandler, TelemetryTaskTweakHandler>();
 
         services.AddSingleton<ITweakEngine, TweakEngine>();
         services.AddSingleton<IProfileService, ProfileService>();

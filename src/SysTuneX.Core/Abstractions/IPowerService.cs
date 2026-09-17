@@ -26,6 +26,27 @@ public interface IPowerService
 
     Task<bool> IsCoreParkingDisabledAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Writes one setting on the active power scheme, on mains and on battery, and re-activates
+    /// the scheme so it takes effect. <paramref name="failureCode"/> is the message to report if
+    /// powercfg refuses.
+    /// </summary>
+    Task<OperationResult> SetSchemeSettingAsync(
+        string subgroup,
+        string setting,
+        int value,
+        MessageTemplate failureCode,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// One setting's current mains value, or null when powercfg will not answer - which is what a
+    /// setting hidden on this machine looks like, and is not the same as a value of zero.
+    /// </summary>
+    Task<int?> GetSchemeSettingAsync(
+        string subgroup,
+        string setting,
+        CancellationToken cancellationToken = default);
+
     Task<OperationResult> SetHibernationAsync(bool enabled, CancellationToken cancellationToken = default);
 }
 

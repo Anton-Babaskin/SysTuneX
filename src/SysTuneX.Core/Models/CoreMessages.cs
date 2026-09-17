@@ -77,6 +77,27 @@ public static class CoreMessages
     public static readonly MessageTemplate PowerHibernationFailed =
         new("Power_HibernationFailed", "powercfg could not change hibernation: {0}");
 
+    public static readonly MessageTemplate PowerSettingRejected =
+        new("Power_SettingRejected", "powercfg rejected the power setting change: {0}");
+
+    /// <summary>
+    /// The setting is not exposed on this machine. Not an error the user caused: some firmware and
+    /// some OEM power schemes simply do not carry it.
+    /// </summary>
+    public static readonly MessageTemplate PowerSettingUnavailable =
+        new("Power_SettingUnavailable", "This power setting is not available on this PC.");
+
+    // ── Scheduled tasks ──────────────────────────
+
+    public static readonly MessageTemplate ScheduledTaskQueryFailed =
+        new("ScheduledTask_QueryFailed", "Windows would not say what state these scheduled tasks are in.");
+
+    public static readonly MessageTemplate ScheduledTaskChangeFailed =
+        new("ScheduledTask_ChangeFailed", "Some scheduled tasks could not be changed: {0}");
+
+    public static readonly MessageTemplate ScheduledTaskNeedsAdministrator =
+        new("ScheduledTask_NeedsAdministrator", "Changing Windows scheduled tasks needs administrator rights.");
+
     // ── Network ─────────────────────────────────────────────────────────────────
 
     public static readonly MessageTemplate NetworkAdapterGone =
@@ -219,7 +240,8 @@ public static class CoreMessages
         ServiceStopTimedOut, ServiceStopFailed, ServiceUnknownStartType, ServiceSetStartTypeFailed,
         ServiceNotChangedByUs,
         PowerNoHighPerformanceScheme, PowerActivateFailed, PowerCoreParkingRejected,
-        PowerReapplyFailed, PowerHibernationFailed,
+        PowerReapplyFailed, PowerHibernationFailed, PowerSettingRejected, PowerSettingUnavailable,
+        ScheduledTaskQueryFailed, ScheduledTaskChangeFailed, ScheduledTaskNeedsAdministrator,
         NetworkAdapterGone, NetworkInvalidAddress, NetworkNoIpv4Interface, NetworkSetResolverFailed,
         NetworkRestoreDhcpFailed, NetworkFlushCacheFailed, NetworkNoConnectedAdapter,
         HostsNeedsAdministrator, HostsLocked, HostsUpdateFailed,

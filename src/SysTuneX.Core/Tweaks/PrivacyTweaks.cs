@@ -36,6 +36,23 @@ public static class PrivacyTweaks
 
         new()
         {
+            Id = "telemetry_tasks_disable",
+            Category = TweakCategory.Privacy,
+            GroupKey = "Group_Telemetry",
+            Name = "Switch off the data-collection scheduled tasks",
+            Description =
+                "Seven scheduled tasks exist to report how this PC is used: the Compatibility " +
+                "Appraiser, which walks every installed program and can hold a core busy for minutes " +
+                "at a time, and six smaller Customer Experience Improvement Program tasks. None of " +
+                "them is needed for Windows to work, for updates to install or for a game to run. " +
+                "Only the ones that are actually running are switched off, and only those are " +
+                "switched back on - a task you disabled yourself stays as you left it.",
+            Risk = RiskLevel.Safe,
+            HandlerKey = "telemetry_tasks",
+        },
+
+        new()
+        {
             Id = "advertising_id_disable",
             Category = TweakCategory.Privacy,
             GroupKey = "Group_Telemetry",

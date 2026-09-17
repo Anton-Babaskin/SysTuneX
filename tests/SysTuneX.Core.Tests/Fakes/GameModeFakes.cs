@@ -175,6 +175,26 @@ public sealed class FakePowerService : IPowerService
 
     public Task<bool> IsCoreParkingDisabledAsync(CancellationToken cancellationToken = default) => Task.FromResult(true);
 
+    /// <summary>Scheme settings written, keyed "subgroup/setting", so a test can check what was asked for.</summary>
+    public Dictionary<string, int> SchemeSettings { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    public Task<OperationResult> SetSchemeSettingAsync(
+        string subgroup,
+        string setting,
+        int value,
+        MessageTemplate failureCode,
+        CancellationToken cancellationToken = default)
+    {
+        SchemeSettings[$"{subgroup}/{setting}"] = value;
+        return Task.FromResult(OperationResult.Ok());
+    }
+
+    public Task<int?> GetSchemeSettingAsync(
+        string subgroup,
+        string setting,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult(SchemeSettings.TryGetValue($"{subgroup}/{setting}", out int value) ? value : (int?)null);
+
     public Task<OperationResult> SetHibernationAsync(bool enabled, CancellationToken cancellationToken = default) =>
         Task.FromResult(OperationResult.Ok());
 }

@@ -31,6 +31,67 @@ counter that is running but has nothing to count shows `--` rather than a number
 how the readout is assembled, because the window is small, it sits over a game, and nobody reading
 it has room to wonder whether a zero means zero.
 
+### The frame counter reports a number again
+
+Reported from a real machine: the FPS counter does not work. It was two clocks being compared
+against each other.
+
+Frame timestamps come from the trace — whatever epoch Event Tracing hands over. The window then
+aged those timestamps against the local wall clock. Where the two do not line up, every frame looks
+hours old on the first read, the window empties itself, and the counter reports nothing. Forever,
+and silently: an empty window is a perfectly ordinary state, so there was nothing to log.
+
+Every test passed the same value for both roles, which is exactly why nothing caught it. A frame
+now carries two timestamps and the type says why: the presentation time, only ever used as a
+difference against another presentation time, and the arrival time on this process's own monotonic
+clock, which is the only value ever compared against "now".
+
+**Direct3D 9 games were never counted at all.** A D3D9 title does not call `IDXGISwapChain::Present`,
+so with the DXGI provider alone the counter sat at nothing for every game of that era and gave no
+hint why. That provider is listened to as well now.
+
+**"No frame rate" said one thing for four different situations**, which is why the only bug report
+it ever produced was "it doesn't work". The page now tells them apart: the trace session would not
+start; the session is up and nothing on this PC presents through DirectX at all, which is what a
+Vulkan or OpenGL game looks like; frames are being presented but by some other window; or this game
+was being counted and has stopped — which is what alt-tabbing out of an exclusive fullscreen game
+does, and is not a fault.
+
+### Three new tweaks
+
+**PCI Express power saving, off.** ASPM parks a PCIe link between transfers and wakes it on the next
+one. Waking takes microseconds — which matters only when it lands between a mouse report and the
+frame that should have used it, on the link carrying the drive a game streams from or the network
+card a match is on. It costs power, and on a laptop on battery that is a real loss, so the tweak
+says so instead of selling it as free. A machine whose firmware does not expose the setting now says
+*that*, rather than offering a switch that cannot do anything.
+
+**The accessibility key shortcuts, off.** Five taps of Shift opens the Sticky Keys dialogue, which
+in a shooter means crouch, crouch, crouch and then a modal window over the game. The shortcuts go;
+the features stay available in Settings for anyone who uses them.
+
+**The data-collection scheduled tasks, off.** Seven of them: the Compatibility Appraiser, which
+walks every installed program and can hold a core busy for minutes at a time, and six smaller
+Customer Experience Improvement Program tasks. Only the ones actually running are switched off, and
+only those are switched back on — a task you disabled yourself stays as you left it, which is the
+rule the service tweaks already follow.
+
+**No "audio latency" tweak**, although every optimizer has one. On stock Windows 11 the multimedia
+scheduler's Audio task already sits at priority 6 and Pro Audio already at scheduling category
+High — the values those guides tell you to write. The one value that is not already set is the Audio
+task's category, and raising it puts the audio engine in the same scheduling band as the game. That
+is a trade, not a win, and shipping it as a speed-up would be a placebo with a real cost.
+
+### Reading a power setting no longer guesses
+
+Reading one meant scanning powercfg's output for a line with "index" in it — in English or in
+Russian. That had never been run against either, because reaching it needed powercfg on a Windows
+machine, and a scan that matches nothing does not fail: it returns zero, which for most of these
+settings means "off". It would report a machine as tuned having read nothing at all.
+
+The parsing is now a plain function with twelve tests over real powercfg output in both languages,
+and a setting the machine does not expose reads as *nothing* rather than as zero.
+
 ### The profiles page now says which profile is on
 
 Reported after applying "Battle royale" and not being able to tell. The page showed, per card, what

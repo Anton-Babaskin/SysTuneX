@@ -1943,4 +1943,43 @@
   <data name="Monitor_Fps_NoTarget" xml:space="preserve">
     <value>Счётчик работает и ждёт. Разверните игру один раз — дальше он останется на ней, даже пока вы смотрите эту страницу.</value>
   </data>
+  <data name="Core_Power_SettingRejected" xml:space="preserve">
+    <value>powercfg отклонил изменение параметра питания: {0}</value>
+  </data>
+  <data name="Core_Power_SettingUnavailable" xml:space="preserve">
+    <value>Этот параметр питания недоступен на этом ПК.</value>
+  </data>
+  <data name="Core_ScheduledTask_QueryFailed" xml:space="preserve">
+    <value>Windows не сообщила, в каком состоянии эти задачи планировщика.</value>
+  </data>
+  <data name="Core_ScheduledTask_ChangeFailed" xml:space="preserve">
+    <value>Некоторые задачи планировщика изменить не удалось: {0}</value>
+  </data>
+  <data name="Core_ScheduledTask_NeedsAdministrator" xml:space="preserve">
+    <value>Для изменения задач планировщика Windows нужны права администратора.</value>
+  </data>
+  <data name="History_Kind_PowerSetting" xml:space="preserve">
+    <value>Параметр питания</value>
+  </data>
+  <data name="History_Kind_ScheduledTask" xml:space="preserve">
+    <value>Задача планировщика</value>
+  </data>
+  <data name="Tweak_pcie_aspm_disable_Name" xml:space="preserve">
+    <value>Отключить энергосбережение PCI Express</value>
+  </data>
+  <data name="Tweak_pcie_aspm_disable_Desc" xml:space="preserve">
+    <value>ASPM переводит линию PCIe в энергосберегающее состояние между передачами и будит её на следующей. Пробуждение занимает микросекунды — и это неважно ровно до тех пор, пока оно не попадёт между отчётом мыши и кадром, который должен был его использовать, на линии с NVMe-диском, откуда игра подгружает данные, или с сетевой картой, на которой идёт матч. Стоит энергии: на ноутбуке от батареи это реальная потеря, а не бесплатный выигрыш.</value>
+  </data>
+  <data name="Tweak_sticky_keys_disable_Name" xml:space="preserve">
+    <value>Отключить горячие клавиши специальных возможностей</value>
+  </data>
+  <data name="Tweak_sticky_keys_disable_Desc" xml:space="preserve">
+    <value>Пять нажатий Shift открывают окно залипания клавиш — в шутере это присесть, присесть, присесть и модальное окно поверх игры. Удержание правого Shift восемь секунд делает то же самое для фильтрации ввода. Отключаются именно сочетания, которые их вызывают; сами функции остаются доступны в параметрах Windows для тех, кто ими пользуется.</value>
+  </data>
+  <data name="Tweak_telemetry_tasks_disable_Name" xml:space="preserve">
+    <value>Отключить задачи сбора данных</value>
+  </data>
+  <data name="Tweak_telemetry_tasks_disable_Desc" xml:space="preserve">
+    <value>Семь задач планировщика существуют, чтобы сообщать, как используется этот ПК: Compatibility Appraiser, который обходит все установленные программы и может занимать ядро минутами, и шесть задач поменьше из Customer Experience Improvement Program. Ни одна из них не нужна ни для работы Windows, ни для установки обновлений, ни для запуска игры. Отключаются только те, что действительно работают, и включаются обратно только они же — задачу, которую вы отключили сами, SysTuneX не трогает.</value>
+  </data>
 </root>
