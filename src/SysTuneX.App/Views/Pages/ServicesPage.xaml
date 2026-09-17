@@ -29,6 +29,7 @@
                 <StackPanel>
                     <TextBlock Text="{loc:Loc Services_Title}" Style="{StaticResource PageTitle}" />
                     <TextBlock Text="{loc:Loc Services_Subtitle}" Style="{StaticResource PageSubtitle}" />
+                    <Border Style="{StaticResource TitleAccent}" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">

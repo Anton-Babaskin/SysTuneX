@@ -29,6 +29,7 @@
                 <StackPanel>
                     <TextBlock Text="{loc:Loc Network_Title}" Style="{StaticResource PageTitle}" />
                     <TextBlock Text="{loc:Loc Network_Subtitle}" Style="{StaticResource PageSubtitle}" />
+                    <Border Style="{StaticResource TitleAccent}" />
                 </StackPanel>
 
                 <ContentControl Grid.Column="1" Template="{StaticResource TweakToolbarTemplate}" />

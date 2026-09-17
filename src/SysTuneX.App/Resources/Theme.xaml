@@ -25,7 +25,7 @@
     -->
     <GridLength x:Key="ChartBandHeight">56</GridLength>
 
-    <CornerRadius x:Key="CardCornerRadius">8</CornerRadius>
+    <CornerRadius x:Key="CardCornerRadius">10</CornerRadius>
     <CornerRadius x:Key="PillCornerRadius">10</CornerRadius>
 
     <sys:Double x:Key="MaxContentWidth">1180</sys:Double>
@@ -50,11 +50,32 @@
 
     <!-- ── Typography ──────────────────────────────────────────────────────── -->
 
+    <!--
+        One scale, in one place: 30 / 24 / 16 / 14 / 12 / 11.
+
+        Pages used to reach past these with hard-coded sizes - 13 here, 26 there - so two things
+        that meant the same thing were set differently on different pages and nothing said which
+        was right. A size that is not on this list is a size that will drift.
+    -->
+
     <Style x:Key="PageTitle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="30" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
         <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+    </Style>
+
+    <!--
+        The one number a screen is about - the tuning score, the headline frame rate. Bigger than a
+        metric tile because it is the answer rather than one of several readings.
+    -->
+    <Style x:Key="DisplayValue" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="30" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+        <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
     </Style>
 
     <Style x:Key="PageSubtitle" TargetType="TextBlock">
@@ -71,7 +92,7 @@
     </Style>
 
     <Style x:Key="BodyText" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontSize" Value="14" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
         <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
@@ -82,12 +103,28 @@
         <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
 
+    <!-- A caption carrying the app's accent, for the one line on a card that is a verdict. -->
+    <Style x:Key="AccentCaption" TargetType="TextBlock" BasedOn="{StaticResource CaptionText}">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+    </Style>
+
     <Style x:Key="MetricValue" TargetType="TextBlock">
         <Setter Property="FontSize" Value="28" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
-        <!-- Tabular figures stop live counters shifting width every time a digit changes. -->
         <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+        <!--
+            Tabular figures: every digit the same width, so a counter going 99 -> 100 -> 99 does not
+            shove the caption beside it back and forth twice a second.
+
+            This line is the fix for a comment that claimed it and a setter that did not do it. The
+            monitor page updates once a second and the compact window sits over a game, which are
+            the two worst places for text that jitters - and it had been jittering since the page
+            was written, because nothing about a comment is enforced.
+        -->
+        <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
     </Style>
 
     <Style x:Key="MetricUnit" TargetType="TextBlock">
@@ -127,6 +164,24 @@
     </Style>
 
     <!-- ── Surfaces ────────────────────────────────────────────────────────── -->
+
+    <!--
+        The accent rule under a page title.
+
+        The app has a brand gradient and, until now, nowhere that used it: every screen opened with
+        grey text on a grey background and looked like a settings dialog. Four pixels of colour is
+        enough to say which application this is, and unlike a drop shadow it costs nothing to draw -
+        which matters in a tool whose whole argument is that it does not waste the machine.
+    -->
+    <Style x:Key="TitleAccent" TargetType="Border">
+        <Setter Property="Height" Value="4" />
+        <Setter Property="Width" Value="44" />
+        <Setter Property="CornerRadius" Value="2" />
+        <Setter Property="Margin" Value="0,14,0,0" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="Background" Value="{StaticResource BrandGradientBrush}" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
 
     <Style x:Key="Card" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />

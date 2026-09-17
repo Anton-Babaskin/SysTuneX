@@ -24,6 +24,7 @@
                 <StackPanel>
                     <TextBlock Text="{loc:Loc Monitor_Title}" Style="{StaticResource PageTitle}" />
                     <TextBlock Text="{loc:Loc Monitor_Subtitle}" Style="{StaticResource PageSubtitle}" />
+                    <Border Style="{StaticResource TitleAccent}" />
                 </StackPanel>
 
                 <!--

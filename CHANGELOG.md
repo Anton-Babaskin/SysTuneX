@@ -31,6 +31,31 @@ counter that is running but has nothing to count shows `--` rather than a number
 how the readout is assembled, because the window is small, it sits over a game, and nobody reading
 it has room to wonder whether a zero means zero.
 
+### The interface has an identity, and its numbers stop jittering
+
+**Live counters no longer shift about.** The metric style carried a comment saying it used tabular
+figures — every digit the same width — and a setter that did nothing of the kind. So a counter going
+99 → 100 → 99 shoved the caption beside it back and forth, twice a second, on the two screens where
+that is worst: the monitor page and the small window that sits over a game. It had done that since
+the page was written, because nothing about a comment is enforced. The setting is now actually
+applied.
+
+**Every page opens with the brand accent.** The app has had a gradient in its palette and nowhere
+that used it: every screen started with grey text on a grey background and looked like a settings
+dialogue. Four pixels of colour under each page title is enough to say which application this is,
+and unlike a drop shadow it costs nothing to draw — which matters in a tool whose whole argument is
+that it does not waste the machine.
+
+**One type scale instead of three.** Pages reached past the shared styles with hard-coded sizes —
+13 here, 26 there — so two things that meant the same thing were set differently on different pages
+and nothing said which was right. There is one scale now, and the sizes that were off it are on it.
+
+**A test that reads the markup.** A `{StaticResource}` naming a key that does not exist is not a
+build error: it throws when the page is parsed, which is when the user opens it, and takes the page
+down. This project has already shipped that once. There is now a check that resolves every resource
+key every page asks for, and it needs neither Windows nor WPF to run — so a resource renamed on any
+machine is caught by the person who renamed it.
+
 ### The frame counter reports a number again
 
 Reported from a real machine: the FPS counter does not work. It was two clocks being compared

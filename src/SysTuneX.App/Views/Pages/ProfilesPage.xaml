@@ -25,6 +25,7 @@
                         <StackPanel>
                             <TextBlock Text="{loc:Loc Profiles_Title}" Style="{StaticResource PageTitle}" />
                             <TextBlock Text="{loc:Loc Profiles_Subtitle}" Style="{StaticResource PageSubtitle}" />
+                            <Border Style="{StaticResource TitleAccent}" />
                         </StackPanel>
 
                         <ui:Button Grid.Column="1"

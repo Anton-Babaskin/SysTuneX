@@ -27,6 +27,7 @@
                 <StackPanel Margin="{StaticResource SectionGap}">
                     <TextBlock Text="{loc:Loc Settings_Title}" Style="{StaticResource PageTitle}" />
                     <TextBlock Text="{loc:Loc Settings_Subtitle}" Style="{StaticResource PageSubtitle}" />
+                    <Border Style="{StaticResource TitleAccent}" />
                 </StackPanel>
 
                 <!-- ── Open: the two that get changed ────────────────────────────────── -->

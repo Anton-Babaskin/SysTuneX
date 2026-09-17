@@ -27,6 +27,7 @@
                         <StackPanel>
                             <TextBlock Text="{loc:Loc Dashboard_Title}" Style="{StaticResource PageTitle}" />
                             <TextBlock Text="{loc:Loc Dashboard_Subtitle}" Style="{StaticResource PageSubtitle}" />
+                            <Border Style="{StaticResource TitleAccent}" />
                         </StackPanel>
 
                         <ui:Button Grid.Column="1"
@@ -52,10 +53,7 @@
                                                  Width="104" Height="104" />
                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                                     <TextBlock Text="{Binding Score, StringFormat={}{0:F0}}"
-                                               FontSize="26"
-                                               FontWeight="SemiBold"
-                                               HorizontalAlignment="Center"
-                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                               Style="{StaticResource DisplayValue}" />
                                     <TextBlock Text="/ 100"
                                                FontSize="11"
                                                HorizontalAlignment="Center"
@@ -66,9 +64,8 @@
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                 <TextBlock Text="{loc:Loc Dashboard_Score}" Style="{StaticResource SectionTitle}" />
                                 <TextBlock Text="{Binding ScoreCaption}"
-                                           FontSize="13"
-                                           Margin="0,2,0,6"
-                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                           Style="{StaticResource AccentCaption}"
+                                           Margin="0,2,0,6" />
                                 <TextBlock Text="{loc:Loc Dashboard_ScoreHint}" Style="{StaticResource CaptionText}" />
 
                                 <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
