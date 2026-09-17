@@ -11,6 +11,16 @@ public interface IProfileService
     IReadOnlyList<TweakDefinition> ResolveTweaks(GameProfile profile, bool includeAdvanced);
 
     /// <summary>How far through the profile the machine already is, as a fraction between 0 and 1.</summary>
+    /// <summary>
+    /// The profile the user last applied, or null when none is. Survives a restart, because the
+    /// machine keeps the tweaks after the window closes.
+    ///
+    /// Deliberately separate from <see cref="GetCompletionAsync"/>: that measures how much of a
+    /// profile the machine currently holds, which cannot identify the chosen one because profiles
+    /// share most of their tweaks and all of them read high once any one is applied.
+    /// </summary>
+    AppliedProfile? Applied { get; }
+
     Task<double> GetCompletionAsync(GameProfile profile, CancellationToken cancellationToken = default);
 
     /// <summary>

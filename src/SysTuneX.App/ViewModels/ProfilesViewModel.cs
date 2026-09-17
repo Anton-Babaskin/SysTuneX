@@ -146,6 +146,7 @@ public sealed partial class ProfilesViewModel : PageViewModel
         {
             try
             {
+                card.Applied = _profiles.Applied;
                 card.Completion = await _profiles.GetCompletionAsync(card.Profile, PageToken).ConfigureAwait(true);
             }
             catch (OperationCanceledException)
@@ -170,7 +171,22 @@ public sealed partial class ProfileCardViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CompletionPercent))]
+    [NotifyPropertyChangedFor(nameof(State))]
+    [NotifyPropertyChangedFor(nameof(IsApplied))]
+    [NotifyPropertyChangedFor(nameof(IsPartiallyHeld))]
+    [NotifyPropertyChangedFor(nameof(StateCaption))]
     private double _completion;
+
+    /// <summary>
+    /// The recorded decision, pushed in by the page. Null until the page has read it, and null
+    /// again once everything has been restored.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(State))]
+    [NotifyPropertyChangedFor(nameof(IsApplied))]
+    [NotifyPropertyChangedFor(nameof(IsPartiallyHeld))]
+    [NotifyPropertyChangedFor(nameof(StateCaption))]
+    private AppliedProfile? _applied;
 
     public ProfileCardViewModel(GameProfile profile, CatalogText text, IProfileService profiles)
     {
@@ -205,6 +221,22 @@ public sealed partial class ProfileCardViewModel : ObservableObject
     public bool HasAdvanced { get; }
 
     public double CompletionPercent => Math.Round(Completion * 100);
+
+    /// <summary>
+    /// Whether this is the profile that is on. Answered from the record rather than from the
+    /// percentage, because the percentage cannot answer it - profiles share most of their tweaks,
+    /// so applying any one of them leaves every card reading in the high eighties.
+    /// </summary>
+    public ProfileCardState State => ProfileCardStates.For(Applied, Id, Completion);
+
+    public bool IsApplied => State is not ProfileCardState.Inactive;
+
+    public bool IsPartiallyHeld => State is ProfileCardState.PartiallyHeld;
+
+    /// <summary>When it was applied, for the badge. Empty when this is not the applied profile.</summary>
+    public string StateCaption => Applied is { } applied && IsApplied
+        ? applied.AppliedAt.ToLocalTime().ToString("d MMM, HH:mm")
+        : string.Empty;
 
     public void RefreshText()
     {

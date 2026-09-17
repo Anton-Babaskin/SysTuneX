@@ -1340,4 +1340,10 @@
   <data name="Settings_Compact_OpenOnStartup" xml:space="preserve">
     <value>Open it when SysTuneX starts</value>
   </data>
+  <data name="Profiles_ActiveBadge" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="Profiles_PartiallyHeldBadge" xml:space="preserve">
+    <value>Partly held</value>
+  </data>
 </root>

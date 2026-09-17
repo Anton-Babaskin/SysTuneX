@@ -31,6 +31,24 @@ counter that is running but has nothing to count shows `--` rather than a number
 how the readout is assembled, because the window is small, it sits over a game, and nobody reading
 it has room to wonder whether a zero means zero.
 
+### The profiles page now says which profile is on
+
+Reported after applying "Battle royale" and not being able to tell. The page showed, per card, what
+share of that profile's tweaks were currently in place — and profiles deliberately share most of
+their tweaks, so applying any one of them left every card reading somewhere in the high eighties.
+Six near-identical percentages answer nothing.
+
+A percentage never could answer it: it measures the machine, and the question is about a decision.
+So the decision is recorded when it is made. The applied profile is remembered — on disk, because
+the machine keeps the tweaks after the window closes — and its card carries a badge with the date.
+
+Applying another profile moves the badge. Restoring everything clears it, because then no profile
+is applied.
+
+A card can also say **partly held**: applied, but since reverted in part by hand. Calling that
+simply "on" would be the comfortable half of the truth, and calling it off would throw away what
+the user did.
+
 ---
 
 ## v2.10.2

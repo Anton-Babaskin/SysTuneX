@@ -1,6 +1,7 @@
 using System.Runtime.Versioning;
 using Microsoft.Extensions.Logging;
 using SysTuneX.Core.Abstractions;
+using SysTuneX.Core.Diagnostics;
 using SysTuneX.Core.Models;
 using SysTuneX.Core.Tweaks;
 
@@ -22,6 +23,15 @@ public sealed class ProfileService : IProfileService
     private readonly IEnvironmentService _environment;
     private readonly IRegistryService _registry;
 
+    /// <summary>
+    /// Where the applied profile is remembered.
+    ///
+    /// On disk rather than in memory because the question "which profile is on" outlives the
+    /// window: the machine keeps the tweaks after the app closes, so the app has to keep the
+    /// record too, or it reopens knowing less than the machine does.
+    /// </summary>
+    private readonly string _appliedFile;
+
     public ProfileService(
         ILogger<ProfileService> logger,
         ITweakEngine tweaks,
@@ -33,8 +43,10 @@ public sealed class ProfileService : IProfileService
         IPrivacyService privacy,
         INetworkService network,
         IEnvironmentService environment,
-        IRegistryService registry)
+        IRegistryService registry,
+        string? dataDirectory = null)
     {
+        _appliedFile = Path.Combine(dataDirectory ?? AppPaths.DataDirectory, "profile.json");
         _logger = logger;
         _tweaks = tweaks;
         _services = services;
@@ -46,6 +58,59 @@ public sealed class ProfileService : IProfileService
         _network = network;
         _environment = environment;
         _registry = registry;
+
+        Applied = ReadApplied();
+    }
+
+    /// <inheritdoc />
+    public AppliedProfile? Applied { get; private set; }
+
+    /// <summary>
+    /// Reads the record at construction rather than on demand: every caller wants it immediately,
+    /// and a missing or unreadable file means "nothing applied", which is the honest answer when
+    /// we genuinely do not know.
+    /// </summary>
+    private AppliedProfile? ReadApplied()
+    {
+        try
+        {
+            return File.Exists(_appliedFile)
+                ? System.Text.Json.JsonSerializer.Deserialize<AppliedProfile>(File.ReadAllText(_appliedFile))
+                : null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "The applied profile record could not be read: {Path}", _appliedFile);
+            return null;
+        }
+    }
+
+    private void WriteApplied(AppliedProfile? applied)
+    {
+        Applied = applied;
+
+        try
+        {
+            if (applied is null)
+            {
+                if (File.Exists(_appliedFile))
+                {
+                    File.Delete(_appliedFile);
+                }
+
+                return;
+            }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(_appliedFile)!);
+            File.WriteAllText(
+                _appliedFile,
+                System.Text.Json.JsonSerializer.Serialize(applied, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+        }
+        catch (Exception ex)
+        {
+            // The record is still correct in memory for this session; only the next launch loses it.
+            _logger.LogWarning(ex, "The applied profile record could not be saved to {Path}", _appliedFile);
+        }
     }
 
     public IReadOnlyList<GameProfile> GetProfiles() => GameProfiles.BuiltIn;
@@ -268,6 +333,15 @@ public sealed class ProfileService : IProfileService
             tweakResult.Failed,
             servicesChanged);
 
+        // Recorded after the work, so a run that threw before touching anything does not leave the
+        // page claiming a profile the machine never received.
+        WriteApplied(new AppliedProfile
+        {
+            ProfileId = profile.Id,
+            AppliedAt = DateTimeOffset.Now,
+            IncludedAdvanced = options.IncludeAdvanced,
+        });
+
         return new ProfileApplyResult
         {
             Tweaks = tweakResult,
@@ -360,6 +434,10 @@ public sealed class ProfileService : IProfileService
                 errors.Add(hosts.Message ?? "The hosts file could not be restored.");
             }
         }
+
+        // Everything SysTuneX recorded has been put back, so no profile is applied any more.
+        // Leaving the record would let the page keep naming a profile whose tweaks are gone.
+        WriteApplied(null);
 
         return new ProfileApplyResult
         {

@@ -1928,4 +1928,10 @@
   <data name="Settings_Compact_OpenOnStartup" xml:space="preserve">
     <value>Открывать при запуске SysTuneX</value>
   </data>
+  <data name="Profiles_ActiveBadge" xml:space="preserve">
+    <value>Применён</value>
+  </data>
+  <data name="Profiles_PartiallyHeldBadge" xml:space="preserve">
+    <value>Частично держится</value>
+  </data>
 </root>
