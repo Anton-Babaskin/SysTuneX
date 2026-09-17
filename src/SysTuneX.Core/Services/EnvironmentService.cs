@@ -17,13 +17,18 @@ public sealed class EnvironmentService : IEnvironmentService
 
     private readonly ILogger<EnvironmentService> _logger;
     private readonly IRegistryService _registry;
+    private readonly IProcessRunner _processes;
     private readonly Lazy<bool> _isElevated;
     private readonly Lazy<WindowsVersionInfo> _windows;
 
-    public EnvironmentService(ILogger<EnvironmentService> logger, IRegistryService registry)
+    public EnvironmentService(
+        ILogger<EnvironmentService> logger,
+        IRegistryService registry,
+        IProcessRunner processes)
     {
         _logger = logger;
         _registry = registry;
+        _processes = processes;
         _isElevated = new Lazy<bool>(DetectElevation);
         _windows = new Lazy<WindowsVersionInfo>(DetectWindowsVersion);
 
@@ -65,6 +70,33 @@ public sealed class EnvironmentService : IEnvironmentService
             _logger.LogWarning(ex, "Elevated restart was refused");
             return OperationResult.Fail(CoreMessages.EnvironmentElevationRefused, ex);
         }
+    }
+
+    /// <summary>
+    /// Asks Windows to reboot in five seconds.
+    ///
+    /// The delay is deliberate: shutdown.exe can be called off with <c>shutdown /a</c> inside it,
+    /// which is the only escape hatch there is once the command has gone out.
+    /// </summary>
+    public async Task<OperationResult> RestartWindowsAsync(CancellationToken cancellationToken = default)
+    {
+        if (!IsElevated)
+        {
+            return OperationResult.Fail(CoreMessages.BootNeedsAdministrator);
+        }
+
+        ProcessRunResult result = await _processes
+            .RunAsync("shutdown.exe", "/r /t 5", TimeSpan.FromSeconds(15), cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning("shutdown.exe refused to restart the machine: {Error}", result.Output.Trim());
+            return OperationResult.Fail(CoreMessages.RestartRefused, result.Output.Trim());
+        }
+
+        _logger.LogInformation("A restart was requested");
+        return OperationResult.Ok();
     }
 
     public async Task<OperationResult> RestartExplorerAsync(CancellationToken cancellationToken = default)

@@ -38,13 +38,13 @@ public sealed class DiagnosticsService : IDiagnosticsService
         _level = level;
     }
 
-    public string LogDirectory => AppPaths.LogDirectory;
+    public string LogDirectory => AppPaths.LogDirectoryIn(_environment.DataDirectory);
 
     public string? CurrentLogFile
     {
         get
         {
-            string path = AppPaths.LogFileFor(DateTime.Now);
+            string path = AppPaths.LogFileFor(DateTime.Now, _environment.DataDirectory);
             return File.Exists(path) ? path : null;
         }
     }
@@ -58,7 +58,7 @@ public sealed class DiagnosticsService : IDiagnosticsService
     public async Task<DiagnosticsReport> WriteReportAsync(CancellationToken cancellationToken = default)
     {
         string path = Path.Combine(
-            AppPaths.ReportDirectory,
+            AppPaths.ReportDirectoryIn(_environment.DataDirectory),
             $"systunex-diagnostics-{DateTime.Now:yyyyMMdd-HHmmss}.txt");
 
         var report = new StringBuilder();
@@ -76,7 +76,7 @@ public sealed class DiagnosticsService : IDiagnosticsService
             logLines = WriteLog(report);
             WriteErrors(report);
 
-            Directory.CreateDirectory(AppPaths.ReportDirectory);
+            Directory.CreateDirectory(AppPaths.ReportDirectoryIn(_environment.DataDirectory));
             await File.WriteAllTextAsync(path, report.ToString(), Encoding.UTF8, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -196,9 +196,9 @@ public sealed class DiagnosticsService : IDiagnosticsService
             : $"{entry.OriginalValue} ({entry.OriginalValueKind})",
     };
 
-    private static int WriteLog(StringBuilder report)
+    private int WriteLog(StringBuilder report)
     {
-        string path = AppPaths.LogFileFor(DateTime.Now);
+        string path = AppPaths.LogFileFor(DateTime.Now, _environment.DataDirectory);
         Section(report, $"Log tail (last {LogTailLines} lines of {Path.GetFileName(path)})");
 
         string[] lines = ReadTail(path, LogTailLines);
@@ -216,15 +216,15 @@ public sealed class DiagnosticsService : IDiagnosticsService
         return lines.Length;
     }
 
-    private static void WriteErrors(StringBuilder report)
+    private void WriteErrors(StringBuilder report)
     {
-        if (!File.Exists(AppPaths.ErrorLogFile))
+        if (!File.Exists(AppPaths.ErrorLogFileIn(_environment.DataDirectory)))
         {
             return;
         }
 
         Section(report, "Unhandled exceptions (errors.log)");
-        foreach (string line in ReadTail(AppPaths.ErrorLogFile, ErrorTailLines))
+        foreach (string line in ReadTail(AppPaths.ErrorLogFileIn(_environment.DataDirectory), ErrorTailLines))
         {
             report.AppendLine(line);
         }

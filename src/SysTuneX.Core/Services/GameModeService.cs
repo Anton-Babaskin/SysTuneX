@@ -27,10 +27,9 @@ public sealed class GameModeService : IGameModeService
         IEnvironmentService environment,
         IServiceManager services,
         IPowerService power,
-        IProcessService processes,
-        string? dataDirectory = null)
+        IProcessService processes)
     {
-        _sessionFile = Path.Combine(dataDirectory ?? AppPaths.DataDirectory, "gamemode.json");
+        _sessionFile = Path.Combine(environment.DataDirectory, "gamemode.json");
         _logger = logger;
         _environment = environment;
         _services = services;

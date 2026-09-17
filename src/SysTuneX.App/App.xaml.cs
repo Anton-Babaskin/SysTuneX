@@ -60,6 +60,7 @@ public partial class App : Application
                 services.AddSingleton<ISnackbarService, SnackbarService>();
                 services.AddSingleton<IContentDialogService, ContentDialogService>();
                 services.AddSingleton<IUserInteraction, UserInteraction>();
+                services.AddSingleton<IShellLauncher, ShellLauncher>();
                 services.AddSingleton<ITrayIconService, TrayIconService>();
                 services.AddSingleton<IGlobalSearch, GlobalSearch>();
                 services.AddSingleton<IGlobalHotkeyService, GlobalHotkeyService>();

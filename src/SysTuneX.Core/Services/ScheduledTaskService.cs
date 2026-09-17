@@ -28,11 +28,16 @@ public sealed class ScheduledTaskService : IScheduledTaskService
 
     private readonly ILogger<ScheduledTaskService> _logger;
     private readonly IEnvironmentService _environment;
+    private readonly IProcessRunner _processes;
 
-    public ScheduledTaskService(ILogger<ScheduledTaskService> logger, IEnvironmentService environment)
+    public ScheduledTaskService(
+        ILogger<ScheduledTaskService> logger,
+        IEnvironmentService environment,
+        IProcessRunner processes)
     {
         _logger = logger;
         _environment = environment;
+        _processes = processes;
     }
 
     public async Task<IReadOnlyList<ScheduledTaskInfo>> GetStateAsync(
@@ -115,17 +120,21 @@ public sealed class ScheduledTaskService : IScheduledTaskService
     private static string List(IReadOnlyList<string> paths) =>
         "@(" + string.Join(',', paths.Select(Quote)) + ")";
 
-    private static Task<ProcessRunResult> RunAsync(string script, CancellationToken cancellationToken) =>
-        ProcessRunner.RunAsync(
-            "powershell.exe",
-            $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command \"{script.Replace("\"", "\\\"")}\"",
-            Timeout,
-            cancellationToken);
+    /// <summary>
+    /// Runs the script through the base64 path rather than building a command line.
+    ///
+    /// The first version of this quoted the script onto <c>powershell -Command "..."</c> by hand,
+    /// which means surviving both the Windows command line parser and PowerShell's own. Every
+    /// scheme anyone writes for that is a bug waiting for a path with a quote in it - and there was
+    /// already a method here that encodes the command instead, so there is nothing to get right.
+    /// </summary>
+    private Task<ProcessRunResult> RunAsync(string script, CancellationToken cancellationToken) =>
+        _processes.RunPowerShellAsync(script, Timeout, cancellationToken);
 
     /// <summary>
     /// A single-quoted PowerShell string, with any single quote in the path doubled. The paths are
-    /// ours rather than the user's, but building a command line by concatenation is how a quoting
-    /// bug becomes a command nobody asked for.
+    /// ours rather than the user's, but building a script by concatenation is how a quoting bug
+    /// becomes a command nobody asked for.
     /// </summary>
     private static string Quote(string path) => "'" + path.Replace("'", "''", StringComparison.Ordinal) + "'";
 }

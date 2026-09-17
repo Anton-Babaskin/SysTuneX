@@ -31,6 +31,40 @@ counter that is running but has nothing to count shows `--` rather than a number
 how the readout is assembled, because the window is small, it sits over a game, and nobody reading
 it has room to wonder whether a zero means zero.
 
+### Half of Core became testable
+
+Everything SysTuneX cannot do through an API it does by running `powercfg`, `netsh`, `bcdedit` or
+PowerShell and reading what they print. The reading is the part that goes wrong — those tools print
+in the user's language and their output shape is not a contract — and the runner was a static class,
+so none of it could be reached from a test. A comment in the power service said so out loud. Two
+real defects came out of exactly that blind spot, both found by reading rather than by testing,
+which is the expensive way.
+
+The runner is injected now. Twelve tests cover what powercfg prints and what SysTuneX makes of it,
+including the claim the scheme parser has carried since it was written — that powercfg's labels are
+translated, so only the GUID and the name in brackets can be relied on. That had never once been run
+against a Russian machine's output. It turns out to be correct. The power *setting* reader made the
+same claim and was wrong.
+
+**Tests no longer write to your ProgramData folder.** Half the services took an optional directory
+and fell back to a fixed path when it was not given — and no test ever gave it, so every test of the
+profile, snapshot, game-mode and game-watcher services read and wrote the real
+`%ProgramData%\SysTuneX` on whatever machine ran them. The escape hatch is gone; the path comes from
+one injected place, and a test fails if anything but the logger reaches for the fixed one.
+
+**Rebooting your PC left the view model.** `shutdown /r` was a one-line call to a static process
+runner from inside the class that describes the main window — the most consequential thing this app
+can do, in the layer furthest from anything that could check it. It sits beside "relaunch elevated"
+and "restart the shell" now, and it reports a refusal instead of failing silently.
+
+**Opening a folder too.** Four commands called `Process.Start` directly; they go through one
+launcher, which also refuses to hand Windows anything that is not plainly a web address — every URL
+in the app is a constant in our own source, and that is exactly the kind of thing that stops being
+true one edit later.
+
+Four architecture tests keep all of it from coming back. Each one is a mistake this project actually
+made.
+
 ### The interface has an identity, and its numbers stop jittering
 
 **Live counters no longer shift about.** The metric style carried a comment saying it used tabular

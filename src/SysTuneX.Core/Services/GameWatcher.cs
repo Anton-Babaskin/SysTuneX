@@ -39,10 +39,10 @@ public sealed class GameWatcher : IGameWatcher
     /// untestable: every test would read and write the real machine's list and the next one
     /// would inherit it.
     /// </param>
-    public GameWatcher(ILogger<GameWatcher> logger, string? dataDirectory = null)
+    public GameWatcher(ILogger<GameWatcher> logger, IEnvironmentService environment)
     {
         _logger = logger;
-        _listFile = Path.Combine(dataDirectory ?? AppPaths.DataDirectory, "games.json");
+        _listFile = Path.Combine(environment.DataDirectory, "games.json");
     }
 
     public bool IsWatching => _polling is not null;

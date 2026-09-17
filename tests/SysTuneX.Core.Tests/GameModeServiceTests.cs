@@ -293,8 +293,7 @@ public sealed class GameModeServiceTests : IDisposable
             environment ?? new FakeEnvironment(),
             services,
             power ?? new FakePowerService(),
-            processes ?? new FakeProcessService(),
-            _directory);
+            processes ?? new FakeProcessService());
 
     public void Dispose()
     {

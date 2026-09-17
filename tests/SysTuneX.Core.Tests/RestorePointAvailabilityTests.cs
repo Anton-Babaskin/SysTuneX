@@ -23,7 +23,7 @@ public sealed class RestorePointAvailabilityTests
     private const string PolicyKey = @"HKLM\SOFTWARE\Policies\Microsoft\Windows NT\SystemRestore";
 
     private static RestorePointService Service(FakeRegistryService registry, bool elevated = true) =>
-        new(NullLogger<RestorePointService>.Instance, registry, new FakeEnvironment { IsElevated = elevated });
+        new(NullLogger<RestorePointService>.Instance, registry, new FakeEnvironment { IsElevated = elevated }, new FakeProcessRunner());
 
     [Fact]
     public async Task A_stock_machine_can_make_one()

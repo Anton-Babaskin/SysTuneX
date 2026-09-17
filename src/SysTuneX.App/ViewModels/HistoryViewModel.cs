@@ -24,6 +24,7 @@ public sealed partial class HistoryViewModel : PageViewModel
     private readonly ILocalizationService _localization;
     private readonly CatalogText _text;
     private readonly ISnapshotService _snapshots;
+    private readonly IShellLauncher _shell;
 
     [ObservableProperty]
     private bool _showReverted;
@@ -55,7 +56,8 @@ public sealed partial class HistoryViewModel : PageViewModel
         IUserInteraction interaction,
         ILocalizationService localization,
         CatalogText text,
-        ISnapshotService snapshots)
+        ISnapshotService snapshots,
+        IShellLauncher shell)
     {
         _backup = backup;
         _profiles = profiles;
@@ -64,6 +66,7 @@ public sealed partial class HistoryViewModel : PageViewModel
         _localization = localization;
         _text = text;
         _snapshots = snapshots;
+        _shell = shell;
 
         localization.LanguageChanged += (_, _) => Reload();
     }
@@ -245,12 +248,11 @@ public sealed partial class HistoryViewModel : PageViewModel
     {
         try
         {
-            Directory.CreateDirectory(_environment.DataDirectory);
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            OperationResult opened = _shell.OpenFolder(_environment.DataDirectory);
+            if (!opened.Success)
             {
-                FileName = _environment.DataDirectory,
-                UseShellExecute = true,
-            });
+                _interaction.ShowError(opened.Describe(_localization));
+            }
         }
         catch (Exception ex)
         {

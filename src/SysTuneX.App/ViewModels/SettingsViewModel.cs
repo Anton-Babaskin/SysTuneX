@@ -30,6 +30,7 @@ public sealed partial class SettingsViewModel : PageViewModel
     private readonly ITrayIconService _tray;
     private readonly GameModeScheduler _scheduler;
     private readonly ICompactMonitorService _compact;
+    private readonly IShellLauncher _shell;
     private readonly ILogger<SettingsViewModel> _logger;
 
     private bool _isLoading = true;
@@ -116,6 +117,7 @@ public sealed partial class SettingsViewModel : PageViewModel
         ITrayIconService tray,
         GameModeScheduler scheduler,
         ICompactMonitorService compact,
+        IShellLauncher shell,
         ILogger<SettingsViewModel> logger)
     {
         _settings = settings;
@@ -129,6 +131,7 @@ public sealed partial class SettingsViewModel : PageViewModel
         _tray = tray;
         _scheduler = scheduler;
         _compact = compact;
+        _shell = shell;
         _logger = logger;
 
         _compact.StateChanged += (_, _) => OnPropertyChanged(nameof(CompactHotkeyStatus));
@@ -672,8 +675,7 @@ public sealed partial class SettingsViewModel : PageViewModel
     {
         try
         {
-            Directory.CreateDirectory(_environment.DataDirectory);
-            Process.Start(new ProcessStartInfo { FileName = _environment.DataDirectory, UseShellExecute = true });
+            Report(_shell.OpenFolder(_environment.DataDirectory));
         }
         catch (Exception ex)
         {
@@ -729,8 +731,7 @@ public sealed partial class SettingsViewModel : PageViewModel
     {
         try
         {
-            Directory.CreateDirectory(_diagnostics.LogDirectory);
-            Process.Start(new ProcessStartInfo { FileName = _diagnostics.LogDirectory, UseShellExecute = true });
+            Report(_shell.OpenFolder(_diagnostics.LogDirectory));
         }
         catch (Exception ex)
         {
@@ -738,30 +739,18 @@ public sealed partial class SettingsViewModel : PageViewModel
         }
     }
 
-    /// <summary>Opens Explorer with the file already selected - one less step than opening the folder.</summary>
-    private static void Reveal(string filePath)
-    {
-        try
-        {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = "explorer.exe",
-                Arguments = $"/select,\"{filePath}\"",
-                UseShellExecute = true,
-            });
-        }
-        catch
-        {
-            // Not being able to show the folder is not worth an error toast; the path is on screen.
-        }
-    }
+    /// <summary>
+    /// Opens Explorer with the file already selected - one less step than opening the folder.
+    /// A refusal is deliberately silent: the path is on screen either way.
+    /// </summary>
+    private void Reveal(string filePath) => _ = _shell.RevealFile(filePath);
 
     [RelayCommand]
     private void OpenRepository()
     {
         try
         {
-            Process.Start(new ProcessStartInfo { FileName = RepositoryUrl, UseShellExecute = true });
+            Report(_shell.OpenUrl(RepositoryUrl));
         }
         catch (Exception ex)
         {
@@ -770,4 +759,13 @@ public sealed partial class SettingsViewModel : PageViewModel
     }
 
     private void Save() => _ = _settings.SaveAsync();
+
+    /// <summary>Surfaces a shell refusal. Silence here would look like a dead button.</summary>
+    private void Report(OperationResult result)
+    {
+        if (!result.Success)
+        {
+            _interaction.ShowError(result.Describe(_localization));
+        }
+    }
 }

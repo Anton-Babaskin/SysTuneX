@@ -1982,4 +1982,13 @@
   <data name="Tweak_telemetry_tasks_disable_Desc" xml:space="preserve">
     <value>Семь задач планировщика существуют, чтобы сообщать, как используется этот ПК: Compatibility Appraiser, который обходит все установленные программы и может занимать ядро минутами, и шесть задач поменьше из Customer Experience Improvement Program. Ни одна из них не нужна ни для работы Windows, ни для установки обновлений, ни для запуска игры. Отключаются только те, что действительно работают, и включаются обратно только они же — задачу, которую вы отключили сами, SysTuneX не трогает.</value>
   </data>
+  <data name="Core_Environment_RestartRefused" xml:space="preserve">
+    <value>Windows отказалась перезагрузить компьютер: {0}</value>
+  </data>
+  <data name="Core_Shell_OpenFailed" xml:space="preserve">
+    <value>Не удалось открыть {0}: {1}</value>
+  </data>
+  <data name="Core_Shell_RefusedAddress" xml:space="preserve">
+    <value>{0} — не веб-адрес, поэтому он не был открыт.</value>
+  </data>
 </root>

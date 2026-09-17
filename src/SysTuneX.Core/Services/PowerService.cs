@@ -35,11 +35,19 @@ public sealed partial class PowerService : IPowerService
 
     private readonly ILogger<PowerService> _logger;
     private readonly IBackupService _backup;
+    private readonly IProcessRunner _processes;
+    private readonly IEnvironmentService _environment;
 
-    public PowerService(ILogger<PowerService> logger, IBackupService backup)
+    public PowerService(
+        ILogger<PowerService> logger,
+        IBackupService backup,
+        IProcessRunner processes,
+        IEnvironmentService environment)
     {
         _logger = logger;
         _backup = backup;
+        _processes = processes;
+        _environment = environment;
     }
 
     /// <summary>
@@ -54,7 +62,7 @@ public sealed partial class PowerService : IPowerService
 
     public async Task<IReadOnlyList<PowerScheme>> GetSchemesAsync(CancellationToken cancellationToken = default)
     {
-        ProcessRunResult result = await ProcessRunner
+        ProcessRunResult result = await _processes
             .RunAsync("powercfg.exe", "/list", TimeSpan.FromSeconds(10), cancellationToken)
             .ConfigureAwait(false);
 
@@ -83,7 +91,7 @@ public sealed partial class PowerService : IPowerService
 
     public async Task<PowerScheme?> GetActiveSchemeAsync(CancellationToken cancellationToken = default)
     {
-        ProcessRunResult result = await ProcessRunner
+        ProcessRunResult result = await _processes
             .RunAsync("powercfg.exe", "/getactivescheme", TimeSpan.FromSeconds(10), cancellationToken)
             .ConfigureAwait(false);
 
@@ -183,7 +191,7 @@ public sealed partial class PowerService : IPowerService
     /// </summary>
     public async Task<OperationResult> SetActiveSchemeAsync(Guid schemeGuid, CancellationToken cancellationToken = default)
     {
-        ProcessRunResult result = await ProcessRunner
+        ProcessRunResult result = await _processes
             .RunAsync("powercfg.exe", $"/setactive {schemeGuid:D}", SetActiveTimeout, cancellationToken)
             .ConfigureAwait(false);
 
@@ -273,7 +281,7 @@ public sealed partial class PowerService : IPowerService
 
         foreach (string mode in new[] { "setacvalueindex", "setdcvalueindex" })
         {
-            ProcessRunResult run = await ProcessRunner.RunAsync(
+            ProcessRunResult run = await _processes.RunAsync(
                     "powercfg.exe",
                     $"/{mode} SCHEME_CURRENT {subgroup} {setting} {value}",
                     TimeSpan.FromSeconds(10),
@@ -291,7 +299,7 @@ public sealed partial class PowerService : IPowerService
             return OperationResult.Fail(failureCode, string.Join("; ", errors));
         }
 
-        ProcessRunResult reactivate = await ProcessRunner
+        ProcessRunResult reactivate = await _processes
             .RunAsync("powercfg.exe", "/setactive SCHEME_CURRENT", TimeSpan.FromSeconds(10), cancellationToken)
             .ConfigureAwait(false);
 
@@ -310,7 +318,7 @@ public sealed partial class PowerService : IPowerService
         string setting,
         CancellationToken cancellationToken = default)
     {
-        ProcessRunResult result = await ProcessRunner
+        ProcessRunResult result = await _processes
             .RunAsync(
                 "powercfg.exe",
                 $"/q SCHEME_CURRENT {subgroup} {setting}",
@@ -323,7 +331,7 @@ public sealed partial class PowerService : IPowerService
 
     public async Task<OperationResult> SetHibernationAsync(bool enabled, CancellationToken cancellationToken = default)
     {
-        ProcessRunResult result = await ProcessRunner
+        ProcessRunResult result = await _processes
             .RunAsync("powercfg.exe", $"/hibernate {(enabled ? "on" : "off")}", TimeSpan.FromSeconds(15), cancellationToken)
             .ConfigureAwait(false);
 
@@ -375,12 +383,12 @@ public sealed partial class PowerService : IPowerService
         }
     }
 
-    private static string DuplicateNotePath =>
-        Path.Combine(AppPaths.DataDirectory, "powerscheme.txt");
+    private string DuplicateNotePath =>
+        Path.Combine(_environment.DataDirectory, "powerscheme.txt");
 
     private async Task<Guid?> DuplicateSchemeAsync(Guid source, CancellationToken cancellationToken)
     {
-        ProcessRunResult result = await ProcessRunner
+        ProcessRunResult result = await _processes
             .RunAsync("powercfg.exe", $"/duplicatescheme {source:D}", TimeSpan.FromSeconds(15), cancellationToken)
             .ConfigureAwait(false);
 

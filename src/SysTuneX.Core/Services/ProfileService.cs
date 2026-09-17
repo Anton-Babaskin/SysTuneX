@@ -43,10 +43,9 @@ public sealed class ProfileService : IProfileService
         IPrivacyService privacy,
         INetworkService network,
         IEnvironmentService environment,
-        IRegistryService registry,
-        string? dataDirectory = null)
+        IRegistryService registry)
     {
-        _appliedFile = Path.Combine(dataDirectory ?? AppPaths.DataDirectory, "profile.json");
+        _appliedFile = Path.Combine(environment.DataDirectory, "profile.json");
         _logger = logger;
         _tweaks = tweaks;
         _services = services;

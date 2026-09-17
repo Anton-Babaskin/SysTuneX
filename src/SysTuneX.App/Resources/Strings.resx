@@ -1376,4 +1376,13 @@
   <data name="History_Kind_ScheduledTask" xml:space="preserve">
     <value>Scheduled task</value>
   </data>
+  <data name="Core_Environment_RestartRefused" xml:space="preserve">
+    <value>Windows refused to restart the machine: {0}</value>
+  </data>
+  <data name="Core_Shell_OpenFailed" xml:space="preserve">
+    <value>Could not open {0}: {1}</value>
+  </data>
+  <data name="Core_Shell_RefusedAddress" xml:space="preserve">
+    <value>{0} is not a web address, so it was not opened.</value>
+  </data>
 </root>

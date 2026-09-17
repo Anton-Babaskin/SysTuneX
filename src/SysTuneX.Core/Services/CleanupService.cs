@@ -12,8 +12,13 @@ namespace SysTuneX.Core.Services;
 public sealed class CleanupService : ICleanupService
 {
     private readonly ILogger<CleanupService> _logger;
+    private readonly IProcessRunner _processes;
 
-    public CleanupService(ILogger<CleanupService> logger) => _logger = logger;
+    public CleanupService(ILogger<CleanupService> logger, IProcessRunner processes)
+    {
+        _logger = logger;
+        _processes = processes;
+    }
 
     public IReadOnlyList<CleanupTarget> GetTargets() =>
         CleanupCatalog.All.Where(t => ResolvePaths(t).Count > 0).ToList();
@@ -143,7 +148,7 @@ public sealed class CleanupService : ICleanupService
                 ConvertTo-Json -Compress
             """;
 
-        ProcessRunResult result = await ProcessRunner
+        ProcessRunResult result = await _processes
             .RunPowerShellAsync(script, TimeSpan.FromSeconds(90), cancellationToken)
             .ConfigureAwait(false);
 
@@ -218,7 +223,7 @@ public sealed class CleanupService : ICleanupService
             Get-AppxPackage -Name '{{packageName}}' | Remove-AppxPackage
             """;
 
-        ProcessRunResult result = await ProcessRunner
+        ProcessRunResult result = await _processes
             .RunPowerShellAsync(script, TimeSpan.FromSeconds(120), cancellationToken)
             .ConfigureAwait(false);
 

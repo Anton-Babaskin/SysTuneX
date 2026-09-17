@@ -14,15 +14,18 @@ public sealed class RestorePointService : IRestorePointService
     private readonly ILogger<RestorePointService> _logger;
     private readonly IRegistryService _registry;
     private readonly IEnvironmentService _environment;
+    private readonly IProcessRunner _processes;
 
     public RestorePointService(
         ILogger<RestorePointService> logger,
         IRegistryService registry,
-        IEnvironmentService environment)
+        IEnvironmentService environment,
+        IProcessRunner processes)
     {
         _logger = logger;
         _registry = registry;
         _environment = environment;
+        _processes = processes;
     }
 
     /// <summary>Policy key that turns System Restore off for the whole machine.</summary>
@@ -83,7 +86,7 @@ public sealed class RestorePointService : IRestorePointService
         {
             string safeDescription = description.Replace("'", "''");
 
-            ProcessRunResult result = await ProcessRunner
+            ProcessRunResult result = await _processes
                 .RunPowerShellAsync(
                     $"Checkpoint-Computer -Description '{safeDescription}' -RestorePointType 'MODIFY_SETTINGS'",
                     TimeSpan.FromMinutes(4),

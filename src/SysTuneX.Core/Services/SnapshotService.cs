@@ -31,14 +31,14 @@ public sealed class SnapshotService : ISnapshotService
         IServiceManager services,
         IPowerService power,
         ISystemInfoService systemInfo,
-        string? dataDirectory = null)
+        IEnvironmentService environment)
     {
         _logger = logger;
         _tweaks = tweaks;
         _services = services;
         _power = power;
         _systemInfo = systemInfo;
-        _file = Path.Combine(dataDirectory ?? AppPaths.DataDirectory, "snapshots.json");
+        _file = Path.Combine(environment.DataDirectory, "snapshots.json");
     }
 
     public IReadOnlyList<SystemStateSnapshot> Snapshots

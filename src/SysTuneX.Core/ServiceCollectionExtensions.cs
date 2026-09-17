@@ -19,6 +19,7 @@ public static class ServiceCollectionExtensions
         // logging at runtime; TryAdd keeps a standalone consumer of Core working without one.
         services.TryAddSingleton<LogLevelSwitch>();
 
+        services.AddSingleton<IProcessRunner, ProcessRunner>();
         services.AddSingleton<IRegistryService, RegistryService>();
         services.AddSingleton<IEnvironmentService, EnvironmentService>();
         services.AddSingleton<IBackupService, BackupService>();

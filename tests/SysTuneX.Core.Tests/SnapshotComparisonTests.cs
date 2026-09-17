@@ -1,3 +1,4 @@
+using SysTuneX.Core.Tests.Fakes;
 using Microsoft.Extensions.Logging.Abstractions;
 using SysTuneX.Core.Abstractions;
 using SysTuneX.Core.Models;
@@ -121,7 +122,7 @@ public sealed class SnapshotComparisonTests
     }
 
     private static SnapshotService Service() =>
-        new(NullLogger<SnapshotService>.Instance, null!, null!, null!, null!, Path.GetTempPath());
+        new(NullLogger<SnapshotService>.Instance, null!, null!, null!, null!, new FakeEnvironment());
 
     private static SystemStateSnapshot Snapshot(
         string label,

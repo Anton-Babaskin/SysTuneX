@@ -201,6 +201,19 @@ public static class CoreMessages
     public static readonly MessageTemplate EnvironmentElevationRefused =
         new("Environment_ElevationRefused", "The elevation prompt was cancelled or blocked by policy.");
 
+    public static readonly MessageTemplate ShellOpenFailed =
+        new("Shell_OpenFailed", "Could not open {0}: {1}");
+
+    /// <summary>
+    /// UseShellExecute hands a string to Windows to interpret, so a launcher that took anything
+    /// would run anything. Only http and https get through.
+    /// </summary>
+    public static readonly MessageTemplate ShellRefusedAddress =
+        new("Shell_RefusedAddress", "{0} is not a web address, so it was not opened.");
+
+    public static readonly MessageTemplate RestartRefused =
+        new("Environment_RestartRefused", "Windows refused to restart the machine: {0}");
+
     public static readonly MessageTemplate EnvironmentExplorerRestartFailed =
         new("Environment_ExplorerRestartFailed", "Could not restart Explorer: {0}");
 
@@ -251,6 +264,7 @@ public static class CoreMessages
         TweakBuildGated, TweakNoHandler, TweakApplyFailed,
         CleanupUnsafePackageName, CleanupPackageRemoveFailed,
         EnvironmentExecutableUnknown, EnvironmentElevationRefused, EnvironmentExplorerRestartFailed,
+        RestartRefused, ShellOpenFailed, ShellRefusedAddress,
         GameModeNeedsAdministrator, GameModeAlreadyOn, GameModeNotOn, GameNameEmpty, GameAlreadyWatched,
         BackupExportFailed, DiagnosticsReportFailed,
     ];

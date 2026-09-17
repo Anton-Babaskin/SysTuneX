@@ -174,6 +174,9 @@ public sealed class GlobalSearchTests
 
         public Task<OperationResult> RestartExplorerAsync(CancellationToken cancellationToken = default) =>
             Task.FromResult(OperationResult.Ok());
+
+    public Task<OperationResult> RestartWindowsAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult(OperationResult.Ok());
     }
 
     /// <summary>The real catalog, gated the way the real engine gates it.</summary>
