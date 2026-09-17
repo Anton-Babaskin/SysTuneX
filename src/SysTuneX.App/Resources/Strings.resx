@@ -1346,4 +1346,13 @@
   <data name="Profiles_PartiallyHeldBadge" xml:space="preserve">
     <value>Partly held</value>
   </data>
+  <data name="Monitor_Fps_NoEvents" xml:space="preserve">
+    <value>The counter is running, but nothing on this PC is presenting frames through DirectX. A game using Vulkan or OpenGL is not counted, and neither is a game that is not rendering right now.</value>
+  </data>
+  <data name="Monitor_Fps_WrongTarget" xml:space="preserve">
+    <value>Frames are being presented, but not by {0} — the window the counter is pointed at. Bring the game to the front for a moment and the counter will follow it.</value>
+  </data>
+  <data name="Monitor_Fps_NoTarget" xml:space="preserve">
+    <value>The counter is running and waiting. Bring a game to the front once and it will stay pointed at it, even while you look at this page.</value>
+  </data>
 </root>

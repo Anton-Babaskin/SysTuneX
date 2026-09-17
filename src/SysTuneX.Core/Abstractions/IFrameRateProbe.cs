@@ -44,6 +44,22 @@ public interface IFrameRateProbe : IDisposable
     /// no game running is the normal case, not an error.
     /// </summary>
     FrameRateReading? Read();
+
+    /// <summary>
+    /// Present events seen since the session started, from any process.
+    ///
+    /// Here so that "no frame rate" can be told apart from "no frame rate, and here is why". Zero
+    /// while a game is plainly running means the game presents through an API this does not listen
+    /// to - Vulkan and OpenGL titles never touch DXGI or Direct3D 9 - which is a different problem
+    /// from a counter pointed at the wrong window, and the two used to look identical.
+    /// </summary>
+    long PresentEventsSeen { get; }
+
+    /// <summary>Of those, the ones attributed to the process being watched.</summary>
+    long TargetPresentEventsSeen { get; }
+
+    /// <summary>The process the counter is pointed at, or empty when it is pointed at nothing.</summary>
+    string TargetProcessName { get; }
 }
 
 /// <param name="ProcessName">The foreground process the frames belong to, for the interface to name.</param>

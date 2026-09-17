@@ -588,9 +588,7 @@ public sealed partial class MonitorViewModel : PageViewModel
         {
             Fps = null;
             GameName = string.Empty;
-            FrameRateHint = _frameRate.IsRunning
-                ? _localization["Monitor_Fps_Idle"]
-                : _localization.Format("Monitor_Fps_Unavailable", _frameRate.UnavailableReason);
+            FrameRateHint = DescribeMissingFrameRate();
 
             // The history is not cleared. Someone who just closed a game still wants to see the
             // shape of the last minute they played.
@@ -605,6 +603,41 @@ public sealed partial class MonitorViewModel : PageViewModel
 
         Append(FpsHistory, reading.Fps);
         OnPropertyChanged(nameof(FpsScale));
+    }
+
+    /// <summary>
+    /// Why there is no number, in a sentence the user can act on.
+    ///
+    /// "No frame rate" used to say one thing for four different situations, which is why the only
+    /// bug report it ever produced was "the FPS counter doesn't work". These are genuinely
+    /// different problems with genuinely different answers, and the probe now counts enough to tell
+    /// them apart.
+    /// </summary>
+    private string DescribeMissingFrameRate()
+    {
+        if (!_frameRate.IsRunning)
+        {
+            return _localization.Format("Monitor_Fps_Unavailable", _frameRate.UnavailableReason);
+        }
+
+        // The session is up and the graphics stack has said nothing at all. Either nothing is
+        // rendering, or the game presents through an API this does not listen to.
+        if (_frameRate.PresentEventsSeen == 0)
+        {
+            return _localization["Monitor_Fps_NoEvents"];
+        }
+
+        // Frames are being presented on this machine, just not by the window we are pointed at.
+        if (_frameRate.TargetPresentEventsSeen == 0)
+        {
+            return _frameRate.TargetProcessName.Length > 0
+                ? _localization.Format("Monitor_Fps_WrongTarget", _frameRate.TargetProcessName)
+                : _localization["Monitor_Fps_NoTarget"];
+        }
+
+        // We have counted this game before and it has stopped. Alt-tabbing out of an exclusive
+        // fullscreen game does exactly this: it stops rendering, so there is nothing to count.
+        return _localization["Monitor_Fps_Idle"];
     }
 
     private async Task SampleSensorsAsync()

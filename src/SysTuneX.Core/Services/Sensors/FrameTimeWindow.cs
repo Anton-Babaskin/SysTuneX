@@ -19,8 +19,27 @@ public sealed class FrameTimeWindow(TimeSpan window)
     /// </summary>
     private const int MinimumSamples = 2;
 
+    /// <summary>
+    /// One frame, on two clocks.
+    ///
+    /// This is the whole point of the type, and it was the bug. A frame carries the time the
+    /// graphics stack says it was presented, which is what the intervals between frames have to be
+    /// measured from - and separately the time we heard about it, which is what "is this still
+    /// happening?" has to be measured from. They are not the same clock and must never be compared
+    /// to each other.
+    /// </summary>
+    /// <param name="PresentedAtMs">
+    /// From the trace event. Only ever used as a difference against another presented time, so it
+    /// does not matter what epoch or time zone it is in, only that it is monotonic.
+    /// </param>
+    /// <param name="ReceivedAtMs">
+    /// From the caller's own monotonic clock, at the moment the event arrived. The only value
+    /// compared against <c>now</c>.
+    /// </param>
+    private readonly record struct Frame(double PresentedAtMs, double ReceivedAtMs);
+
     private readonly TimeSpan _window = window;
-    private readonly Queue<double> _presentedAtMs = new();
+    private readonly Queue<Frame> _frames = new();
     private readonly Lock _gate = new();
 
     private int _processId;
@@ -33,19 +52,25 @@ public sealed class FrameTimeWindow(TimeSpan window)
     /// from one game to another must not average the two together, and the moment of the switch
     /// is exactly when a blended number would look most plausible and be most wrong.
     /// </summary>
-    public void Add(int processId, string processName, double timestampMs)
+    /// <param name="presentedAtMs">When the graphics stack says the frame was presented.</param>
+    /// <param name="receivedAtMs">
+    /// When this process heard about it, on the same clock that will be passed to
+    /// <see cref="Compute"/>. Separate from <paramref name="presentedAtMs"/> on purpose - see
+    /// <see cref="Frame"/>.
+    /// </param>
+    public void Add(int processId, string processName, double presentedAtMs, double receivedAtMs)
     {
         lock (_gate)
         {
             if (processId != _processId)
             {
-                _presentedAtMs.Clear();
+                _frames.Clear();
                 _processId = processId;
                 _processName = processName;
             }
 
-            _presentedAtMs.Enqueue(timestampMs);
-            Trim(timestampMs);
+            _frames.Enqueue(new Frame(presentedAtMs, receivedAtMs));
+            Trim(receivedAtMs);
         }
     }
 
@@ -54,7 +79,7 @@ public sealed class FrameTimeWindow(TimeSpan window)
     {
         lock (_gate)
         {
-            _presentedAtMs.Clear();
+            _frames.Clear();
             _processId = 0;
             _processName = string.Empty;
         }
@@ -63,9 +88,8 @@ public sealed class FrameTimeWindow(TimeSpan window)
     /// <summary>
     /// The current reading, or null when there is not enough recent history to state one.
     ///
-    /// <paramref name="nowMs"/> is passed in rather than read from a clock so the caller owns the
-    /// timebase - the probe uses the same one the trace timestamps come from, and a test uses
-    /// whatever it likes.
+    /// <paramref name="nowMs"/> is on the arrival clock - the one passed as <c>receivedAtMs</c> to
+    /// <see cref="Add"/> - and is never compared against a presentation timestamp.
     /// </summary>
     public FrameRateReading? Compute(double nowMs)
     {
@@ -76,12 +100,12 @@ public sealed class FrameTimeWindow(TimeSpan window)
             // disappear then instead of freezing at whatever it last was.
             Trim(nowMs);
 
-            if (_presentedAtMs.Count < MinimumSamples)
+            if (_frames.Count < MinimumSamples)
             {
                 return null;
             }
 
-            double[] times = [.. _presentedAtMs];
+            double[] times = [.. _frames.Select(frame => frame.PresentedAtMs)];
             double span = times[^1] - times[0];
 
             if (span <= 0)
@@ -133,14 +157,17 @@ public sealed class FrameTimeWindow(TimeSpan window)
         return meanWorstMs > 0 ? 1000.0 / meanWorstMs : 0;
     }
 
-    /// <summary>Drops everything older than the window, measured back from <paramref name="nowMs"/>.</summary>
+    /// <summary>
+    /// Drops every frame we heard about longer ago than the window, measured back from
+    /// <paramref name="nowMs"/> on the arrival clock.
+    /// </summary>
     private void Trim(double nowMs)
     {
         double oldest = nowMs - _window.TotalMilliseconds;
 
-        while (_presentedAtMs.Count > 0 && _presentedAtMs.Peek() < oldest)
+        while (_frames.Count > 0 && _frames.Peek().ReceivedAtMs < oldest)
         {
-            _presentedAtMs.Dequeue();
+            _frames.Dequeue();
         }
     }
 }
