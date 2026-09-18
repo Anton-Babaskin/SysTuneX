@@ -187,6 +187,23 @@ translated, so a translation legitimately carries keys the English file does not
 a second translation could silently miss a whole catalogue and no check would notice. The
 translations are now held to each other as well as to the original.
 
+### English is checked now too
+
+It was the one part of the interface nothing verified. Every tweak, service, profile and cleanup
+target carries its English in C# rather than in a resource file, so Core stays useful on its own
+and a missing translation degrades to English instead of showing a raw key. That is the right
+arrangement, and it has a blind spot in both directions: an entry with no English description is an
+empty paragraph for every English user that no resource check can see, and a missing translation is
+one English line in the middle of a translated page that nothing ever reports.
+
+Both directions are now held to the catalogue itself rather than to another resource file. Every
+entry must carry finished English text — not blank, not a placeholder — and every entry must be
+translated in every shipped language. The reverse too: a translation naming an id the catalogue no
+longer has is a renamed tweak's old name and description, carried and re-reviewed in every language
+forever.
+
+Nothing was wrong when the checks went in. The point is that nothing would have said so.
+
 ---
 
 ## v2.10.2
