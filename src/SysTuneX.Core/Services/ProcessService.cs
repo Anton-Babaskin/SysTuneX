@@ -7,9 +7,9 @@ using SysTuneX.Core.Native;
 
 namespace SysTuneX.Core.Services;
 
-/// <inheritdoc cref="IProcessService"/>
+/// <inheritdoc cref="IMemoryTrimmer"/>
 [SupportedOSPlatform("windows")]
-public sealed class ProcessService : IProcessService
+public sealed class ProcessService : IMemoryTrimmer
 {
     private readonly ILogger<ProcessService> _logger;
     private readonly IEnvironmentService _environment;
@@ -20,48 +20,7 @@ public sealed class ProcessService : IProcessService
         _environment = environment;
     }
 
-    public OperationResult SetPriority(int processId, ProcessPriorityClass priority)
-    {
-        try
-        {
-            using Process process = Process.GetProcessById(processId);
-            if (process.PriorityClass == priority)
-            {
-                return OperationResult.NoChange();
-            }
 
-            process.PriorityClass = priority;
-            _logger.LogInformation("Priority of PID {Pid} set to {Priority}", processId, priority);
-            return OperationResult.Ok();
-        }
-        catch (ArgumentException)
-        {
-            return OperationResult.Fail(CoreMessages.ProcessNotRunning, processId);
-        }
-        catch (Exception ex)
-        {
-            return OperationResult.Fail(CoreMessages.ProcessSetPriorityFailed, ex, processId, ex.Message);
-        }
-    }
-
-    public OperationResult SetAffinity(int processId, nint affinityMask)
-    {
-        if (affinityMask == 0)
-        {
-            return OperationResult.Fail(CoreMessages.ProcessZeroAffinity);
-        }
-
-        try
-        {
-            using Process process = Process.GetProcessById(processId);
-            process.ProcessorAffinity = affinityMask;
-            return OperationResult.Ok();
-        }
-        catch (Exception ex)
-        {
-            return OperationResult.Fail(CoreMessages.ProcessSetAffinityFailed, ex, processId, ex.Message);
-        }
-    }
 
     /// <summary>
     /// Trims every accessible working set and then drops the standby list.
@@ -113,31 +72,6 @@ public sealed class ProcessService : IProcessService
             cancellationToken);
     }
 
-    public IReadOnlyList<ProcessInfo> GetTopProcessesByMemory(int count = 10)
-    {
-        var results = new List<ProcessInfo>();
-
-        foreach (Process process in Process.GetProcesses())
-        {
-            try
-            {
-                results.Add(new ProcessInfo(process.Id, process.ProcessName, process.WorkingSet64, null));
-            }
-            catch
-            {
-                // The process exited between enumeration and inspection.
-            }
-            finally
-            {
-                process.Dispose();
-            }
-        }
-
-        return results
-            .OrderByDescending(p => p.WorkingSetBytes)
-            .Take(count)
-            .ToList();
-    }
 
     private static long GetAvailableBytes() =>
         NativeHelpers.TryGetMemoryStatus(out NativeMethods.MEMORYSTATUSEX status) ? (long)status.AvailPhys : 0;

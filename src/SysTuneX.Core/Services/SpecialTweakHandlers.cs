@@ -16,9 +16,9 @@ namespace SysTuneX.Core.Services;
 [SupportedOSPlatform("windows")]
 public sealed class CoreParkingTweakHandler : ISpecialTweakHandler
 {
-    private readonly IPowerService _power;
+    private readonly IPowerSettingService _power;
 
-    public CoreParkingTweakHandler(IPowerService power) => _power = power;
+    public CoreParkingTweakHandler(IPowerSettingService power) => _power = power;
 
     public string Key => "core_parking";
 
@@ -45,13 +45,13 @@ public sealed class HypervisorLaunchTweakHandler : ISpecialTweakHandler
     private const string OwnerId = "tweak:hypervisor_launch_off";
 
     private readonly ILogger<HypervisorLaunchTweakHandler> _logger;
-    private readonly IBackupService _backup;
+    private readonly IChangeJournalWriter _backup;
     private readonly IEnvironmentService _environment;
     private readonly IProcessRunner _processes;
 
     public HypervisorLaunchTweakHandler(
         ILogger<HypervisorLaunchTweakHandler> logger,
-        IBackupService backup,
+        IChangeJournalWriter backup,
         IEnvironmentService environment,
         IProcessRunner processes)
     {
@@ -182,10 +182,10 @@ public sealed class NagleTweakHandler : ISpecialTweakHandler
     private const string OwnerId = "tweak:nagle_disable";
 
     private readonly IRegistryService _registry;
-    private readonly IBackupService _backup;
+    private readonly IChangeJournalWriter _backup;
     private readonly INetworkService _network;
 
-    public NagleTweakHandler(IRegistryService registry, IBackupService backup, INetworkService network)
+    public NagleTweakHandler(IRegistryService registry, IChangeJournalWriter backup, INetworkService network)
     {
         _registry = registry;
         _backup = backup;

@@ -30,10 +30,10 @@ public sealed partial class DashboardViewModel : PageViewModel
     private readonly ISystemInfoService _systemInfo;
     private readonly ITweakEngine _tweaks;
     private readonly IServiceManager _services;
-    private readonly IProcessService _processes;
-    private readonly IPowerService _power;
+    private readonly IMemoryTrimmer _processes;
+    private readonly IPowerSchemeService _power;
     private readonly IProfileService _profiles;
-    private readonly IBackupService _backup;
+    private readonly IChangeJournalReader _backup;
     private readonly IEnvironmentService _environment;
     private readonly IUserInteraction _interaction;
     private readonly ILocalizationService _localization;
@@ -149,10 +149,10 @@ public sealed partial class DashboardViewModel : PageViewModel
         ISystemInfoService systemInfo,
         ITweakEngine tweaks,
         IServiceManager services,
-        IProcessService processes,
-        IPowerService power,
+        IMemoryTrimmer processes,
+        IPowerSchemeService power,
         IProfileService profiles,
-        IBackupService backup,
+        IChangeJournalReader backup,
         IEnvironmentService environment,
         IUserInteraction interaction,
         ILocalizationService localization,

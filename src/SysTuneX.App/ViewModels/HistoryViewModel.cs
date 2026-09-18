@@ -17,7 +17,7 @@ namespace SysTuneX.App.ViewModels;
 /// </summary>
 public sealed partial class HistoryViewModel : PageViewModel
 {
-    private readonly IBackupService _backup;
+    private readonly IChangeJournalReader _backup;
     private readonly IProfileService _profiles;
     private readonly IEnvironmentService _environment;
     private readonly IUserInteraction _interaction;
@@ -50,7 +50,7 @@ public sealed partial class HistoryViewModel : PageViewModel
     private SnapshotComparison? _comparison;
 
     public HistoryViewModel(
-        IBackupService backup,
+        IChangeJournalReader backup,
         IProfileService profiles,
         IEnvironmentService environment,
         IUserInteraction interaction,

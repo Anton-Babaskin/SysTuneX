@@ -47,9 +47,9 @@ public sealed class TelemetryTaskTweakHandler : ISpecialTweakHandler
     ];
 
     private readonly IScheduledTaskService _tasks;
-    private readonly IBackupService _backup;
+    private readonly IChangeJournalWriter _backup;
 
-    public TelemetryTaskTweakHandler(IScheduledTaskService tasks, IBackupService backup)
+    public TelemetryTaskTweakHandler(IScheduledTaskService tasks, IChangeJournalWriter backup)
     {
         _tasks = tasks;
         _backup = backup;

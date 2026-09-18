@@ -110,9 +110,9 @@ public sealed class ServiceChangeRestorer : IChangeRestorer
 [SupportedOSPlatform("windows")]
 public sealed class PowerSchemeChangeRestorer : IChangeRestorer
 {
-    private readonly IPowerService _power;
+    private readonly IPowerSchemeService _power;
 
-    public PowerSchemeChangeRestorer(IPowerService power) => _power = power;
+    public PowerSchemeChangeRestorer(IPowerSchemeService power) => _power = power;
 
     public string Id => "power";
 
@@ -212,9 +212,9 @@ public sealed class HostsChangeRestorer : IChangeRestorer
 public sealed class RegistryChangeRestorer : IChangeRestorer
 {
     private readonly IRegistryService _registry;
-    private readonly IBackupService _backup;
+    private readonly IChangeJournalWriter _backup;
 
-    public RegistryChangeRestorer(IRegistryService registry, IBackupService backup)
+    public RegistryChangeRestorer(IRegistryService registry, IChangeJournalWriter backup)
     {
         _registry = registry;
         _backup = backup;
@@ -325,10 +325,10 @@ public sealed class BootChangeRestorer : IChangeRestorer
 [SupportedOSPlatform("windows")]
 public sealed class PowerSettingChangeRestorer : IChangeRestorer
 {
-    private readonly IPowerService _power;
-    private readonly IBackupService _backup;
+    private readonly IPowerSettingService _power;
+    private readonly IChangeJournalWriter _backup;
 
-    public PowerSettingChangeRestorer(IPowerService power, IBackupService backup)
+    public PowerSettingChangeRestorer(IPowerSettingService power, IChangeJournalWriter backup)
     {
         _power = power;
         _backup = backup;
@@ -359,9 +359,9 @@ public sealed class PowerSettingChangeRestorer : IChangeRestorer
 public sealed class ScheduledTaskChangeRestorer : IChangeRestorer
 {
     private readonly IScheduledTaskService _tasks;
-    private readonly IBackupService _backup;
+    private readonly IChangeJournalWriter _backup;
 
-    public ScheduledTaskChangeRestorer(IScheduledTaskService tasks, IBackupService backup)
+    public ScheduledTaskChangeRestorer(IScheduledTaskService tasks, IChangeJournalWriter backup)
     {
         _tasks = tasks;
         _backup = backup;

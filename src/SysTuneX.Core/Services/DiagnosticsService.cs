@@ -21,14 +21,14 @@ public sealed class DiagnosticsService : IDiagnosticsService
     private readonly ILogger<DiagnosticsService> _logger;
     private readonly IEnvironmentService _environment;
     private readonly ISystemInfoService _systemInfo;
-    private readonly IBackupService _backup;
+    private readonly IChangeJournalReader _backup;
     private readonly LogLevelSwitch _level;
 
     public DiagnosticsService(
         ILogger<DiagnosticsService> logger,
         IEnvironmentService environment,
         ISystemInfoService systemInfo,
-        IBackupService backup,
+        IChangeJournalReader backup,
         LogLevelSwitch level)
     {
         _logger = logger;

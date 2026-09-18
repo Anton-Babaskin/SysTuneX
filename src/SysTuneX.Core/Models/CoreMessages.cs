@@ -74,9 +74,6 @@ public static class CoreMessages
     public static readonly MessageTemplate PowerReapplyFailed =
         new("Power_ReapplyFailed", "Could not re-apply the power scheme: {0}");
 
-    public static readonly MessageTemplate PowerHibernationFailed =
-        new("Power_HibernationFailed", "powercfg could not change hibernation: {0}");
-
     public static readonly MessageTemplate PowerSettingRejected =
         new("Power_SettingRejected", "powercfg rejected the power setting change: {0}");
 
@@ -253,7 +250,7 @@ public static class CoreMessages
         ServiceStopTimedOut, ServiceStopFailed, ServiceUnknownStartType, ServiceSetStartTypeFailed,
         ServiceNotChangedByUs,
         PowerNoHighPerformanceScheme, PowerActivateFailed, PowerCoreParkingRejected,
-        PowerReapplyFailed, PowerHibernationFailed, PowerSettingRejected, PowerSettingUnavailable,
+        PowerReapplyFailed, PowerSettingRejected, PowerSettingUnavailable,
         ScheduledTaskQueryFailed, ScheduledTaskChangeFailed, ScheduledTaskNeedsAdministrator,
         NetworkAdapterGone, NetworkInvalidAddress, NetworkNoIpv4Interface, NetworkSetResolverFailed,
         NetworkRestoreDhcpFailed, NetworkFlushCacheFailed, NetworkNoConnectedAdapter,

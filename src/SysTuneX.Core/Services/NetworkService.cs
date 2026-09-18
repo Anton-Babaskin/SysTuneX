@@ -15,13 +15,13 @@ public sealed class NetworkService : INetworkService
 
     private readonly ILogger<NetworkService> _logger;
     private readonly IRegistryService _registry;
-    private readonly IBackupService _backup;
+    private readonly IChangeJournalWriter _backup;
     private readonly IProcessRunner _processes;
 
     public NetworkService(
         ILogger<NetworkService> logger,
         IRegistryService registry,
-        IBackupService backup,
+        IChangeJournalWriter backup,
         IProcessRunner processes)
     {
         _logger = logger;

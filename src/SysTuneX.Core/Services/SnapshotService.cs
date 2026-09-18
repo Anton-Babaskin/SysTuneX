@@ -20,7 +20,7 @@ public sealed class SnapshotService : ISnapshotService
     private readonly ILogger<SnapshotService> _logger;
     private readonly ITweakEngine _tweaks;
     private readonly IServiceManager _services;
-    private readonly IPowerService _power;
+    private readonly IPowerSchemeService _power;
     private readonly ISystemInfoService _systemInfo;
     private readonly string _file;
     private readonly List<SystemStateSnapshot> _snapshots = [];
@@ -29,7 +29,7 @@ public sealed class SnapshotService : ISnapshotService
         ILogger<SnapshotService> logger,
         ITweakEngine tweaks,
         IServiceManager services,
-        IPowerService power,
+        IPowerSchemeService power,
         ISystemInfoService systemInfo,
         IEnvironmentService environment)
     {

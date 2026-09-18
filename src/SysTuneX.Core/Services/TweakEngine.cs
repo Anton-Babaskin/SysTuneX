@@ -14,7 +14,7 @@ public sealed class TweakEngine : ITweakEngine
 {
     private readonly ILogger<TweakEngine> _logger;
     private readonly IRegistryService _registry;
-    private readonly IBackupService _backup;
+    private readonly IChangeJournalWriter _backup;
     private readonly IEnvironmentService _environment;
     private readonly IReadOnlyDictionary<string, ISpecialTweakHandler> _handlers;
 
@@ -26,7 +26,7 @@ public sealed class TweakEngine : ITweakEngine
     public TweakEngine(
         ILogger<TweakEngine> logger,
         IRegistryService registry,
-        IBackupService backup,
+        IChangeJournalWriter backup,
         IEnvironmentService environment,
         IEnumerable<ISpecialTweakHandler> handlers)
     {

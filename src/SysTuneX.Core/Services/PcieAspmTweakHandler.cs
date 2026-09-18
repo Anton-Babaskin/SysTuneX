@@ -40,10 +40,10 @@ public sealed class PcieAspmTweakHandler : ISpecialTweakHandler
 
     private const string OwnerId = "tweak:pcie_aspm_disable";
 
-    private readonly IPowerService _power;
-    private readonly IBackupService _backup;
+    private readonly IPowerSettingService _power;
+    private readonly IChangeJournalWriter _backup;
 
-    public PcieAspmTweakHandler(IPowerService power, IBackupService backup)
+    public PcieAspmTweakHandler(IPowerSettingService power, IChangeJournalWriter backup)
     {
         _power = power;
         _backup = backup;

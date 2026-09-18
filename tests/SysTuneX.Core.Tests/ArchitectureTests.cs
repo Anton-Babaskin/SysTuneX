@@ -106,6 +106,41 @@ public sealed partial class ArchitectureTests
         Assert.Empty(offenders);
     }
 
+    /// <summary>
+    /// The fat interfaces are for the container and the implementation, nothing else.
+    ///
+    /// They exist so one object can be handed out behind several narrower contracts. A service
+    /// that takes the union again gets every member back - and with it the fake that has to stub
+    /// eleven methods to use three, which is what these splits were for.
+    /// </summary>
+    [Theory]
+    [InlineData("IBackupService", "BackupService.cs")]
+    [InlineData("IPowerService", "PowerService.cs")]
+    [InlineData("IGameWatcher", "GameWatcher.cs")]
+    public void A_union_interface_is_only_used_by_its_implementation_and_the_container(
+        string union,
+        string implementation)
+    {
+        string[] allowed =
+        [
+            implementation,
+            "ServiceCollectionExtensions.cs",   // registers one instance behind all of them
+            "App.xaml.cs",                      // loads the journal and starts the watcher at launch
+        ];
+
+        List<string> offenders =
+        [
+            .. Sources()
+                .Where(pair => !pair.File.Contains("Abstractions", StringComparison.Ordinal))
+                .Where(pair => !allowed.Contains(Path.GetFileName(pair.File), StringComparer.Ordinal))
+                .Where(pair => Regex.IsMatch(pair.Text, $@"\b{union}\b"))
+                .Select(pair => Path.GetFileName(pair.File))
+                .Order(StringComparer.Ordinal),
+        ];
+
+        Assert.Empty(offenders);
+    }
+
     private static IReadOnlyList<(string File, string Text)> Sources(string? root = null)
     {
         var files = new List<(string, string)>();

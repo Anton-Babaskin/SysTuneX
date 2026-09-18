@@ -16,8 +16,8 @@ public sealed class GameModeService : IGameModeService
     private readonly ILogger<GameModeService> _logger;
     private readonly IEnvironmentService _environment;
     private readonly IServiceManager _services;
-    private readonly IPowerService _power;
-    private readonly IProcessService _processes;
+    private readonly IPowerSchemeService _power;
+    private readonly IMemoryTrimmer _processes;
     private readonly SemaphoreSlim _gate = new(1, 1);
 
     private readonly string _sessionFile;
@@ -26,8 +26,8 @@ public sealed class GameModeService : IGameModeService
         ILogger<GameModeService> logger,
         IEnvironmentService environment,
         IServiceManager services,
-        IPowerService power,
-        IProcessService processes)
+        IPowerSchemeService power,
+        IMemoryTrimmer processes)
     {
         _sessionFile = Path.Combine(environment.DataDirectory, "gamemode.json");
         _logger = logger;

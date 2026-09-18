@@ -206,27 +206,19 @@ public sealed class FakePowerService : IPowerService
         CancellationToken cancellationToken = default) =>
         Task.FromResult(SchemeSettings.TryGetValue($"{subgroup}/{setting}", out int value) ? value : (int?)null);
 
-    public Task<OperationResult> SetHibernationAsync(bool enabled, CancellationToken cancellationToken = default) =>
-        Task.FromResult(OperationResult.Ok());
 }
 
-public sealed class FakeProcessService : IProcessService
+public sealed class FakeProcessService : IMemoryTrimmer
 {
     public int TrimCount { get; private set; }
 
     public long FreedBytes { get; set; } = 512L * 1024 * 1024;
-
-    public OperationResult SetPriority(int processId, ProcessPriorityClass priority) => OperationResult.Ok();
-
-    public OperationResult SetAffinity(int processId, nint affinityMask) => OperationResult.Ok();
 
     public Task<MemoryTrimResult> TrimMemoryAsync(CancellationToken cancellationToken = default)
     {
         TrimCount++;
         return Task.FromResult(new MemoryTrimResult(12, StandbyPurged: true, FreedBytes));
     }
-
-    public IReadOnlyList<ProcessInfo> GetTopProcessesByMemory(int count = 10) => [];
 }
 
 /// <summary>A watcher whose detection the test drives directly.</summary>

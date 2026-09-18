@@ -34,13 +34,13 @@ public sealed partial class PowerService : IPowerService
     private static readonly TimeSpan SetActiveTimeout = TimeSpan.FromSeconds(30);
 
     private readonly ILogger<PowerService> _logger;
-    private readonly IBackupService _backup;
+    private readonly IChangeJournalWriter _backup;
     private readonly IProcessRunner _processes;
     private readonly IEnvironmentService _environment;
 
     public PowerService(
         ILogger<PowerService> logger,
-        IBackupService backup,
+        IChangeJournalWriter backup,
         IProcessRunner processes,
         IEnvironmentService environment)
     {
@@ -329,16 +329,6 @@ public sealed partial class PowerService : IPowerService
         return result.Success ? PowerSettingIndex.Parse(result.StandardOutput) : null;
     }
 
-    public async Task<OperationResult> SetHibernationAsync(bool enabled, CancellationToken cancellationToken = default)
-    {
-        ProcessRunResult result = await _processes
-            .RunAsync("powercfg.exe", $"/hibernate {(enabled ? "on" : "off")}", TimeSpan.FromSeconds(15), cancellationToken)
-            .ConfigureAwait(false);
-
-        return result.Success
-            ? OperationResult.Ok()
-            : OperationResult.Fail(CoreMessages.PowerHibernationFailed, result.Output.Trim());
-    }
 
     /// <summary>
     /// The scheme this app duplicated last time, if it is still on the machine.

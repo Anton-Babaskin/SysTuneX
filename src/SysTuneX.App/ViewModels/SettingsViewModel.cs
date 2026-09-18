@@ -24,8 +24,8 @@ public sealed partial class SettingsViewModel : PageViewModel
     private readonly IEnvironmentService _environment;
     private readonly IUserInteraction _interaction;
     private readonly IDiagnosticsService _diagnostics;
-    private readonly IPowerService _power;
-    private readonly IGameWatcher _watcher;
+    private readonly IPowerSchemeService _power;
+    private readonly IWatchedGameList _watcher;
     private readonly GameModeAutomation _automation;
     private readonly ITrayIconService _tray;
     private readonly GameModeScheduler _scheduler;
@@ -111,8 +111,8 @@ public sealed partial class SettingsViewModel : PageViewModel
         IEnvironmentService environment,
         IUserInteraction interaction,
         IDiagnosticsService diagnostics,
-        IPowerService power,
-        IGameWatcher watcher,
+        IPowerSchemeService power,
+        IWatchedGameList watcher,
         GameModeAutomation automation,
         ITrayIconService tray,
         GameModeScheduler scheduler,

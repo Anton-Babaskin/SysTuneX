@@ -14,12 +14,9 @@ public sealed class ProfileService : IProfileService
     private readonly ILogger<ProfileService> _logger;
     private readonly ITweakEngine _tweaks;
     private readonly IServiceManager _services;
-    private readonly IPowerService _power;
-    private readonly IProcessService _processes;
-    private readonly IBackupService _backup;
+    private readonly IPowerSchemeService _power;
+    private readonly IMemoryTrimmer _processes;
     private readonly IRestorePointService _restorePoints;
-    private readonly IPrivacyService _privacy;
-    private readonly INetworkService _network;
     private readonly IEnvironmentService _environment;
     private readonly IRegistryService _registry;
 
@@ -30,12 +27,9 @@ public sealed class ProfileService : IProfileService
         ILogger<ProfileService> logger,
         ITweakEngine tweaks,
         IServiceManager services,
-        IPowerService power,
-        IProcessService processes,
-        IBackupService backup,
+        IPowerSchemeService power,
+        IMemoryTrimmer processes,
         IRestorePointService restorePoints,
-        IPrivacyService privacy,
-        INetworkService network,
         IEnvironmentService environment,
         IRegistryService registry,
         IAppliedProfileStore applied,
@@ -46,10 +40,7 @@ public sealed class ProfileService : IProfileService
         _services = services;
         _power = power;
         _processes = processes;
-        _backup = backup;
         _restorePoints = restorePoints;
-        _privacy = privacy;
-        _network = network;
         _environment = environment;
         _registry = registry;
         _applied = applied;

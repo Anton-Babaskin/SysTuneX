@@ -10,12 +10,12 @@ namespace SysTuneX.Core.Services;
 public sealed class ChangeRollbackService : IChangeRollbackService
 {
     private readonly IReadOnlyList<IChangeRestorer> _restorers;
-    private readonly IBackupService _backup;
+    private readonly IChangeJournalReader _backup;
     private readonly ILogger<ChangeRollbackService> _logger;
 
     public ChangeRollbackService(
         IEnumerable<IChangeRestorer> restorers,
-        IBackupService backup,
+        IChangeJournalReader backup,
         ILogger<ChangeRollbackService> logger)
     {
         _restorers = [.. restorers.OrderBy(r => r.Order)];
