@@ -156,6 +156,28 @@ public sealed partial class PowerService : IPowerService
         return await SetActiveSchemeAsync(target.Value, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<bool> IsHighPerformanceActiveAsync(CancellationToken cancellationToken = default)
+    {
+        PowerScheme? active = await GetActiveSchemeAsync(cancellationToken).ConfigureAwait(false);
+
+        if (active is null)
+        {
+            return false;
+        }
+
+        if (active.IsHighPerformance)
+        {
+            return true;
+        }
+
+        // The copy this app made itself. It carries a fresh GUID and the source scheme's name,
+        // which is only the English string on an English Windows - so on every other machine the
+        // note this app wrote is the only thing that identifies it.
+        IReadOnlyList<PowerScheme> schemes = await GetSchemesAsync(cancellationToken).ConfigureAwait(false);
+
+        return RememberedDuplicate(schemes) == active.Guid;
+    }
+
     public async Task<OperationResult> RestorePreviousSchemeAsync(CancellationToken cancellationToken = default)
     {
         BackupEntry? entry = _backup.FindActive(BackupKind.PowerScheme, "ActiveScheme");

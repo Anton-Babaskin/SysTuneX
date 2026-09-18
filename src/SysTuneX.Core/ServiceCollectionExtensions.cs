@@ -31,6 +31,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IChangeJournalReader>(s => s.GetRequiredService<BackupService>());
         services.AddSingleton<ISystemInfoService, SystemInfoService>();
         services.AddSingleton<IMemoryTrimmer, ProcessService>();
+        services.AddSingleton<IQuickOptimizer, QuickOptimizer>();
         services.AddSingleton<IServiceManager, ServiceManager>();
         // One PowerService behind three interfaces: callers take the half they need, and the
         // container hands all three the same instance so powercfg is never asked twice at once.

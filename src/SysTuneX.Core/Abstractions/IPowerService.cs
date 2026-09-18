@@ -26,6 +26,18 @@ public interface IPowerSchemeService
     /// <summary>Restores the scheme that was active before SysTuneX changed it.</summary>
     Task<OperationResult> RestorePreviousSchemeAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Whether a high-performance scheme is active right now - a fifth of the tuning score.
+    ///
+    /// Not the same question as <see cref="PowerScheme.IsHighPerformance"/> on the active scheme,
+    /// and this is the one the dashboard has to ask. When Windows ships without either built-in
+    /// scheme, SysTuneX duplicates one; the copy gets a fresh GUID and keeps the source scheme's
+    /// name - which on a Russian or Ukrainian Windows is not the English string. Only the service
+    /// knows which copy it made, so only the service can answer this without guessing at
+    /// translations of a Windows scheme name.
+    /// </summary>
+    Task<bool> IsHighPerformanceActiveAsync(CancellationToken cancellationToken = default);
+
     Task<OperationResult> SetActiveSchemeAsync(Guid schemeGuid, CancellationToken cancellationToken = default);
 }
 
@@ -80,4 +92,20 @@ public sealed record PowerScheme(Guid Guid, string Name, bool IsActive)
 
     public static readonly Guid HighPerformance = new("8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c");
     public static readonly Guid Balanced = new("381b4222-f694-41f0-9685-ff5bb260df2e");
+
+    /// <summary>
+    /// Whether this scheme is a high-performance one, which is a fifth of the tuning score.
+    ///
+    /// The two GUIDs answer it outright. The name check is for the copy SysTuneX makes itself when
+    /// Windows ships without either scheme - <c>powercfg /duplicatescheme</c> gives the copy a new
+    /// GUID and keeps the name, so the copy would otherwise read as balanced forever.
+    ///
+    /// It lives on the scheme rather than in the dashboard because it is a claim about the scheme,
+    /// and because the name half is the kind of string matching that needs a test standing over it.
+    /// </summary>
+    public bool IsHighPerformance =>
+        Guid == UltimatePerformance ||
+        Guid == HighPerformance ||
+        Name.Contains("Ultimate", StringComparison.OrdinalIgnoreCase) ||
+        Name.Contains("High performance", StringComparison.OrdinalIgnoreCase);
 }

@@ -96,7 +96,8 @@ public sealed partial class BindingCoverageTests
         HashSet<string> declared = DeclaredNames();
 
         Assert.Contains("CpuUsage", declared);          // [ObservableProperty] private double _cpuUsage
-        Assert.Contains("GameModeChanges", declared);   // a plain property
+        Assert.Contains("CpuHistory", declared);        // a plain property
+        Assert.Contains("CpuTopology", declared);       // an expression-bodied one
         Assert.Contains("RefreshCommand", declared);    // [RelayCommand] private Task RefreshAsync()
         Assert.Contains("Restores", declared);          // a positional record member
         Assert.True(declared.Count > 300, $"Only {declared.Count} property names were found.");
@@ -161,6 +162,10 @@ public sealed partial class BindingCoverageTests
     /// <summary>The page's view model, from <c>d:DataContext="{d:DesignInstance Type=vm:Foo}"</c>.</summary>
     [GeneratedRegex(@"d:DesignInstance\s+(?:Type=)?(?:vm:)?(\w+)")]
     private static partial Regex DesignInstance { get; }
+
+    /// <summary>A binding's whole path: <c>Counters.CpuUsage</c>, not just <c>Counters</c>.</summary>
+    [GeneratedRegex(@"\{Binding\s+(?:Path=)?([A-Za-z_][\w.]*)")]
+    private static partial Regex FullBindingPath { get; }
 
     /// <summary>
     /// Every binding a page makes against its own view model - or against a child view model it
@@ -275,18 +280,49 @@ public sealed partial class BindingCoverageTests
 
             // The attribute that set this scope up was itself written against the enclosing one.
             bool isScope = attribute.Name.LocalName == "DataContext";
-            HashSet<string> against = isScope ? Members(outer) : members;
-            string expected = isScope ? outer : viewModel;
+            string start = isScope ? outer : viewModel;
 
-            foreach (Match match in BindingPath.Matches(value))
+            foreach (Match match in FullBindingPath.Matches(value))
             {
-                string name = match.Groups[1].Value;
-
-                if (!ProvidedByWpf.Contains(name) && !against.Contains(name))
-                {
-                    missing.Add($"{name} (bound in {file}, expected on {expected})");
-                }
+                Resolve(match.Groups[1].Value, start, file, missing);
             }
+        }
+    }
+
+    /// <summary>
+    /// Follows <c>Counters.CpuUsage</c> one step at a time: the first name has to be on the view
+    /// model the element reads, and the second on whatever type that property is.
+    ///
+    /// Following the whole path rather than only its first step is the difference between the
+    /// dashboard's bindings being checked and merely looking checked. Its three cards interleave
+    /// on screen, so they are reached by path rather than by a scoped subtree, and a scan that
+    /// stopped at "Counters" would have verified nothing about the thirty-odd names after the dot.
+    /// </summary>
+    private static void Resolve(string path, string viewModel, string file, SortedSet<string> missing)
+    {
+        string? type = viewModel;
+
+        foreach (string step in path.Split('.'))
+        {
+            if (ProvidedByWpf.Contains(step))
+            {
+                return;
+            }
+
+            // The type is not one of ours - a collection's Count, a TimeSpan's Minutes. There is
+            // nothing dishonest to say about the rest of the path, so this stops rather than guesses.
+            if (type is null || Members(type).Count == 0)
+            {
+                return;
+            }
+
+            if (!Members(type).Contains(step))
+            {
+                missing.Add($"{step} (bound in {file}, expected on {type})");
+                return;
+            }
+
+            type = PropertyType(type, step);
         }
     }
 

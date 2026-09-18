@@ -174,6 +174,10 @@ public sealed class FakePowerService : IPowerService
     public Task<OperationResult> RestorePreviousSchemeAsync(CancellationToken cancellationToken = default) =>
         Task.FromResult(OperationResult.Ok());
 
+    /// <summary>Answered from the scheme, since this fake never duplicates one.</summary>
+    public async Task<bool> IsHighPerformanceActiveAsync(CancellationToken cancellationToken = default) =>
+        await GetActiveSchemeAsync(cancellationToken).ConfigureAwait(false) is { IsHighPerformance: true };
+
     public Task<OperationResult> SetActiveSchemeAsync(Guid schemeGuid, CancellationToken cancellationToken = default)
     {
         ActiveScheme = schemeGuid;
