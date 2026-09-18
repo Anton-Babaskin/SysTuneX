@@ -3,7 +3,7 @@
 Every released version, newest first. The release workflow publishes only the section
 for the version being released, so a release page shows that version and nothing else.
 
-## v2.11.0
+## v2.12.0
 
 ### A compact readout you can call up over a game
 
@@ -151,23 +151,44 @@ settings means "off". It would report a machine as tuned having read nothing at 
 The parsing is now a plain function with twelve tests over real powercfg output in both languages,
 and a setting the machine does not expose reads as *nothing* rather than as zero.
 
-### The profiles page now says which profile is on
+### The tuning score was wrong on a translated Windows
 
-Reported after applying "Battle royale" and not being able to tell. The page showed, per card, what
-share of that profile's tweaks were currently in place — and profiles deliberately share most of
-their tweaks, so applying any one of them left every card reading somewhere in the high eighties.
-Six near-identical percentages answer nothing.
+Found while moving the check that answers it out of the dashboard.
 
-A percentage never could answer it: it measures the machine, and the question is about a decision.
-So the decision is recorded when it is made. The applied profile is remembered — on disk, because
-the machine keeps the tweaks after the window closes — and its card carries a badge with the date.
+A fifth of the score is "is a high performance power scheme active". Some editions of Windows ship
+with neither built-in scheme, so SysTuneX duplicates one — and `powercfg /duplicatescheme` gives
+the copy a fresh GUID and keeps **the source scheme's name**, which on a Russian or Ukrainian
+Windows is not the English string the check was looking for.
 
-Applying another profile moves the badge. Restoring everything clears it, because then no profile
-is applied.
+So on every non-English machine that needed the duplicate, the dashboard reported a tuned machine
+as untuned and quietly withheld twenty points. Nothing looked broken; the number was just lower
+than it should have been, which is the kind of wrong that never gets reported.
 
-A card can also say **partly held**: applied, but since reverted in part by hand. Calling that
-simply "on" would be the comfortable half of the truth, and calling it off would throw away what
-the user did.
+SysTuneX already writes down which copy it made. The question goes to the service that made it
+now, instead of to a string comparison against text Windows wrote in the user's language.
+
+### The big classes came apart
+
+An audit of the codebase against SOLID listed twenty places worth fixing. All of them are done;
+most are invisible from the outside, and two are worth naming because they changed what can go
+wrong.
+
+**Restore All can no longer skip a kind of change silently.** Restoring worked through one method
+that knew every kind of recorded change by name. A kind added later and not added there was simply
+not restored, and nothing said so — the promise this whole application rests on, failing quietly.
+Each kind now owns its own restorer, anything left unclaimed is reported rather than dropped, and
+a test fails if a recorded kind has no restorer at all.
+
+**Quick Optimize is bound by a rule that can now be tested.** The one button that changes the
+machine without asking a second time applies safe tweaks only — never moderate, never advanced.
+That rule was a filter in the middle of a WPF command handler, three layers from anything that
+could assert it. One careless edit there and a click labelled "optimise" disables
+virtualisation-based security. It is a service with its own tests now.
+
+The rest is shape: the dashboard was fourteen dependencies and eight jobs in one class and is now
+three cards and a page; the settings page was seven hundred lines and is five sections; the
+profile confirmation dialog was ninety lines of layout built by hand inside the class that shows
+toasts, and is markup with the decisions behind it under test.
 
 ### Ukrainian
 
@@ -203,6 +224,28 @@ longer has is a renamed tweak's old name and description, carried and re-reviewe
 forever.
 
 Nothing was wrong when the checks went in. The point is that nothing would have said so.
+
+---
+
+## v2.11.0
+
+### The profiles page now says which profile is on
+
+Reported after applying "Battle royale" and not being able to tell. The page showed, per card, what
+share of that profile's tweaks were currently in place — and profiles deliberately share most of
+their tweaks, so applying any one of them left every card reading somewhere in the high eighties.
+Six near-identical percentages answer nothing.
+
+A percentage never could answer it: it measures the machine, and the question is about a decision.
+So the decision is recorded when it is made. The applied profile is remembered — on disk, because
+the machine keeps the tweaks after the window closes — and its card carries a badge with the date.
+
+Applying another profile moves the badge. Restoring everything clears it, because then no profile
+is applied.
+
+A card can also say **partly held**: applied, but since reverted in part by hand. Calling that
+simply "on" would be the comfortable half of the truth, and calling it off would throw away what
+the user did.
 
 ---
 

@@ -193,6 +193,7 @@ Security reports go through [SECURITY.md](SECURITY.md), privately, rather than a
 | **Search**      | One box across every tweak, service and cleanup target — it navigates to the page and filters it down to the result     |
 | **Tray**        | Live counters on hover and the game mode switch in the menu                                                            |
 | **Appearance**  | Follows the Windows light/dark setting by default, or pin light or dark by hand; Mica, Acrylic or plain backdrop        |
+| **Language**    | English, Russian and Ukrainian — the whole interface, including every tweak, service and profile with its description    |
 | **Before/after**| Record the machine either side of a change and see exactly what moved                                                   |
 | **Diagnostics** | Persistent logs, verbose logging and a complete diagnostic report                                                        |
 | **Change log**  | Full history of recorded changes with individual or complete rollback                                                    |
