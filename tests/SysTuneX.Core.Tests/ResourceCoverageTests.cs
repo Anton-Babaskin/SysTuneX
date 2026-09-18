@@ -166,4 +166,47 @@ public sealed partial class ResourceCoverageTests
 
         Assert.Empty(broken);
     }
+
+    /// <summary>
+    /// <c>{Binding [Fps]}</c> on the monitor page asks the view model whether that reading can be
+    /// shown, by name. A name the enum does not have parses to nothing, the tile is hidden, and
+    /// nothing anywhere says why - which is what happened to two of them the moment the bindings
+    /// were written by hand.
+    /// </summary>
+    [Fact]
+    public void Every_indexed_metric_binding_names_a_real_reading()
+    {
+        var names = new HashSet<string>(
+            Enum.GetNames<SysTuneX.Core.Models.MonitorMetric>(),
+            StringComparer.OrdinalIgnoreCase);
+
+        var missing = new SortedDictionary<string, string>(StringComparer.Ordinal);
+
+        foreach ((string file, string text) in Files())
+        {
+            foreach (Match match in IndexedBinding.Matches(text))
+            {
+                string name = match.Groups[1].Value;
+                if (!names.Contains(name))
+                {
+                    missing[name] = Path.GetFileName(file);
+                }
+            }
+        }
+
+        Assert.Empty(missing.Select(pair => $"{pair.Key} (bound in {pair.Value})"));
+    }
+
+    /// <summary>Guards the scan above: a regex that matched nothing would pass it trivially.</summary>
+    [Fact]
+    public void The_indexed_binding_scan_finds_the_monitor_tiles()
+    {
+        int found = Files().Sum(pair => IndexedBinding.Matches(pair.Text).Count);
+
+        Assert.True(found >= 10, $"Only {found} indexed metric bindings were found.");
+    }
+
+    /// <summary><c>{Binding [Fps]}</c>.</summary>
+    [GeneratedRegex(@"\{Binding\s+\[(\w+)\]")]
+    private static partial Regex IndexedBinding { get; }
 }

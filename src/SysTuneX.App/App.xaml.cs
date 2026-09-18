@@ -14,6 +14,7 @@ using SysTuneX.App.Views.Pages;
 using SysTuneX.Core;
 using SysTuneX.Core.Abstractions;
 using SysTuneX.Core.Diagnostics;
+using SysTuneX.Core.Models;
 using SysTuneX.Core.Services;
 using Wpf.Ui;
 using Wpf.Ui.Abstractions;
@@ -66,6 +67,9 @@ public partial class App : Application
                 services.AddSingleton<IShellLauncher, ShellLauncher>();
                 services.AddSingleton<ITrayIconService, TrayIconService>();
                 services.AddSingleton<IGlobalSearch, GlobalSearch>();
+                services.AddSingleton<ISearchSource, TweakSearchSource>();
+                services.AddSingleton<ISearchSource, ServiceSearchSource>();
+                services.AddSingleton<ISearchSource, CleanupSearchSource>();
                 services.AddSingleton<IGlobalHotkeyService, GlobalHotkeyService>();
                 services.AddSingleton<ICompactMonitorService, CompactMonitorService>();
 
@@ -83,12 +87,12 @@ public partial class App : Application
                 // view model and a fresh refresh timer on every single navigation.
                 AddPage<DashboardPage, DashboardViewModel>(services);
                 AddPage<ProfilesPage, ProfilesViewModel>(services);
-                AddPage<GamingPage, GamingViewModel>(services);
+                AddPage<GamingPage, GamingViewModel>(services, TweakCategory.Gaming, "Nav_Gaming");
                 AddPage<MonitorPage, MonitorViewModel>(services);
-                AddPage<Windows11Page, Windows11ViewModel>(services);
+                AddPage<Windows11Page, Windows11ViewModel>(services, TweakCategory.Windows11, "Nav_Windows11");
                 AddPage<ServicesPage, ServicesViewModel>(services);
-                AddPage<PrivacyPage, PrivacyViewModel>(services);
-                AddPage<NetworkPage, NetworkViewModel>(services);
+                AddPage<PrivacyPage, PrivacyViewModel>(services, TweakCategory.Privacy, "Nav_Privacy");
+                AddPage<NetworkPage, NetworkViewModel>(services, TweakCategory.Network, "Nav_Network");
                 AddPage<CleanupPage, CleanupViewModel>(services);
                 AddPage<HistoryPage, HistoryViewModel>(services);
                 AddPage<SettingsPage, SettingsViewModel>(services);
@@ -219,12 +223,26 @@ public partial class App : Application
         }
     }
 
-    private static void AddPage<TPage, TViewModel>(IServiceCollection services)
+    /// <param name="category">
+    /// The tweak category this page owns, when it owns one. Declared here rather than in a switch
+    /// inside global search, whose default arm sent an unrecognised category to the gaming page -
+    /// so a category added to the enum and not to the switch opened the wrong page, silently.
+    /// </param>
+    /// <param name="navigationKey">Resource key for the page's name, for search results to show.</param>
+    private static void AddPage<TPage, TViewModel>(
+        IServiceCollection services,
+        TweakCategory? category = null,
+        string? navigationKey = null)
         where TPage : class
         where TViewModel : class
     {
         services.AddSingleton<TViewModel>();
         services.AddSingleton<TPage>();
+
+        if (category is { } owned && navigationKey is { } key)
+        {
+            services.AddSingleton(new TweakCategoryPage(owned, typeof(TPage), key));
+        }
     }
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)

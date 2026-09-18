@@ -175,7 +175,7 @@
                             <TextBlock Text="{loc:Loc Monitor_FrameRate}" Style="{StaticResource CaptionText}" />
 
                             <StackPanel Orientation="Horizontal"
-                                        Visibility="{Binding DisplayFps, Converter={StaticResource BoolToVisibility}}">
+                                        Visibility="{Binding [Fps], Converter={StaticResource BoolToVisibility}}">
                                 <TextBlock Text="{Binding Fps}"
                                            FontSize="64"
                                            FontWeight="SemiBold"
@@ -209,7 +209,7 @@
                                 The 1% low sits next to the average because on its own the average
                                 lies. 144 with a 1% low of 40 stutters; a steady 90 does not.
                             -->
-                            <StackPanel Visibility="{Binding DisplayOnePercentLow, Converter={StaticResource BoolToVisibility}}">
+                            <StackPanel Visibility="{Binding [OnePercentLow], Converter={StaticResource BoolToVisibility}}">
                                 <TextBlock Text="{loc:Loc Monitor_OnePercentLow}" Style="{StaticResource CaptionText}" />
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding OnePercentLowFps}" Style="{StaticResource MetricValue}" />
@@ -218,7 +218,7 @@
                             </StackPanel>
 
                             <StackPanel Margin="0,12,0,0"
-                                        Visibility="{Binding DisplayFrameTime, Converter={StaticResource BoolToVisibility}}">
+                                        Visibility="{Binding [FrameTime], Converter={StaticResource BoolToVisibility}}">
                                 <TextBlock Text="{loc:Loc Monitor_FrameTime}" Style="{StaticResource CaptionText}" />
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding FrameTimeMs, StringFormat={}{0:F1}}"
@@ -257,7 +257,7 @@
 
                             <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                                 <StackPanel VerticalAlignment="Bottom"
-                                            Visibility="{Binding DisplayCpuLoad, Converter={StaticResource BoolToVisibility}}">
+                                            Visibility="{Binding [CpuLoad], Converter={StaticResource BoolToVisibility}}">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{Binding CpuUsage, StringFormat={}{0:F0}}"
                                                    Style="{StaticResource MetricValue}" />
@@ -267,7 +267,7 @@
                                 </StackPanel>
 
                                 <StackPanel Margin="18,0,0,0" VerticalAlignment="Bottom"
-                                            Visibility="{Binding DisplayCpuTemperature, Converter={StaticResource BoolToVisibility}}">
+                                            Visibility="{Binding [CpuTemperature], Converter={StaticResource BoolToVisibility}}">
                                     <!-- Coloured by how close the part is to throttling, on the
                                          processor's own scale. See TemperatureScale. -->
                                     <TextBlock Style="{StaticResource MetricValueSecondary}"
@@ -309,7 +309,7 @@
                                  at 99% mean completely different things. -->
                             <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                                 <StackPanel VerticalAlignment="Bottom"
-                                            Visibility="{Binding DisplayGpuLoad, Converter={StaticResource BoolToVisibility}}">
+                                            Visibility="{Binding [GpuLoad], Converter={StaticResource BoolToVisibility}}">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{Binding GpuUsage}" Style="{StaticResource MetricValue}" />
                                         <TextBlock Text="%" Style="{StaticResource MetricUnit}" />
@@ -318,7 +318,7 @@
                                 </StackPanel>
 
                                 <StackPanel Margin="18,0,0,0" VerticalAlignment="Bottom"
-                                            Visibility="{Binding DisplayGpuTemperature, Converter={StaticResource BoolToVisibility}}">
+                                            Visibility="{Binding [GpuTemperature], Converter={StaticResource BoolToVisibility}}">
                                     <!-- The graphics scale, which reads earlier than the processor's:
                                          these parts throttle at a lower temperature. -->
                                     <TextBlock Style="{StaticResource MetricValueSecondary}"
@@ -329,7 +329,7 @@
                                 </StackPanel>
 
                                 <StackPanel Margin="18,0,0,0" VerticalAlignment="Bottom"
-                                            Visibility="{Binding DisplayGpuFan, Converter={StaticResource BoolToVisibility}}">
+                                            Visibility="{Binding [GpuFan], Converter={StaticResource BoolToVisibility}}">
                                     <TextBlock Style="{StaticResource MetricValueSecondary}"
                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}">
                                         <Run Text="{Binding GpuFan, Mode=OneWay}" /><Run Text="%" />
@@ -366,7 +366,7 @@
                             <TextBlock Text="{loc:Loc Monitor_Memory}" Style="{StaticResource CaptionText}" />
 
                             <StackPanel Orientation="Horizontal" Margin="0,4,0,0"
-                                        Visibility="{Binding DisplayMemory, Converter={StaticResource BoolToVisibility}}">
+                                        Visibility="{Binding [MemoryUsed], Converter={StaticResource BoolToVisibility}}">
                                 <StackPanel VerticalAlignment="Bottom">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{Binding RamUsedMb, Converter={StaticResource MegabytesToSize}}"
@@ -387,23 +387,23 @@
 
                             <TextBlock Style="{StaticResource CaptionText}"
                                        Margin="0,8,0,0"
-                                       Visibility="{Binding DisplayStandby, Converter={StaticResource BoolToVisibility}}">
+                                       Visibility="{Binding [StandbyMemory], Converter={StaticResource BoolToVisibility}}">
                                 <Run Text="{loc:Loc Metric_StandbyMemory}" /><Run Text=": " /><Run Text="{Binding StandbyMb, Converter={StaticResource MegabytesToSize}, Mode=OneWay}" />
                             </TextBlock>
 
                             <TextBlock Style="{StaticResource CaptionText}"
-                                       Visibility="{Binding DisplayDiskFree, Converter={StaticResource BoolToVisibility}}">
+                                       Visibility="{Binding [DiskFree], Converter={StaticResource BoolToVisibility}}">
                                 <Run Text="{loc:Loc Metric_DiskFree}" /><Run Text=": " /><Run Text="{Binding DriveFreeMb, Converter={StaticResource MegabytesToSize}, Mode=OneWay}" />
                             </TextBlock>
 
                             <TextBlock Style="{StaticResource CaptionText}"
-                                       Visibility="{Binding DisplayProcessCount, Converter={StaticResource BoolToVisibility}}">
+                                       Visibility="{Binding [ProcessCount], Converter={StaticResource BoolToVisibility}}">
                                 <Run Text="{loc:Loc Monitor_Label_Processes}" />
                                 <Run Text="{Binding ProcessCount, Mode=OneWay}" />
                             </TextBlock>
 
                             <TextBlock Style="{StaticResource CaptionText}"
-                                       Visibility="{Binding DisplayUptime, Converter={StaticResource BoolToVisibility}}">
+                                       Visibility="{Binding [Uptime], Converter={StaticResource BoolToVisibility}}">
                                 <Run Text="{loc:Loc Metric_Uptime}" /><Run Text=": " /><Run Text="{Binding Uptime, Converter={StaticResource TimeSpanToUptime}, Mode=OneWay}" />
                             </TextBlock>
                         </StackPanel>
