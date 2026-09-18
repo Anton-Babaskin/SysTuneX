@@ -158,82 +158,12 @@ public sealed class SnapshotService : ISnapshotService
         await SaveAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public SnapshotComparison Compare(SystemStateSnapshot before, SystemStateSnapshot after)
-    {
-        ArgumentNullException.ThrowIfNull(before);
-        ArgumentNullException.ThrowIfNull(after);
-
-        // Order by time rather than by argument, so picking them the wrong way round in the
-        // interface still reads as "this became that".
-        if (after.CapturedAt < before.CapturedAt)
-        {
-            (before, after) = (after, before);
-        }
-
-        var changes = new List<SnapshotChange>();
-
-        AddSetDifferences(changes, "Tweak", before.AppliedTweakIds, after.AppliedTweakIds, "applied", "not applied");
-        AddSetDifferences(changes, "Service", before.RunningServices, after.RunningServices, "running", "stopped");
-
-        if (before.PowerScheme != after.PowerScheme)
-        {
-            changes.Add(new SnapshotChange("Power", "scheme", before.PowerSchemeName, after.PowerSchemeName));
-        }
-
-        AddNumericChange(changes, "Memory", "used", before.RamUsedMb, after.RamUsedMb, "MB");
-        AddNumericChange(changes, "Memory", "standby", before.StandbyMb, after.StandbyMb, "MB");
-        AddNumericChange(changes, "System", "processes", before.ProcessCount, after.ProcessCount, string.Empty);
-
-        return new SnapshotComparison(before, after, changes);
-    }
-
-    /// <summary>Reports what entered the set and what left it, rather than the counts.</summary>
-    private static void AddSetDifferences(
-        List<SnapshotChange> changes,
-        string category,
-        IReadOnlyList<string> before,
-        IReadOnlyList<string> after,
-        string presentLabel,
-        string absentLabel)
-    {
-        var wasThere = new HashSet<string>(before, StringComparer.OrdinalIgnoreCase);
-        var isThere = new HashSet<string>(after, StringComparer.OrdinalIgnoreCase);
-
-        foreach (string added in isThere.Except(wasThere, StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase))
-        {
-            changes.Add(new SnapshotChange(category, added, absentLabel, presentLabel));
-        }
-
-        foreach (string removed in wasThere.Except(isThere, StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase))
-        {
-            changes.Add(new SnapshotChange(category, removed, presentLabel, absentLabel));
-        }
-    }
-
     /// <summary>
-    /// Memory and process counts move on their own, so a change is only worth reporting once it
-    /// is bigger than the noise. Listing a 3 MB difference as an effect of a tweak would be a lie
-    /// dressed as data.
+    /// What changed between two snapshots. The rules live in <see cref="SnapshotComparer"/>, where
+    /// a test can reach them without constructing this service and its four dependencies.
     /// </summary>
-    private static void AddNumericChange(
-        List<SnapshotChange> changes,
-        string category,
-        string item,
-        long before,
-        long after,
-        string unit)
-    {
-        long delta = Math.Abs(after - before);
-        long threshold = Math.Max(16, before / 20);
-
-        if (delta < threshold)
-        {
-            return;
-        }
-
-        string suffix = string.IsNullOrEmpty(unit) ? string.Empty : " " + unit;
-        changes.Add(new SnapshotChange(category, item, $"{before}{suffix}", $"{after}{suffix}"));
-    }
+    public SnapshotComparison Compare(SystemStateSnapshot before, SystemStateSnapshot after) =>
+        SnapshotComparer.Compare(before, after);
 
     private async Task SaveAsync(CancellationToken cancellationToken)
     {

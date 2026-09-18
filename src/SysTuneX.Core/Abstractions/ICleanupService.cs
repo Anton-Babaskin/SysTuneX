@@ -13,10 +13,6 @@ public interface ICleanupService
         IEnumerable<CleanupTarget> targets,
         IProgress<CleanupProgress>? progress = null,
         CancellationToken cancellationToken = default);
-
-    Task<IReadOnlyList<AppPackage>> GetRemovableAppsAsync(CancellationToken cancellationToken = default);
-
-    Task<OperationResult> RemoveAppAsync(string packageFamilyName, CancellationToken cancellationToken = default);
 }
 
 public sealed record CleanupProgress(string TargetName, int CompletedTargets, int TotalTargets, long FreedBytes);

@@ -12,6 +12,7 @@ namespace SysTuneX.App.ViewModels;
 public sealed partial class CleanupViewModel : PageViewModel
 {
     private readonly ICleanupService _cleanup;
+    private readonly IAppPackageService _apps;
     private readonly IUserInteraction _interaction;
     private readonly ILocalizationService _localization;
     private readonly CatalogText _text;
@@ -32,11 +33,13 @@ public sealed partial class CleanupViewModel : PageViewModel
 
     public CleanupViewModel(
         ICleanupService cleanup,
+        IAppPackageService apps,
         IUserInteraction interaction,
         ILocalizationService localization,
         CatalogText text)
     {
         _cleanup = cleanup;
+        _apps = apps;
         _interaction = interaction;
         _localization = localization;
         _text = text;
@@ -200,7 +203,7 @@ public sealed partial class CleanupViewModel : PageViewModel
 
         try
         {
-            OperationResult result = await _cleanup
+            OperationResult result = await _apps
                 .RemoveAppAsync(app.PackageName, PageToken)
                 .ConfigureAwait(true);
 
@@ -226,7 +229,7 @@ public sealed partial class CleanupViewModel : PageViewModel
 
         try
         {
-            IReadOnlyList<AppPackage> packages = await _cleanup
+            IReadOnlyList<AppPackage> packages = await _apps
                 .GetRemovableAppsAsync(PageToken)
                 .ConfigureAwait(true);
 

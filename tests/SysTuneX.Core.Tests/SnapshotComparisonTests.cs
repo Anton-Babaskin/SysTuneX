@@ -20,7 +20,7 @@ public sealed class SnapshotComparisonTests
         SystemStateSnapshot before = Snapshot("before");
         SystemStateSnapshot after = before with { Id = "b", Label = "after", CapturedAt = before.CapturedAt.AddMinutes(1) };
 
-        SnapshotComparison comparison = Service().Compare(before, after);
+        SnapshotComparison comparison = SnapshotComparer.Compare(before, after);
 
         Assert.False(comparison.HasChanges);
         Assert.Empty(comparison.Changes);
@@ -32,7 +32,7 @@ public sealed class SnapshotComparisonTests
         SystemStateSnapshot before = Snapshot("before", tweaks: ["game_bar_disable"]);
         SystemStateSnapshot after = Snapshot("after", tweaks: ["game_bar_disable", "nagle_disable"], minutesLater: 5);
 
-        SnapshotChange change = Assert.Single(Service().Compare(before, after).Changes);
+        SnapshotChange change = Assert.Single(SnapshotComparer.Compare(before, after).Changes);
 
         Assert.Equal("Tweak", change.Category);
         Assert.Equal("nagle_disable", change.Item);
@@ -46,7 +46,7 @@ public sealed class SnapshotComparisonTests
         SystemStateSnapshot before = Snapshot("before", services: ["DiagTrack", "SysMain"]);
         SystemStateSnapshot after = Snapshot("after", services: ["SysMain"], minutesLater: 5);
 
-        SnapshotChange change = Assert.Single(Service().Compare(before, after).Changes);
+        SnapshotChange change = Assert.Single(SnapshotComparer.Compare(before, after).Changes);
 
         Assert.Equal("Service", change.Category);
         Assert.Equal("DiagTrack", change.Item);
@@ -69,7 +69,7 @@ public sealed class SnapshotComparisonTests
             PowerSchemeName = "Ultimate Performance",
         };
 
-        SnapshotChange change = Assert.Single(Service().Compare(before, after).Changes);
+        SnapshotChange change = Assert.Single(SnapshotComparer.Compare(before, after).Changes);
 
         Assert.Equal("Power", change.Category);
         Assert.Equal("Balanced", change.Before);
@@ -86,7 +86,7 @@ public sealed class SnapshotComparisonTests
         SystemStateSnapshot before = Snapshot("before") with { RamUsedMb = 8000 };
         SystemStateSnapshot after = Snapshot("after", minutesLater: 1) with { RamUsedMb = 8100 };
 
-        Assert.Empty(Service().Compare(before, after).Changes);
+        Assert.Empty(SnapshotComparer.Compare(before, after).Changes);
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public sealed class SnapshotComparisonTests
         SystemStateSnapshot before = Snapshot("before") with { RamUsedMb = 8000 };
         SystemStateSnapshot after = Snapshot("after", minutesLater: 1) with { RamUsedMb = 5500 };
 
-        SnapshotChange change = Assert.Single(Service().Compare(before, after).Changes);
+        SnapshotChange change = Assert.Single(SnapshotComparer.Compare(before, after).Changes);
 
         Assert.Equal("Memory", change.Category);
         Assert.Equal("8000 MB", change.Before);
@@ -112,7 +112,7 @@ public sealed class SnapshotComparisonTests
         SystemStateSnapshot earlier = Snapshot("earlier", tweaks: []);
         SystemStateSnapshot later = Snapshot("later", tweaks: ["nagle_disable"], minutesLater: 10);
 
-        SnapshotComparison comparison = Service().Compare(after: earlier, before: later);
+        SnapshotComparison comparison = SnapshotComparer.Compare(after: earlier, before: later);
 
         Assert.Equal("earlier", comparison.Before.Label);
         Assert.Equal("later", comparison.After.Label);
@@ -120,9 +120,6 @@ public sealed class SnapshotComparisonTests
         SnapshotChange change = Assert.Single(comparison.Changes);
         Assert.Equal("applied", change.After);
     }
-
-    private static SnapshotService Service() =>
-        new(NullLogger<SnapshotService>.Instance, null!, null!, null!, null!, new FakeEnvironment());
 
     private static SystemStateSnapshot Snapshot(
         string label,

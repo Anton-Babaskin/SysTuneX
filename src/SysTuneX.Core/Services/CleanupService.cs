@@ -1,5 +1,4 @@
 using System.Runtime.Versioning;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using SysTuneX.Core.Abstractions;
 using SysTuneX.Core.Models;
@@ -137,105 +136,6 @@ public sealed class CleanupService : ICleanupService
             cancellationToken);
     }
 
-    public async Task<IReadOnlyList<AppPackage>> GetRemovableAppsAsync(CancellationToken cancellationToken = default)
-    {
-        // Ask for JSON rather than parsing loose text; -AllUsers is deliberately omitted so the
-        // list matches what removing packages for the current user will actually affect.
-        const string script = """
-            Get-AppxPackage |
-                Where-Object { $_.NonRemovable -ne $true } |
-                Select-Object Name, PackageFamilyName, Publisher |
-                ConvertTo-Json -Compress
-            """;
-
-        ProcessRunResult result = await _processes
-            .RunPowerShellAsync(script, TimeSpan.FromSeconds(90), cancellationToken)
-            .ConfigureAwait(false);
-
-        if (!result.Success || string.IsNullOrWhiteSpace(result.StandardOutput))
-        {
-            _logger.LogWarning("Could not enumerate Store packages: {Error}", result.Output.Trim());
-            return [];
-        }
-
-        var installed = new Dictionary<string, InstalledPackage>(StringComparer.OrdinalIgnoreCase);
-
-        try
-        {
-            using JsonDocument document = JsonDocument.Parse(result.StandardOutput);
-            JsonElement root = document.RootElement;
-
-            // ConvertTo-Json emits a bare object when exactly one package matches.
-            IEnumerable<JsonElement> elements = root.ValueKind == JsonValueKind.Array
-                ? root.EnumerateArray()
-                : [root];
-
-            foreach (JsonElement element in elements)
-            {
-                string name = element.TryGetProperty("Name", out JsonElement n) ? n.GetString() ?? string.Empty : string.Empty;
-                if (string.IsNullOrEmpty(name))
-                {
-                    continue;
-                }
-
-                installed[name] = new InstalledPackage(
-                    name,
-                    element.TryGetProperty("PackageFamilyName", out JsonElement f) ? f.GetString() ?? name : name,
-                    element.TryGetProperty("Publisher", out JsonElement p) ? p.GetString() ?? string.Empty : string.Empty);
-            }
-        }
-        catch (JsonException ex)
-        {
-            _logger.LogWarning(ex, "Could not parse the Store package list");
-            return [];
-        }
-
-        var packages = new List<AppPackage>();
-
-        foreach (BloatwarePackage candidate in BloatwareCatalog.All)
-        {
-            if (!installed.TryGetValue(candidate.PackageName, out InstalledPackage found))
-            {
-                continue;
-            }
-
-            packages.Add(new AppPackage
-            {
-                PackageFamilyName = candidate.PackageName,
-                DisplayName = candidate.DisplayName,
-                Publisher = found.Publisher,
-                IsSystemRelevant = candidate.IsSystemRelevant,
-            });
-        }
-
-        return packages;
-    }
-
-    public async Task<OperationResult> RemoveAppAsync(string packageName, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrWhiteSpace(packageName) || packageName.Any(c => c is '\'' or '"' or ';' or '|' or '&'))
-        {
-            return OperationResult.Fail(CoreMessages.CleanupUnsafePackageName);
-        }
-
-        string script = $$"""
-            $ErrorActionPreference = 'Stop'
-            Get-AppxPackage -Name '{{packageName}}' | Remove-AppxPackage
-            """;
-
-        ProcessRunResult result = await _processes
-            .RunPowerShellAsync(script, TimeSpan.FromSeconds(120), cancellationToken)
-            .ConfigureAwait(false);
-
-        if (!result.Success)
-        {
-            return OperationResult.Fail(CoreMessages.CleanupPackageRemoveFailed, packageName, result.Output.Trim());
-        }
-
-        _logger.LogInformation("Removed Store package {Package}", packageName);
-        return OperationResult.Ok();
-    }
-
     private static IReadOnlyList<string> ResolvePaths(CleanupTarget target)
     {
         var resolved = new List<string>();
@@ -351,5 +251,4 @@ public sealed class CleanupService : ICleanupService
         }
     }
 
-    private readonly record struct InstalledPackage(string Name, string FamilyName, string Publisher);
 }

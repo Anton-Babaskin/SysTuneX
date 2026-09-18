@@ -41,6 +41,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IPrivacyService, PrivacyService>();
         services.AddSingleton<INetworkService, NetworkService>();
         services.AddSingleton<ICleanupService, CleanupService>();
+        services.AddSingleton<IAppPackageService, AppPackageService>();
         services.AddSingleton<IRestorePointService, RestorePointService>();
         services.AddSingleton<IScheduledTaskService, ScheduledTaskService>();
 
