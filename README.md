@@ -10,7 +10,7 @@
 
 A free, open-source Windows optimizer for gamers. Apply smart performance profiles, reduce background load, monitor **FPS, 1% lows, frame time, CPU, GPU, RAM and temperatures**, and restore the exact settings you started with.
 
-[English](README.md) · [Русский](README.ru.md) · [Українська](README.uk.md) · [Español](README.es.md)
+[![English](https://img.shields.io/badge/English-0078D4)](README.md) [![Русский](https://img.shields.io/badge/%D0%A0%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9-5A6570)](README.ru.md) [![Українська](https://img.shields.io/badge/%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%B0-5A6570)](README.uk.md) [![Español](https://img.shields.io/badge/Espa%C3%B1ol-5A6570)](README.es.md)
 
 [⬇️ **Download SysTuneX**](https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SysTuneX.exe) · [Latest release](https://github.com/Anton-Babaskin/SysTuneX/releases/latest) · [SHA-256](https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SHA256SUMS.txt) · [Report an issue](https://github.com/Anton-Babaskin/SysTuneX/issues)
 
@@ -21,6 +21,7 @@ A free, open-source Windows optimizer for gamers. Apply smart performance profil
 [![Downloads](https://img.shields.io/github/downloads/Anton-Babaskin/SysTuneX/total?label=downloads)](https://github.com/Anton-Babaskin/SysTuneX/releases)
 [![License](https://img.shields.io/github/license/Anton-Babaskin/SysTuneX)](LICENSE)
 ![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows11\&logoColor=white)
+![UI languages](https://img.shields.io/badge/UI-English%20%C2%B7%20%D0%A0%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9%20%C2%B7%20%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%B0-5C2D91)
 ![x64](https://img.shields.io/badge/x64-single--file-5C2D91)
 
 </div>
@@ -181,10 +182,10 @@ Security reports go through [SECURITY.md](SECURITY.md), privately, rather than a
 | **Dashboard**   | Live CPU and memory monitoring, tuning status, Quick Optimize and full restore                                           |
 | **Monitor**     | Frame rate with its 1% low and frame time, CPU and GPU load and temperature, memory — measured without touching the game, and only what you tick. Ctrl+Shift+M puts the same numbers in a small window above everything else |
 | **Profiles**    | Ready-made tuning profiles for different gaming and workload scenarios                                                   |
-| **Gaming**      | Game Bar, Game DVR, fullscreen optimizations, mouse acceleration, CPU scheduling and more                                |
+| **Gaming**      | Game Bar, Game DVR, fullscreen optimizations, mouse acceleration, CPU scheduling, PCIe link power saving, accessibility shortcuts and more |
 | **Windows 11**  | VBS, HVCI, hypervisor, Recall, Copilot, widgets, search features and other build-aware settings                          |
 | **Services**    | Safe service tuning with the original startup configuration recorded before changes                                      |
-| **Privacy**     | Telemetry, advertising ID, activity history, suggestions, location, clipboard sync and optional telemetry hosts blocking |
+| **Privacy**     | Telemetry and its scheduled tasks, advertising ID, activity history, suggestions, location, clipboard sync and optional telemetry hosts blocking |
 | **Network**     | Nagle tuning, network throttling and DNS latency testing                                                                 |
 | **Cleanup**     | Temporary files, update caches, crash dumps, shader caches, thumbnails and other disposable data                         |
 | **Game mode**   | One switch that stops background services, raises the power scheme and frees memory — and undoes all of it              |
@@ -437,23 +438,30 @@ SysTuneX separates operating-system logic from the desktop interface.
 SysTuneX/
 ├── src/
 │   ├── SysTuneX.Core/
-│   │   ├── Abstractions/
-│   │   ├── Models/
+│   │   ├── Abstractions/          # the contracts the app depends on
+│   │   ├── Diagnostics/
+│   │   ├── Models/                # records and the pure functions over them
 │   │   ├── Native/
 │   │   ├── Services/
-│   │   └── Tweaks/
+│   │   │   └── Sensors/
+│   │   └── Tweaks/                # the tweak, service, profile and cleanup catalogues
 │   │
 │   └── SysTuneX.App/
+│       ├── Assets/
 │       ├── Controls/
 │       ├── Converters/
+│       ├── Diagnostics/
 │       ├── Localization/
-│       ├── Resources/
+│       ├── Resources/             # Strings.resx and one Strings.<lang>.resx per language
+│       ├── Services/              # everything the UI needs that is not a screen
 │       ├── ViewModels/
+│       │   └── Settings/
 │       └── Views/
+│           └── Pages/
 │
 ├── tests/
-│   ├── SysTuneX.Core.Tests/
-│   └── SysTuneX.App.Tests/
+│   ├── SysTuneX.Core.Tests/       # also the checks that read the app's markup and source
+│   └── SysTuneX.App.Tests/        # needs Windows; CI runs it
 │
 └── .github/workflows/
 ```

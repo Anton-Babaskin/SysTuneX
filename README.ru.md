@@ -10,7 +10,7 @@
 
 Бесплатный open-source оптимизатор Windows для игр. Профили производительности, снижение фоновой нагрузки и мониторинг **FPS, 1% low, frame time, CPU, GPU, RAM и температур** — с сохранением исходных настроек и точным откатом.
 
-[English](README.md) · [Русский](README.ru.md) · [Українська](README.uk.md) · [Español](README.es.md)
+[![English](https://img.shields.io/badge/English-5A6570)](README.md) [![Русский](https://img.shields.io/badge/%D0%A0%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9-0078D4)](README.ru.md) [![Українська](https://img.shields.io/badge/%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%B0-5A6570)](README.uk.md) [![Español](https://img.shields.io/badge/Espa%C3%B1ol-5A6570)](README.es.md)
 
 [⬇️ **Скачать SysTuneX**](https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SysTuneX.exe) · [Последний релиз](https://github.com/Anton-Babaskin/SysTuneX/releases/latest) · [SHA-256](https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SHA256SUMS.txt) · [Сообщить об ошибке](https://github.com/Anton-Babaskin/SysTuneX/issues)
 
@@ -21,6 +21,7 @@
 [![Downloads](https://img.shields.io/github/downloads/Anton-Babaskin/SysTuneX/total?label=downloads)](https://github.com/Anton-Babaskin/SysTuneX/releases)
 [![License](https://img.shields.io/github/license/Anton-Babaskin/SysTuneX)](LICENSE)
 ![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows11\&logoColor=white)
+![UI languages](https://img.shields.io/badge/UI-English%20%C2%B7%20%D0%A0%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9%20%C2%B7%20%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%B0-5C2D91)
 ![x64](https://img.shields.io/badge/x64-single--file-5C2D91)
 
 </div>
@@ -180,10 +181,10 @@ Windows SmartScreen выдаст предупреждение, потому чт
 | **Dashboard**   | Мониторинг CPU и памяти, состояние оптимизации, Quick Optimize и полный откат                                             |
 | **Monitor**     | FPS с 1% низких и временем кадра, загрузка и температура CPU и GPU, память — замер без вмешательства в игру, и только то, что отмечено. Ctrl+Shift+M выводит те же цифры в маленькое окно поверх остальных |
 | **Profiles**    | Готовые профили для разных игровых и рабочих сценариев                                                                    |
-| **Gaming**      | Game Bar, Game DVR, fullscreen optimizations, ускорение мыши, CPU scheduling и другие параметры                           |
+| **Gaming**      | Game Bar, Game DVR, fullscreen optimizations, ускорение мыши, CPU scheduling, энергосбережение шины PCIe, горячие клавиши спец. возможностей и другие параметры |
 | **Windows 11**  | VBS, HVCI, hypervisor, Recall, Copilot, widgets, поиск и другие настройки с учётом версии Windows                         |
 | **Services**    | Настройка служб с сохранением исходного типа запуска                                                                      |
-| **Privacy**     | Телеметрия, advertising ID, activity history, рекомендации, геолокация, синхронизация буфера и блокировка telemetry hosts |
+| **Privacy**     | Телеметрия и её задачи планировщика, advertising ID, activity history, рекомендации, геолокация, синхронизация буфера и блокировка telemetry hosts |
 | **Network**     | Nagle, network throttling и тестирование задержки DNS                                                                     |
 | **Cleanup**     | Временные файлы, кэш обновлений, crash dumps, shader cache, thumbnails и другие удаляемые данные                          |
 | **Game mode**   | Один переключатель: останавливает фоновые службы, поднимает схему питания, освобождает память — и всё это отменяет        |
@@ -436,23 +437,30 @@ SysTuneX содержит несколько инструментов для с�
 SysTuneX/
 ├── src/
 │   ├── SysTuneX.Core/
-│   │   ├── Abstractions/
-│   │   ├── Models/
+│   │   ├── Abstractions/          # контракты, от которых зависит приложение
+│   │   ├── Diagnostics/
+│   │   ├── Models/                # записи и чистые функции над ними
 │   │   ├── Native/
 │   │   ├── Services/
-│   │   └── Tweaks/
+│   │   │   └── Sensors/
+│   │   └── Tweaks/                # каталоги твиков, служб, профилей и очистки
 │   │
 │   └── SysTuneX.App/
+│       ├── Assets/
 │       ├── Controls/
 │       ├── Converters/
+│       ├── Diagnostics/
 │       ├── Localization/
-│       ├── Resources/
+│       ├── Resources/             # Strings.resx и по одному Strings.<lang>.resx на язык
+│       ├── Services/              # всё, что нужно интерфейсу и не является экраном
 │       ├── ViewModels/
+│       │   └── Settings/
 │       └── Views/
+│           └── Pages/
 │
 ├── tests/
-│   ├── SysTuneX.Core.Tests/
-│   └── SysTuneX.App.Tests/
+│   ├── SysTuneX.Core.Tests/       # в том числе проверки, читающие разметку и исходники
+│   └── SysTuneX.App.Tests/        # требует Windows; запускается в CI
 │
 └── .github/workflows/
 ```
