@@ -1,4 +1,5 @@
 using Microsoft.Win32;
+using SysTuneX.Core.Services;
 using SysTuneX.Core.Abstractions;
 using SysTuneX.Core.Models;
 
@@ -229,4 +230,12 @@ public sealed class FakeTweakHandler(string key, OperationResult? apply = null, 
 internal static class RegistryValueComparerAccess
 {
     public static string Stringify(object value) => SysTuneX.Core.Services.RegistryValueComparer.Stringify(value);
+}
+
+/// <summary>Remembers the applied profile in memory, so nothing touches a real machine's disk.</summary>
+public sealed class FakeAppliedProfileStore : IAppliedProfileStore
+{
+    public AppliedProfile? Current { get; private set; }
+
+    public void Write(AppliedProfile? applied) => Current = applied;
 }

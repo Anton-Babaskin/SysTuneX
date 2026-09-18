@@ -3,6 +3,230 @@
 Every released version, newest first. The release workflow publishes only the section
 for the version being released, so a release page shows that version and nothing else.
 
+## v2.12.0
+
+### A compact readout you can call up over a game
+
+The numbers on the Monitor page are only useful while you are looking at them, and while you are
+playing you are not. There is now a small window with the same readings that stays above other
+windows, opened with **Ctrl+Shift+M** from wherever you are — including from inside a game.
+
+It shows whatever you ticked on the Monitor page, and it keeps showing it: change a tick with the
+window open and it follows. Drag it anywhere; it reopens where you left it, on a screen that still
+exists — a position on a monitor that has since been unplugged is quietly corrected rather than
+opening the window somewhere you cannot reach it.
+
+**What it is not.** It is not an overlay. Nothing is injected into the game, nothing hooks its swap
+chain, no driver is loaded — it is an ordinary window with its chrome removed. So it appears over a
+game running **borderless windowed**, and it will **not** appear over one running in **exclusive
+fullscreen**, which owns the display outright. That is a real limit, and it is the same trade this
+project makes everywhere: nothing an anti-cheat could reasonably mistake for a cheat.
+
+The key can be changed or switched off in Settings. If another program already owns the
+combination, Settings says which and asks for a different one, rather than leaving you pressing a
+key that does nothing — which is indistinguishable from a broken application.
+
+Readings the machine cannot supply are still left out rather than drawn as zero, and a frame rate
+counter that is running but has nothing to count shows `--` rather than a number. Ten tests cover
+how the readout is assembled, because the window is small, it sits over a game, and nobody reading
+it has room to wonder whether a zero means zero.
+
+### Half of Core became testable
+
+Everything SysTuneX cannot do through an API it does by running `powercfg`, `netsh`, `bcdedit` or
+PowerShell and reading what they print. The reading is the part that goes wrong — those tools print
+in the user's language and their output shape is not a contract — and the runner was a static class,
+so none of it could be reached from a test. A comment in the power service said so out loud. Two
+real defects came out of exactly that blind spot, both found by reading rather than by testing,
+which is the expensive way.
+
+The runner is injected now. Twelve tests cover what powercfg prints and what SysTuneX makes of it,
+including the claim the scheme parser has carried since it was written — that powercfg's labels are
+translated, so only the GUID and the name in brackets can be relied on. That had never once been run
+against a Russian machine's output. It turns out to be correct. The power *setting* reader made the
+same claim and was wrong.
+
+**Tests no longer write to your ProgramData folder.** Half the services took an optional directory
+and fell back to a fixed path when it was not given — and no test ever gave it, so every test of the
+profile, snapshot, game-mode and game-watcher services read and wrote the real
+`%ProgramData%\SysTuneX` on whatever machine ran them. The escape hatch is gone; the path comes from
+one injected place, and a test fails if anything but the logger reaches for the fixed one.
+
+**Rebooting your PC left the view model.** `shutdown /r` was a one-line call to a static process
+runner from inside the class that describes the main window — the most consequential thing this app
+can do, in the layer furthest from anything that could check it. It sits beside "relaunch elevated"
+and "restart the shell" now, and it reports a refusal instead of failing silently.
+
+**Opening a folder too.** Four commands called `Process.Start` directly; they go through one
+launcher, which also refuses to hand Windows anything that is not plainly a web address — every URL
+in the app is a constant in our own source, and that is exactly the kind of thing that stops being
+true one edit later.
+
+Four architecture tests keep all of it from coming back. Each one is a mistake this project actually
+made.
+
+### The interface has an identity, and its numbers stop jittering
+
+**Live counters no longer shift about.** The metric style carried a comment saying it used tabular
+figures — every digit the same width — and a setter that did nothing of the kind. So a counter going
+99 → 100 → 99 shoved the caption beside it back and forth, twice a second, on the two screens where
+that is worst: the monitor page and the small window that sits over a game. It had done that since
+the page was written, because nothing about a comment is enforced. The setting is now actually
+applied.
+
+**Every page opens with the brand accent.** The app has had a gradient in its palette and nowhere
+that used it: every screen started with grey text on a grey background and looked like a settings
+dialogue. Four pixels of colour under each page title is enough to say which application this is,
+and unlike a drop shadow it costs nothing to draw — which matters in a tool whose whole argument is
+that it does not waste the machine.
+
+**One type scale instead of three.** Pages reached past the shared styles with hard-coded sizes —
+13 here, 26 there — so two things that meant the same thing were set differently on different pages
+and nothing said which was right. There is one scale now, and the sizes that were off it are on it.
+
+**A test that reads the markup.** A `{StaticResource}` naming a key that does not exist is not a
+build error: it throws when the page is parsed, which is when the user opens it, and takes the page
+down. This project has already shipped that once. There is now a check that resolves every resource
+key every page asks for, and it needs neither Windows nor WPF to run — so a resource renamed on any
+machine is caught by the person who renamed it.
+
+### The frame counter reports a number again
+
+Reported from a real machine: the FPS counter does not work. It was two clocks being compared
+against each other.
+
+Frame timestamps come from the trace — whatever epoch Event Tracing hands over. The window then
+aged those timestamps against the local wall clock. Where the two do not line up, every frame looks
+hours old on the first read, the window empties itself, and the counter reports nothing. Forever,
+and silently: an empty window is a perfectly ordinary state, so there was nothing to log.
+
+Every test passed the same value for both roles, which is exactly why nothing caught it. A frame
+now carries two timestamps and the type says why: the presentation time, only ever used as a
+difference against another presentation time, and the arrival time on this process's own monotonic
+clock, which is the only value ever compared against "now".
+
+**Direct3D 9 games were never counted at all.** A D3D9 title does not call `IDXGISwapChain::Present`,
+so with the DXGI provider alone the counter sat at nothing for every game of that era and gave no
+hint why. That provider is listened to as well now.
+
+**"No frame rate" said one thing for four different situations**, which is why the only bug report
+it ever produced was "it doesn't work". The page now tells them apart: the trace session would not
+start; the session is up and nothing on this PC presents through DirectX at all, which is what a
+Vulkan or OpenGL game looks like; frames are being presented but by some other window; or this game
+was being counted and has stopped — which is what alt-tabbing out of an exclusive fullscreen game
+does, and is not a fault.
+
+### Three new tweaks
+
+**PCI Express power saving, off.** ASPM parks a PCIe link between transfers and wakes it on the next
+one. Waking takes microseconds — which matters only when it lands between a mouse report and the
+frame that should have used it, on the link carrying the drive a game streams from or the network
+card a match is on. It costs power, and on a laptop on battery that is a real loss, so the tweak
+says so instead of selling it as free. A machine whose firmware does not expose the setting now says
+*that*, rather than offering a switch that cannot do anything.
+
+**The accessibility key shortcuts, off.** Five taps of Shift opens the Sticky Keys dialogue, which
+in a shooter means crouch, crouch, crouch and then a modal window over the game. The shortcuts go;
+the features stay available in Settings for anyone who uses them.
+
+**The data-collection scheduled tasks, off.** Seven of them: the Compatibility Appraiser, which
+walks every installed program and can hold a core busy for minutes at a time, and six smaller
+Customer Experience Improvement Program tasks. Only the ones actually running are switched off, and
+only those are switched back on — a task you disabled yourself stays as you left it, which is the
+rule the service tweaks already follow.
+
+**No "audio latency" tweak**, although every optimizer has one. On stock Windows 11 the multimedia
+scheduler's Audio task already sits at priority 6 and Pro Audio already at scheduling category
+High — the values those guides tell you to write. The one value that is not already set is the Audio
+task's category, and raising it puts the audio engine in the same scheduling band as the game. That
+is a trade, not a win, and shipping it as a speed-up would be a placebo with a real cost.
+
+### Reading a power setting no longer guesses
+
+Reading one meant scanning powercfg's output for a line with "index" in it — in English or in
+Russian. That had never been run against either, because reaching it needed powercfg on a Windows
+machine, and a scan that matches nothing does not fail: it returns zero, which for most of these
+settings means "off". It would report a machine as tuned having read nothing at all.
+
+The parsing is now a plain function with twelve tests over real powercfg output in both languages,
+and a setting the machine does not expose reads as *nothing* rather than as zero.
+
+### The tuning score was wrong on a translated Windows
+
+Found while moving the check that answers it out of the dashboard.
+
+A fifth of the score is "is a high performance power scheme active". Some editions of Windows ship
+with neither built-in scheme, so SysTuneX duplicates one — and `powercfg /duplicatescheme` gives
+the copy a fresh GUID and keeps **the source scheme's name**, which on a Russian or Ukrainian
+Windows is not the English string the check was looking for.
+
+So on every non-English machine that needed the duplicate, the dashboard reported a tuned machine
+as untuned and quietly withheld twenty points. Nothing looked broken; the number was just lower
+than it should have been, which is the kind of wrong that never gets reported.
+
+SysTuneX already writes down which copy it made. The question goes to the service that made it
+now, instead of to a string comparison against text Windows wrote in the user's language.
+
+### The big classes came apart
+
+An audit of the codebase against SOLID listed twenty places worth fixing. All of them are done;
+most are invisible from the outside, and two are worth naming because they changed what can go
+wrong.
+
+**Restore All can no longer skip a kind of change silently.** Restoring worked through one method
+that knew every kind of recorded change by name. A kind added later and not added there was simply
+not restored, and nothing said so — the promise this whole application rests on, failing quietly.
+Each kind now owns its own restorer, anything left unclaimed is reported rather than dropped, and
+a test fails if a recorded kind has no restorer at all.
+
+**Quick Optimize is bound by a rule that can now be tested.** The one button that changes the
+machine without asking a second time applies safe tweaks only — never moderate, never advanced.
+That rule was a filter in the middle of a WPF command handler, three layers from anything that
+could assert it. One careless edit there and a click labelled "optimise" disables
+virtualisation-based security. It is a service with its own tests now.
+
+The rest is shape: the dashboard was fourteen dependencies and eight jobs in one class and is now
+three cards and a page; the settings page was seven hundred lines and is five sections; the
+profile confirmation dialog was ninety lines of layout built by hand inside the class that shows
+toasts, and is markup with the decisions behind it under test.
+
+### Ukrainian
+
+All 644 strings, picked from the language menu like the other two. That is the whole interface plus
+the catalogues: every tweak, service, profile and cleanup target carries its name and its
+description, because a page that lists "Вимкнути Game Bar" next to an English paragraph explaining
+it is not translated, it is half-translated.
+
+Adding it meant the checks that hold the languages together stopped naming them. They discovered
+two files and were hard-coded to compare exactly those two, so a third language would have shipped
+with none of them — which is precisely the language that needs them. They now find every
+`Strings.<lang>.resx` there is and hold each one to the English original: same keys, same
+placeholders, nothing blank, nothing defined twice.
+
+One of them is new. The catalogue names live in C# in English and in the resource files
+translated, so a translation legitimately carries keys the English file does not — and that meant
+a second translation could silently miss a whole catalogue and no check would notice. The
+translations are now held to each other as well as to the original.
+
+### English is checked now too
+
+It was the one part of the interface nothing verified. Every tweak, service, profile and cleanup
+target carries its English in C# rather than in a resource file, so Core stays useful on its own
+and a missing translation degrades to English instead of showing a raw key. That is the right
+arrangement, and it has a blind spot in both directions: an entry with no English description is an
+empty paragraph for every English user that no resource check can see, and a missing translation is
+one English line in the middle of a translated page that nothing ever reports.
+
+Both directions are now held to the catalogue itself rather than to another resource file. Every
+entry must carry finished English text — not blank, not a placeholder — and every entry must be
+translated in every shipped language. The reverse too: a translation naming an id the catalogue no
+longer has is a renamed tweak's old name and description, carried and re-reviewed in every language
+forever.
+
+Nothing was wrong when the checks went in. The point is that nothing would have said so.
+
+---
+
 ## v2.11.0
 
 ### The profiles page now says which profile is on

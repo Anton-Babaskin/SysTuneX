@@ -129,7 +129,46 @@ public sealed class GlobalSearchTests
         var localization = new StubLocalization();
         StubEnvironment env = environment ?? new StubEnvironment();
 
-        return new GlobalSearch(new StubTweakEngine(env), env, localization, new CatalogText(localization));
+        var text = new CatalogText(localization);
+
+        // The same three sources the application registers, so what the tests search is what the
+        // user searches.
+        return new GlobalSearch(
+        [
+            new TweakSearchSource(new StubTweakEngine(env), localization, text, CategoryPages),
+            new ServiceSearchSource(env, localization, text),
+            new CleanupSearchSource(localization, text),
+        ]);
+    }
+
+    /// <summary>
+    /// Every tweak category and the page that owns it, mirroring what App.xaml.cs registers.
+    /// A category missing here is a category whose tweaks cannot be found, which is what the
+    /// test below is about.
+    /// </summary>
+    private static TweakCategoryPage[] CategoryPages =>
+    [
+        new(TweakCategory.Gaming, typeof(GamingPage), "Nav_Gaming"),
+        new(TweakCategory.Windows11, typeof(Windows11Page), "Nav_Windows11"),
+        new(TweakCategory.Privacy, typeof(PrivacyPage), "Nav_Privacy"),
+        new(TweakCategory.Network, typeof(NetworkPage), "Nav_Network"),
+    ];
+
+    /// <summary>
+    /// Every category has a page. This used to be a switch whose default arm was the gaming page,
+    /// so a category added to the enum and not to the switch sent the user to a page that could
+    /// not contain what they had searched for - with nothing to say so.
+    /// </summary>
+    [Fact]
+    public void Every_tweak_category_has_a_page()
+    {
+        List<TweakCategory> unowned =
+        [
+            .. Enum.GetValues<TweakCategory>()
+                .Where(category => !CategoryPages.Any(page => page.Category == category)),
+        ];
+
+        Assert.Empty(unowned);
     }
 
     /// <summary>Returns the neutral text, which is what the catalog carries.</summary>
@@ -174,6 +213,9 @@ public sealed class GlobalSearchTests
 
         public Task<OperationResult> RestartExplorerAsync(CancellationToken cancellationToken = default) =>
             Task.FromResult(OperationResult.Ok());
+
+    public Task<OperationResult> RestartWindowsAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult(OperationResult.Ok());
     }
 
     /// <summary>The real catalog, gated the way the real engine gates it.</summary>

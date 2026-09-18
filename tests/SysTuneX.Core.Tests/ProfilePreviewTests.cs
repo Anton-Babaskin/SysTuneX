@@ -226,7 +226,9 @@ public sealed class ProfilePreviewTests
         bool includeAdvanced = true)
     {
         // PreviewAsync reads the catalog, the registry and the service manager, and nothing
-        // else - the remaining dependencies exist for apply and restore.
+        // else - the remaining dependencies exist for apply and restore. There used to be six
+        // nulls here; the change journal, the privacy service and the network service left with
+        // the rollback that used them.
         var profiles = new ProfileService(
             NullLogger<ProfileService>.Instance,
             engine,
@@ -234,11 +236,10 @@ public sealed class ProfilePreviewTests
             null!,
             null!,
             null!,
-            null!,
-            null!,
-            null!,
             new FakeEnvironment(),
-            registry);
+            registry,
+            new FakeAppliedProfileStore(),
+            null!);
 
         var profile = new GameProfile
         {

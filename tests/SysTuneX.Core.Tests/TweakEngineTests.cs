@@ -340,7 +340,8 @@ public sealed class TweakEngineTests
         IRegistryService registry,
         IBackupService backup,
         int build = 26100,
-        IEnumerable<ISpecialTweakHandler>? handlers = null) =>
+        IEnumerable<ISpecialTweakHandler>? handlers = null,
+        IEnumerable<IPostApplyEffect>? postApply = null) =>
         new(
             NullLogger<TweakEngine>.Instance,
             registry,
@@ -349,7 +350,8 @@ public sealed class TweakEngineTests
             {
                 Windows = new WindowsVersionInfo { Major = 10, Minor = 0, Build = build, ProductName = "Windows" },
             },
-            handlers ?? []);
+            handlers ?? [],
+            postApply ?? []);
 
     private static RegistryChange Change(string keyPath, string valueName, object optimized, object? windowsDefault) =>
         new(keyPath, valueName, optimized, windowsDefault, RegistryValueKind.DWord);
@@ -364,4 +366,143 @@ public sealed class TweakEngineTests
         Risk = RiskLevel.Safe,
         Changes = changes,
     };
+}
+
+/// <summary>
+/// The refresh that makes a written value take effect on a running desktop.
+///
+/// It was a chain of HasFlag branches calling static P/Invoke helpers, so nothing could check that
+/// the right refresh ran for the right tweak without a live desktop to call SystemParametersInfo
+/// on. A tweak whose flag nobody handled simply did not refresh, and the symptom - the setting
+/// works after the next sign-in - is the kind nobody reports.
+/// </summary>
+public sealed class PostApplyEffectTests
+{
+    private sealed class SpyEffect(PostApplyAction flag) : IPostApplyEffect
+    {
+        public PostApplyAction Flag { get; } = flag;
+
+        public List<bool> Runs { get; } = [];
+
+        public bool Throws { get; set; }
+
+        public void Run(bool applying)
+        {
+            Runs.Add(applying);
+
+            if (Throws)
+            {
+                throw new InvalidOperationException("SystemParametersInfo refused");
+            }
+        }
+    }
+
+    private static TweakEngine Engine(FakeRegistryService registry, params IPostApplyEffect[] effects) =>
+        new(
+            NullLogger<TweakEngine>.Instance,
+            registry,
+            new FakeBackupService(),
+            new FakeEnvironment(),
+            [],
+            effects);
+
+    private static TweakDefinition Tweak(PostApplyAction postApply) => new()
+    {
+        Id = "spy",
+        Category = TweakCategory.Gaming,
+        GroupKey = "Group_Input",
+        Name = "Spy",
+        Description = "Spy",
+        Risk = RiskLevel.Safe,
+        PostApply = postApply,
+        Changes = [new(@"HKCU\Control Panel\Mouse", "MouseSpeed", "0", "1", RegistryValueKind.String)],
+    };
+
+    [Fact]
+    public async Task Only_the_effects_a_tweak_asks_for_run()
+    {
+        var mouse = new SpyEffect(PostApplyAction.RefreshMouseSettings);
+        var visual = new SpyEffect(PostApplyAction.RefreshVisualEffects);
+
+        await Engine(new FakeRegistryService(), mouse, visual)
+            .ApplyAsync(Tweak(PostApplyAction.RefreshMouseSettings));
+
+        Assert.Equal([true], mouse.Runs);
+        Assert.Empty(visual.Runs);
+    }
+
+    [Fact]
+    public async Task A_tweak_asking_for_several_gets_several()
+    {
+        var mouse = new SpyEffect(PostApplyAction.RefreshMouseSettings);
+        var broadcast = new SpyEffect(PostApplyAction.BroadcastSettingChange);
+
+        await Engine(new FakeRegistryService(), mouse, broadcast)
+            .ApplyAsync(Tweak(PostApplyAction.RefreshMouseSettings | PostApplyAction.BroadcastSettingChange));
+
+        Assert.Single(mouse.Runs);
+        Assert.Single(broadcast.Runs);
+    }
+
+    /// <summary>
+    /// Reverting runs the same effect with the opposite sense. Most of these push a value that is
+    /// the inverse of the tweak's own: "mouse acceleration off" applies by disabling acceleration.
+    /// </summary>
+    [Fact]
+    public async Task Reverting_runs_the_effect_the_other_way_round()
+    {
+        var mouse = new SpyEffect(PostApplyAction.RefreshMouseSettings);
+
+        await Engine(new FakeRegistryService(), mouse).RevertAsync(Tweak(PostApplyAction.RefreshMouseSettings));
+
+        Assert.Equal([false], mouse.Runs);
+    }
+
+    [Fact]
+    public async Task A_tweak_that_asks_for_nothing_runs_nothing()
+    {
+        var mouse = new SpyEffect(PostApplyAction.RefreshMouseSettings);
+
+        await Engine(new FakeRegistryService(), mouse).ApplyAsync(Tweak(PostApplyAction.None));
+
+        Assert.Empty(mouse.Runs);
+    }
+
+    /// <summary>
+    /// A refresh that throws must not fail the tweak: the value is written either way, and the
+    /// worst case is that it takes effect at the next sign-in rather than now.
+    /// </summary>
+    [Fact]
+    public async Task A_refresh_that_throws_does_not_fail_the_tweak()
+    {
+        var mouse = new SpyEffect(PostApplyAction.RefreshMouseSettings) { Throws = true };
+        var broadcast = new SpyEffect(PostApplyAction.BroadcastSettingChange);
+
+        OperationResult result = await Engine(new FakeRegistryService(), mouse, broadcast)
+            .ApplyAsync(Tweak(PostApplyAction.RefreshMouseSettings | PostApplyAction.BroadcastSettingChange));
+
+        Assert.True(result.Success);
+
+        // And the one after it still ran, rather than being lost to the first one's exception.
+        Assert.Single(broadcast.Runs);
+    }
+
+    /// <summary>
+    /// Every flag has an effect registered for it. A flag added to the enum without one would be
+    /// set on a tweak, look handled, and do nothing.
+    /// </summary>
+    [Fact]
+    public void Every_post_apply_flag_has_an_effect()
+    {
+        IPostApplyEffect[] effects = [new MouseSettingsRefresh(), new VisualEffectsRefresh(), new SettingChangeBroadcast()];
+
+        List<PostApplyAction> unhandled =
+        [
+            .. Enum.GetValues<PostApplyAction>()
+                .Where(flag => flag != PostApplyAction.None)
+                .Where(flag => !effects.Any(e => e.Flag == flag)),
+        ];
+
+        Assert.Empty(unhandled);
+    }
 }

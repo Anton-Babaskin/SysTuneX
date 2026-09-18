@@ -29,20 +29,20 @@ public sealed class GameModeCardThreadingTests(WpfApplicationFixture host)
             return;
         }
 
-        DashboardViewModel? viewModel = null;
+        GameModeCardViewModel? card = null;
 
         host.OnUiThread(() =>
         {
-            viewModel = App.Services.GetRequiredService<DashboardViewModel>();
+            card = App.Services.GetRequiredService<DashboardViewModel>().GameMode;
 
             // A collection view is what gives the collection its thread affinity, and a binding is
             // what creates one. Without this the collection would accept changes from any thread
             // and the test would pass whether the fix were present or not.
-            _ = CollectionViewSource.GetDefaultView(viewModel.GameModeChanges);
+            _ = CollectionViewSource.GetDefaultView(card.Changes);
         });
 
         Exception? failure = Record.Exception(
-            () => Task.Run(() => viewModel!.RefreshGameMode()).GetAwaiter().GetResult());
+            () => Task.Run(() => card!.Refresh()).GetAwaiter().GetResult());
 
         Assert.True(
             failure is null,
@@ -63,14 +63,14 @@ public sealed class GameModeCardThreadingTests(WpfApplicationFixture host)
 
         host.OnUiThread(() =>
         {
-            var viewModel = App.Services.GetRequiredService<DashboardViewModel>();
+            GameModeCardViewModel card = App.Services.GetRequiredService<DashboardViewModel>().GameMode;
 
-            viewModel.RefreshGameMode();
+            card.Refresh();
 
             // Game mode is off in a test run, so the card shows its explanation rather than a list.
-            Assert.Empty(viewModel.GameModeChanges);
-            Assert.False(viewModel.IsGameModeOn);
-            Assert.NotEqual(string.Empty, viewModel.GameModeDetail);
+            Assert.Empty(card.Changes);
+            Assert.False(card.IsOn);
+            Assert.NotEqual(string.Empty, card.Detail);
         });
     }
 }

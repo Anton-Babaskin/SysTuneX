@@ -3,23 +3,15 @@ using SysTuneX.Core.Models;
 namespace SysTuneX.Core.Abstractions;
 
 /// <summary>
-/// Watches for a game starting and stopping, so game mode can follow it.
+/// The list of executables SysTuneX watches for, and editing it.
 ///
-/// Only while SysTuneX is running: doing it with the app closed would mean a Windows service, and
-/// a background service that stops other services is a much bigger thing to ask someone to trust
-/// than a window they can see.
+/// The settings page's half. Split from the detector below because the two are asked for by
+/// different callers for different reasons and neither wants the other's members: the settings
+/// page never starts a poll, and the automation never adds a game.
 /// </summary>
-public interface IGameWatcher : IDisposable
+public interface IWatchedGameList
 {
-    bool IsWatching { get; }
-
-    /// <summary>The game currently running, or null when none of the watched executables is up.</summary>
-    WatchedGame? DetectedGame { get; }
-
     IReadOnlyList<WatchedGame> Games { get; }
-
-    /// <summary>Raised when a watched executable appears, and again when it goes away.</summary>
-    event EventHandler? DetectionChanged;
 
     Task LoadAsync(CancellationToken cancellationToken = default);
 
@@ -30,8 +22,29 @@ public interface IGameWatcher : IDisposable
 
     /// <summary>Turns an entry on or off without deleting it.</summary>
     Task SetEnabledAsync(string processName, bool enabled, CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// Watches for a game starting and stopping, so game mode can follow it.
+///
+/// Only while SysTuneX is running: doing it with the app closed would mean a Windows service, and
+/// a background service that stops other services is a much bigger thing to ask someone to trust
+/// than a window they can see.
+/// </summary>
+public interface IGameDetector
+{
+    bool IsWatching { get; }
+
+    /// <summary>The game currently running, or null when none of the watched executables is up.</summary>
+    WatchedGame? DetectedGame { get; }
+
+    /// <summary>Raised when a watched executable appears, and again when it goes away.</summary>
+    event EventHandler? DetectionChanged;
 
     void Start();
 
     void Stop();
 }
+
+/// <summary>Both halves, for the one implementation and for the container.</summary>
+public interface IGameWatcher : IWatchedGameList, IGameDetector, IDisposable;

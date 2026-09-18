@@ -14,8 +14,9 @@ public sealed class TweakEngine : ITweakEngine
 {
     private readonly ILogger<TweakEngine> _logger;
     private readonly IRegistryService _registry;
-    private readonly IBackupService _backup;
+    private readonly IChangeJournalWriter _backup;
     private readonly IEnvironmentService _environment;
+    private readonly IReadOnlyList<IPostApplyEffect> _postApply;
     private readonly IReadOnlyDictionary<string, ISpecialTweakHandler> _handlers;
 
     // Handler status means shelling out to powercfg or bcdedit, which costs the better part
@@ -26,15 +27,17 @@ public sealed class TweakEngine : ITweakEngine
     public TweakEngine(
         ILogger<TweakEngine> logger,
         IRegistryService registry,
-        IBackupService backup,
+        IChangeJournalWriter backup,
         IEnvironmentService environment,
-        IEnumerable<ISpecialTweakHandler> handlers)
+        IEnumerable<ISpecialTweakHandler> handlers,
+        IEnumerable<IPostApplyEffect> postApply)
     {
         _logger = logger;
         _registry = registry;
         _backup = backup;
         _environment = environment;
         _handlers = handlers.ToDictionary(h => h.Key, StringComparer.OrdinalIgnoreCase);
+        _postApply = [.. postApply];
     }
 
     public IReadOnlyList<TweakDefinition> GetSupportedTweaks(TweakCategory? category = null)
@@ -228,7 +231,7 @@ public sealed class TweakEngine : ITweakEngine
                 }
                 else
                 {
-                    object? restored = Materialize(entry.OriginalValue, entry.OriginalValueKind, change.ValueKind);
+                    object? restored = RegistryValueComparer.Materialize(entry.OriginalValue, entry.OriginalValueKind, change.ValueKind);
                     result = restored is null
                         ? _registry.DeleteValue(change.KeyPath, change.ValueName)
                         : _registry.SetValue(
@@ -370,6 +373,16 @@ public sealed class TweakEngine : ITweakEngine
     /// Pushes a change into the running session. Without this, tweaks like mouse acceleration
     /// and menu delay look like they did nothing until the next sign-out.
     /// </summary>
+    /// <summary>
+    /// Tells Windows to re-read what was just written.
+    ///
+    /// One effect per flag, resolved from the container. This used to be a chain of HasFlag
+    /// branches each calling a static P/Invoke helper, which meant the engine knew about every
+    /// kind of refresh there is and none of it could be reached from a test.
+    ///
+    /// A refresh that throws is logged and swallowed: the value is written either way, and the
+    /// worst case is that it takes effect at the next sign-in rather than now.
+    /// </summary>
     private void RunPostApply(TweakDefinition tweak, bool applying)
     {
         if (tweak.PostApply == PostApplyAction.None)
@@ -377,53 +390,17 @@ public sealed class TweakEngine : ITweakEngine
             return;
         }
 
-        try
+        foreach (IPostApplyEffect effect in _postApply.Where(e => tweak.PostApply.HasFlag(e.Flag)))
         {
-            if (tweak.PostApply.HasFlag(PostApplyAction.RefreshMouseSettings))
+            try
             {
-                NativeHelpers.ApplyMouseSettings(accelerationEnabled: !applying);
+                effect.Run(applying);
             }
-
-            if (tweak.PostApply.HasFlag(PostApplyAction.RefreshVisualEffects))
+            catch (Exception ex)
             {
-                NativeHelpers.ApplyUiEffects(enabled: !applying);
+                _logger.LogDebug(ex, "Post-apply refresh {Flag} for {Id} failed", effect.Flag, tweak.Id);
             }
-
-            if (tweak.PostApply.HasFlag(PostApplyAction.BroadcastSettingChange))
-            {
-                NativeHelpers.BroadcastSettingChange();
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogDebug(ex, "Post-apply refresh for {Id} failed", tweak.Id);
         }
     }
 
-    /// <summary>Turns a journal string back into a value of the right registry type.</summary>
-    private static object? Materialize(string text, RegistryValueKind recordedKind, RegistryValueKind fallbackKind)
-    {
-        RegistryValueKind kind = recordedKind == RegistryValueKind.Unknown ? fallbackKind : recordedKind;
-
-        return kind switch
-        {
-            RegistryValueKind.DWord => int.TryParse(text, out int dword) ? dword : null,
-            RegistryValueKind.QWord => long.TryParse(text, out long qword) ? qword : null,
-            RegistryValueKind.Binary => TryParseHex(text),
-            RegistryValueKind.MultiString => text.Split(RegistryValueComparer.MultiStringSeparator, StringSplitOptions.RemoveEmptyEntries),
-            _ => text,
-        };
-    }
-
-    private static byte[]? TryParseHex(string text)
-    {
-        try
-        {
-            return Convert.FromHexString(text);
-        }
-        catch
-        {
-            return null;
-        }
-    }
 }

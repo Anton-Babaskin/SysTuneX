@@ -22,10 +22,10 @@ public sealed class ServiceManager : IServiceManager
     private static readonly TimeSpan StateChangeTimeout = TimeSpan.FromSeconds(15);
 
     private readonly ILogger<ServiceManager> _logger;
-    private readonly IBackupService _backup;
+    private readonly IChangeJournalWriter _backup;
     private readonly IEnvironmentService _environment;
 
-    public ServiceManager(ILogger<ServiceManager> logger, IBackupService backup, IEnvironmentService environment)
+    public ServiceManager(ILogger<ServiceManager> logger, IChangeJournalWriter backup, IEnvironmentService environment)
     {
         _logger = logger;
         _backup = backup;

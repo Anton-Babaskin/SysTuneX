@@ -1,3 +1,4 @@
+using SysTuneX.Core.Tests.Fakes;
 using Microsoft.Extensions.Logging.Abstractions;
 using SysTuneX.Core.Services;
 using SysTuneX.Core.Tweaks;
@@ -157,7 +158,7 @@ public sealed class GameWatcherTests : IDisposable
     /// </summary>
     private GameWatcher Watcher(ICollection<string> running)
     {
-        var watcher = new GameWatcher(NullLogger<GameWatcher>.Instance, _directory)
+        var watcher = new GameWatcher(NullLogger<GameWatcher>.Instance, new FakeEnvironment { DataDirectory = _directory })
         {
             IsProcessRunning = name => running.Contains(name, StringComparer.OrdinalIgnoreCase),
         };

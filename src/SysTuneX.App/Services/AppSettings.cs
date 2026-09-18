@@ -42,6 +42,9 @@ public sealed class AppSettings
     /// <summary>What the monitor page measures and shows.</summary>
     public MonitorSettings Monitor { get; set; } = new();
 
+    /// <summary>The small always-on-top readout and the key that summons it.</summary>
+    public CompactMonitorSettings CompactMonitor { get; set; } = new();
+
     public double WindowWidth { get; set; } = 1240;
 
     public double WindowHeight { get; set; } = 800;
@@ -75,6 +78,39 @@ public sealed class MonitorSettings
     /// apply; an empty list is a deliberate "show nothing", which is a different thing.
     /// </summary>
     public List<string>? Metrics { get; set; }
+}
+
+/// <summary>
+/// The compact readout: a small window that stays above other windows, summoned by one key.
+///
+/// It is stored as text rather than as a parsed hotkey so that the settings file stays something
+/// a person can open and edit. <see cref="HotkeySpec.TryParse"/> is what decides whether what they
+/// wrote means anything, and hands back the default when it does not.
+/// </summary>
+public sealed class CompactMonitorSettings
+{
+    /// <summary>"Ctrl+Shift+M". Empty means the default; nonsense also means the default.</summary>
+    public string Hotkey { get; set; } = HotkeySpec.Default.ToString();
+
+    /// <summary>Whether the key is listened for at all. Off leaves the combination to other programs.</summary>
+    public bool HotkeyEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Where it was last dragged to. NaN means "never positioned", which is a different thing from
+    /// the top left corner and is what puts it in the corner of the screen the first time.
+    /// </summary>
+    public double Left { get; set; } = double.NaN;
+
+    public double Top { get; set; } = double.NaN;
+
+    /// <summary>
+    /// How solid it is over whatever is behind it. Clamped on the way in, because a settings file
+    /// saying 0 would leave an invisible window the user cannot find to close.
+    /// </summary>
+    public double Opacity { get; set; } = 0.9;
+
+    /// <summary>Reopen it on the next launch, so the readout survives a restart.</summary>
+    public bool OpenOnStartup { get; set; }
 }
 
 public interface IAppSettingsService

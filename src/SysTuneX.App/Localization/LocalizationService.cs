@@ -58,11 +58,17 @@ public sealed class LocalizationService : ILocalizationService
 
     public event EventHandler? LanguageChanged;
 
+    /// <summary>
+    /// Each name is written in its own language, because that is the one the person looking for it
+    /// can read. A list that said "Ukrainian" in English is only useful to someone who already has
+    /// the application in a language they understand.
+    /// </summary>
     public IReadOnlyList<LanguageOption> AvailableLanguages { get; } =
     [
         new(string.Empty, "System"),
         new("en", "English"),
         new("ru", "Русский"),
+        new("uk", "Українська"),
     ];
 
     public CultureInfo CurrentCulture => _culture;

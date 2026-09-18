@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Data;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using SysTuneX.App.Localization;
 using SysTuneX.App.Services;
 using SysTuneX.Core.Abstractions;
@@ -30,6 +31,7 @@ public sealed partial class MonitorViewModel : PageViewModel
     private readonly IFrameRateProbe _frameRate;
     private readonly ILocalizationService _localization;
     private readonly IAppSettingsService _settings;
+    private readonly ICompactMonitorService _compact;
 
     /// <summary>Which readings are on. The single source of truth the whole page reads from.</summary>
     private MonitorSelection _selection = new();
@@ -127,13 +129,17 @@ public sealed partial class MonitorViewModel : PageViewModel
         ISensorService sensors,
         IFrameRateProbe frameRate,
         ILocalizationService localization,
-        IAppSettingsService settings)
+        IAppSettingsService settings,
+        ICompactMonitorService compact)
     {
         _systemInfo = systemInfo;
         _sensors = sensors;
         _frameRate = frameRate;
         _localization = localization;
         _settings = settings;
+        _compact = compact;
+
+        _compact.StateChanged += OnCompactStateChanged;
 
         GroupedOptions = CollectionViewSource.GetDefaultView(Options);
         GroupedOptions.GroupDescriptions.Add(new PropertyGroupDescription(nameof(MonitorMetricOption.GroupName)));
@@ -161,8 +167,50 @@ public sealed partial class MonitorViewModel : PageViewModel
     /// <summary>
     /// A sample of the readout with the current ticks applied, so the effect of a tick is visible
     /// without closing the panel and looking at the cards behind it.
+    ///
+    /// Built by the same code as the compact window, so what the preview promises is what that
+    /// window shows. It used to be a second thirteen-case switch that formatted the same values
+    /// slightly differently.
     /// </summary>
-    public string Preview => string.Join("   ", _selection.ToList().Select(PreviewPart));
+    public string Preview => string.Join(
+        "   ",
+        MonitorReadout.Build(_selection, CurrentValues()).Select(Describe));
+
+    /// <summary>
+    /// The small always-on-top readout, from the page that configures what it shows.
+    ///
+    /// Worth a button here rather than only a hotkey: a key combination nobody has been told about
+    /// is a feature nobody has. The caption next to it names the key, so the button teaches it.
+    /// </summary>
+    [RelayCommand]
+    private void ToggleCompact() => _compact.Toggle();
+
+    public bool IsCompactOpen => _compact.IsOpen;
+
+    public string CompactButtonText =>
+        _localization[_compact.IsOpen ? "Compact_Close" : "Compact_Open"];
+
+    /// <summary>The key as the user would write it, so the hint matches whatever they configured.</summary>
+    public string CompactHotkeyText
+    {
+        get
+        {
+            CompactMonitorSettings compact = _settings.Current.CompactMonitor;
+            if (!compact.HotkeyEnabled)
+            {
+                return _localization["Compact_Hotkey_Off"];
+            }
+
+            HotkeySpec.TryParse(compact.Hotkey, out HotkeySpec spec);
+            return _localization.Format("Compact_Hotkey_Hint", spec.ToString());
+        }
+    }
+
+    private void OnCompactStateChanged(object? sender, EventArgs e)
+    {
+        OnPropertyChanged(nameof(IsCompactOpen));
+        OnPropertyChanged(nameof(CompactButtonText));
+    }
 
     public ObservableCollection<double> FpsHistory { get; } = [];
 
@@ -204,36 +252,35 @@ public sealed partial class MonitorViewModel : PageViewModel
 
     public bool HasGpuFan => GpuFan is not null;
 
-    // Asked for *and* obtainable. Binding a tile to the tick alone was the audit's first finding:
-    // a machine whose firmware exposes no temperature drew a bare "°C" with no number in front of
-    // it, which is exactly the plausible-looking wrong reading this project refuses everywhere
-    // else. Every one of these is "the user wants it" AND "the machine can supply it".
+    /// <summary>
+    /// Whether a reading is both asked for and obtainable, by name, for the page to bind to as
+    /// <c>{Binding [Fps]}</c>.
+    ///
+    /// This was thirteen near-identical properties plus their thirteen names repeated in the list
+    /// of things to raise when a tick moved - so adding a reading meant editing three places in
+    /// this file, while the catalogue it comes from promises that adding one is a single entry
+    /// there plus two resource strings. An indexer keeps that promise: the catalogue decides what
+    /// exists, this decides whether it can be shown, and the page asks by name.
+    ///
+    /// The "and obtainable" half is the part that matters. Binding a tile to the tick alone was an
+    /// audit's first finding: a machine whose firmware exposes no temperature drew a bare "°C" with
+    /// no number in front of it, which is exactly the plausible-looking wrong reading this project
+    /// refuses everywhere else.
+    /// </summary>
+    public bool this[string metric] =>
+        Enum.TryParse(metric, ignoreCase: true, out MonitorMetric parsed) && CanShow(parsed);
 
-    public bool DisplayFps => Selected(MonitorMetric.Fps) && HasFrameRate;
+    private bool CanShow(MonitorMetric metric) => Selected(metric) && metric switch
+    {
+        MonitorMetric.Fps or MonitorMetric.FrameTime or MonitorMetric.OnePercentLow => HasFrameRate,
+        MonitorMetric.CpuTemperature => HasCpuTemperature,
+        MonitorMetric.GpuLoad => HasGpuUsage,
+        MonitorMetric.GpuTemperature => HasGpuTemperature,
+        MonitorMetric.GpuFan => HasGpuFan,
 
-    public bool DisplayFrameTime => Selected(MonitorMetric.FrameTime) && HasFrameRate;
-
-    public bool DisplayOnePercentLow => Selected(MonitorMetric.OnePercentLow) && HasFrameRate;
-
-    public bool DisplayCpuLoad => Selected(MonitorMetric.CpuLoad);
-
-    public bool DisplayCpuTemperature => Selected(MonitorMetric.CpuTemperature) && HasCpuTemperature;
-
-    public bool DisplayGpuLoad => Selected(MonitorMetric.GpuLoad) && HasGpuUsage;
-
-    public bool DisplayGpuTemperature => Selected(MonitorMetric.GpuTemperature) && HasGpuTemperature;
-
-    public bool DisplayGpuFan => Selected(MonitorMetric.GpuFan) && HasGpuFan;
-
-    public bool DisplayMemory => Selected(MonitorMetric.MemoryUsed);
-
-    public bool DisplayStandby => Selected(MonitorMetric.StandbyMemory);
-
-    public bool DisplayDiskFree => Selected(MonitorMetric.DiskFree);
-
-    public bool DisplayProcessCount => Selected(MonitorMetric.ProcessCount);
-
-    public bool DisplayUptime => Selected(MonitorMetric.Uptime);
+        // Load, memory, disk, process count and uptime always have a value on every machine.
+        _ => true,
+    };
 
     /// <summary>A card is drawn when its group has anything ticked at all.</summary>
     public bool ShowFrameCard => FrameCounterEnabled && !_selection.IsGroupEmpty(MonitorGroup.Frames);
@@ -270,8 +317,8 @@ public sealed partial class MonitorViewModel : PageViewModel
     public bool HasNoTemperature =>
         _sensorsChecked &&
         (Selected(MonitorMetric.CpuTemperature) || Selected(MonitorMetric.GpuTemperature)) &&
-        !DisplayCpuTemperature &&
-        !DisplayGpuTemperature;
+        !CanShow(MonitorMetric.CpuTemperature) &&
+        !CanShow(MonitorMetric.GpuTemperature);
 
 
     private bool _loading;
@@ -344,18 +391,21 @@ public sealed partial class MonitorViewModel : PageViewModel
         SaveSettings();
     }
 
-    /// <summary>Every derived flag the page draws from. Raised together because a tick moves several.</summary>
+    /// <summary>
+    /// Every derived flag the page draws from. Raised together because a tick moves several.
+    ///
+    /// The per-reading flags all come from one indexer now, so one notification covers every tile
+    /// - which is what stops this list going stale when a reading is added, as it had.
+    /// </summary>
     private void RefreshVisibility()
     {
+        OnPropertyChanged(Binding.IndexerName);
+
         foreach (string name in (string[])
         [
             nameof(SelectionCount), nameof(Preview), nameof(ShowNothing), nameof(VisibleCardCount),
             nameof(ShowFrameCard), nameof(ShowCpuCard), nameof(ShowGpuCard), nameof(ShowMemoryCard),
-            nameof(DisplayFps), nameof(DisplayFrameTime), nameof(DisplayOnePercentLow),
-            nameof(DisplayCpuLoad), nameof(DisplayCpuTemperature),
-            nameof(DisplayGpuLoad), nameof(DisplayGpuTemperature), nameof(DisplayGpuFan),
-            nameof(DisplayMemory), nameof(DisplayStandby), nameof(DisplayDiskFree),
-            nameof(DisplayProcessCount), nameof(DisplayUptime), nameof(HasNoTemperature),
+            nameof(HasNoTemperature),
         ])
         {
             OnPropertyChanged(name);
@@ -377,31 +427,33 @@ public sealed partial class MonitorViewModel : PageViewModel
         _ = _settings.SaveAsync();
     }
 
-    private string PreviewPart(MonitorMetric metric)
+    private string Describe(MonitorReading reading)
     {
-        MonitorMetricDefinition definition = MonitorMetrics.Find(metric);
-        string label = _localization[definition.NameKey];
+        string label = _localization[reading.NameKey];
 
-        string value = metric switch
-        {
-            MonitorMetric.Fps => Fps?.ToString() ?? "--",
-            MonitorMetric.FrameTime => FrameTimeMs > 0 ? FrameTimeMs.ToString("F1") : "--",
-            MonitorMetric.OnePercentLow => OnePercentLowFps > 0 ? OnePercentLowFps.ToString() : "--",
-            MonitorMetric.CpuLoad => CpuUsage.ToString("F0"),
-            MonitorMetric.CpuTemperature => CpuTemperature?.ToString() ?? "--",
-            MonitorMetric.GpuLoad => GpuUsage?.ToString() ?? "--",
-            MonitorMetric.GpuTemperature => GpuTemperature?.ToString() ?? "--",
-            MonitorMetric.GpuFan => GpuFan?.ToString() ?? "--",
-            MonitorMetric.MemoryUsed => $"{RamUsedMb / 1024.0:0.#} GB",
-            MonitorMetric.StandbyMemory => $"{StandbyMb / 1024.0:0.#} GB",
-            MonitorMetric.DiskFree => $"{DriveFreeMb / 1024.0:0.#} GB",
-            MonitorMetric.ProcessCount => ProcessCount.ToString(),
-            MonitorMetric.Uptime => Uptime.ToString(@"d\.hh\:mm"),
-            _ => "--",
-        };
-
-        return definition.Unit.Length > 0 ? $"{label} {value}{definition.Unit}" : $"{label} {value}";
+        return reading.Unit.Length > 0
+            ? $"{label} {reading.Value}{reading.Unit}"
+            : $"{label} {reading.Value}";
     }
+
+    /// <summary>This tick's readings, in the shape the shared formatter wants.</summary>
+    private MonitorValues CurrentValues() => new()
+    {
+        FrameCounterRunning = _frameRate.IsRunning,
+        Fps = Fps,
+        FrameTimeMs = FrameTimeMs,
+        OnePercentLowFps = OnePercentLowFps,
+        CpuLoadPercent = CpuUsage,
+        CpuTemperature = CpuTemperature,
+        GpuLoadPercent = GpuUsage,
+        GpuTemperature = GpuTemperature,
+        GpuFanPercent = GpuFan,
+        MemoryUsedMb = RamUsedMb,
+        StandbyMemoryMb = StandbyMb,
+        DiskFreeMb = DriveFreeMb,
+        ProcessCount = ProcessCount,
+        Uptime = Uptime,
+    };
 
     private async Task StartFrameCounterAsync()
     {
@@ -472,6 +524,11 @@ public sealed partial class MonitorViewModel : PageViewModel
 
         Sample();
         RefreshVisibility();
+
+        // The hotkey can have been changed on the settings page since the last visit.
+        OnPropertyChanged(nameof(CompactHotkeyText));
+        OnPropertyChanged(nameof(CompactButtonText));
+        OnPropertyChanged(nameof(IsCompactOpen));
     }
 
     protected override Task OnLeaveAsync()
@@ -541,9 +598,7 @@ public sealed partial class MonitorViewModel : PageViewModel
         {
             Fps = null;
             GameName = string.Empty;
-            FrameRateHint = _frameRate.IsRunning
-                ? _localization["Monitor_Fps_Idle"]
-                : _localization.Format("Monitor_Fps_Unavailable", _frameRate.UnavailableReason);
+            FrameRateHint = DescribeMissingFrameRate();
 
             // The history is not cleared. Someone who just closed a game still wants to see the
             // shape of the last minute they played.
@@ -558,6 +613,41 @@ public sealed partial class MonitorViewModel : PageViewModel
 
         Append(FpsHistory, reading.Fps);
         OnPropertyChanged(nameof(FpsScale));
+    }
+
+    /// <summary>
+    /// Why there is no number, in a sentence the user can act on.
+    ///
+    /// "No frame rate" used to say one thing for four different situations, which is why the only
+    /// bug report it ever produced was "the FPS counter doesn't work". These are genuinely
+    /// different problems with genuinely different answers, and the probe now counts enough to tell
+    /// them apart.
+    /// </summary>
+    private string DescribeMissingFrameRate()
+    {
+        if (!_frameRate.IsRunning)
+        {
+            return _localization.Format("Monitor_Fps_Unavailable", _frameRate.UnavailableReason);
+        }
+
+        // The session is up and the graphics stack has said nothing at all. Either nothing is
+        // rendering, or the game presents through an API this does not listen to.
+        if (_frameRate.PresentEventsSeen == 0)
+        {
+            return _localization["Monitor_Fps_NoEvents"];
+        }
+
+        // Frames are being presented on this machine, just not by the window we are pointed at.
+        if (_frameRate.TargetPresentEventsSeen == 0)
+        {
+            return _frameRate.TargetProcessName.Length > 0
+                ? _localization.Format("Monitor_Fps_WrongTarget", _frameRate.TargetProcessName)
+                : _localization["Monitor_Fps_NoTarget"];
+        }
+
+        // We have counted this game before and it has stopped. Alt-tabbing out of an exclusive
+        // fullscreen game does exactly this: it stops rendering, so there is nothing to count.
+        return _localization["Monitor_Fps_Idle"];
     }
 
     private async Task SampleSensorsAsync()

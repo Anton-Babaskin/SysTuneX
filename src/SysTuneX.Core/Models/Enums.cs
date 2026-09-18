@@ -69,4 +69,10 @@ public enum BackupKind
     HostsFile,
     DnsConfiguration,
     BootConfiguration,
+
+    /// <summary>One index on the active power scheme, as opposed to which scheme is active.</summary>
+    PowerSetting,
+
+    /// <summary>A Windows scheduled task that was enabled or disabled.</summary>
+    ScheduledTask,
 }

@@ -14,104 +14,41 @@ public sealed class ProfileService : IProfileService
     private readonly ILogger<ProfileService> _logger;
     private readonly ITweakEngine _tweaks;
     private readonly IServiceManager _services;
-    private readonly IPowerService _power;
-    private readonly IProcessService _processes;
-    private readonly IBackupService _backup;
+    private readonly IPowerSchemeService _power;
+    private readonly IMemoryTrimmer _processes;
     private readonly IRestorePointService _restorePoints;
-    private readonly IPrivacyService _privacy;
-    private readonly INetworkService _network;
     private readonly IEnvironmentService _environment;
     private readonly IRegistryService _registry;
 
-    /// <summary>
-    /// Where the applied profile is remembered.
-    ///
-    /// On disk rather than in memory because the question "which profile is on" outlives the
-    /// window: the machine keeps the tweaks after the app closes, so the app has to keep the
-    /// record too, or it reopens knowing less than the machine does.
-    /// </summary>
-    private readonly string _appliedFile;
+    private readonly IAppliedProfileStore _applied;
+    private readonly IChangeRollbackService _rollback;
 
     public ProfileService(
         ILogger<ProfileService> logger,
         ITweakEngine tweaks,
         IServiceManager services,
-        IPowerService power,
-        IProcessService processes,
-        IBackupService backup,
+        IPowerSchemeService power,
+        IMemoryTrimmer processes,
         IRestorePointService restorePoints,
-        IPrivacyService privacy,
-        INetworkService network,
         IEnvironmentService environment,
         IRegistryService registry,
-        string? dataDirectory = null)
+        IAppliedProfileStore applied,
+        IChangeRollbackService rollback)
     {
-        _appliedFile = Path.Combine(dataDirectory ?? AppPaths.DataDirectory, "profile.json");
         _logger = logger;
         _tweaks = tweaks;
         _services = services;
         _power = power;
         _processes = processes;
-        _backup = backup;
         _restorePoints = restorePoints;
-        _privacy = privacy;
-        _network = network;
         _environment = environment;
         _registry = registry;
-
-        Applied = ReadApplied();
+        _applied = applied;
+        _rollback = rollback;
     }
 
     /// <inheritdoc />
-    public AppliedProfile? Applied { get; private set; }
-
-    /// <summary>
-    /// Reads the record at construction rather than on demand: every caller wants it immediately,
-    /// and a missing or unreadable file means "nothing applied", which is the honest answer when
-    /// we genuinely do not know.
-    /// </summary>
-    private AppliedProfile? ReadApplied()
-    {
-        try
-        {
-            return File.Exists(_appliedFile)
-                ? System.Text.Json.JsonSerializer.Deserialize<AppliedProfile>(File.ReadAllText(_appliedFile))
-                : null;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "The applied profile record could not be read: {Path}", _appliedFile);
-            return null;
-        }
-    }
-
-    private void WriteApplied(AppliedProfile? applied)
-    {
-        Applied = applied;
-
-        try
-        {
-            if (applied is null)
-            {
-                if (File.Exists(_appliedFile))
-                {
-                    File.Delete(_appliedFile);
-                }
-
-                return;
-            }
-
-            Directory.CreateDirectory(Path.GetDirectoryName(_appliedFile)!);
-            File.WriteAllText(
-                _appliedFile,
-                System.Text.Json.JsonSerializer.Serialize(applied, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
-        }
-        catch (Exception ex)
-        {
-            // The record is still correct in memory for this session; only the next launch loses it.
-            _logger.LogWarning(ex, "The applied profile record could not be saved to {Path}", _appliedFile);
-        }
-    }
+    public AppliedProfile? Applied => _applied.Current;
 
     public IReadOnlyList<GameProfile> GetProfiles() => GameProfiles.BuiltIn;
 
@@ -335,7 +272,7 @@ public sealed class ProfileService : IProfileService
 
         // Recorded after the work, so a run that threw before touching anything does not leave the
         // page claiming a profile the machine never received.
-        WriteApplied(new AppliedProfile
+        _applied.Write(new AppliedProfile
         {
             ProfileId = profile.Id,
             AppliedAt = DateTimeOffset.Now,
@@ -355,96 +292,43 @@ public sealed class ProfileService : IProfileService
         };
     }
 
+    /// <summary>
+    /// Puts back everything SysTuneX recorded.
+    ///
+    /// This used to be a chain of <c>if (active.Any(e =&gt; e.Kind == X))</c> blocks right here, one
+    /// per kind of change, which meant a new kind nobody remembered to add was recorded faithfully,
+    /// shown in the journal, and then silently skipped by the button whose whole promise is that it
+    /// puts everything back. The work is <see cref="IChangeRollbackService"/>'s now, and anything no
+    /// restorer claims comes back as an error instead of vanishing.
+    /// </summary>
     public async Task<ProfileApplyResult> RestoreEverythingAsync(
         IProgress<BatchProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
-        var errors = new List<string>();
+        RollbackReport report = await _rollback
+            .RestoreEverythingAsync(progress, cancellationToken)
+            .ConfigureAwait(false);
 
-        // Only revert what SysTuneX actually recorded. Blanket-reverting the whole catalog, as
-        // the old "Restore All" did, would overwrite settings the user chose themselves.
-        IReadOnlyList<BackupEntry> active = _backup.GetActive();
+        var errors = new List<string>(report.AllErrors);
 
-        HashSet<string> tweakIds = active
-            .Where(e => e.OwnerId?.StartsWith("tweak:", StringComparison.Ordinal) == true)
-            .Select(e => e.OwnerId!["tweak:".Length..])
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        List<TweakDefinition> tweaks = tweakIds
-            .Select(_tweaks.Find)
-            .Where(t => t is not null)
-            .Select(t => t!)
-            .ToList();
-
-        BatchResult tweakResult = await _tweaks.RevertManyAsync(tweaks, progress, cancellationToken).ConfigureAwait(false);
-        errors.AddRange(tweakResult.Errors);
-
-        string[] serviceNames = active
-            .Where(e => e.Kind == BackupKind.ServiceConfiguration)
-            .Select(e => e.Target)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-        int servicesChanged = 0;
-        int servicesFailed = 0;
-
-        for (int i = 0; i < serviceNames.Length; i++)
+        foreach (BackupEntry orphan in report.Unclaimed)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            progress?.Report(new BatchProgress(serviceNames[i], i, serviceNames.Length));
-
-            OperationResult result = await _services.RestoreAsync(serviceNames[i], cancellationToken).ConfigureAwait(false);
-            if (result.Success)
-            {
-                servicesChanged++;
-            }
-            else
-            {
-                servicesFailed++;
-                errors.Add($"{serviceNames[i]}: {result.Message}");
-            }
+            errors.Add($"{orphan.Kind} \u2014 {orphan.Target}: nothing knows how to restore this.");
         }
 
-        bool powerChanged = false;
-        if (active.Any(e => e.Kind == BackupKind.PowerScheme))
-        {
-            OperationResult power = await _power.RestorePreviousSchemeAsync(cancellationToken).ConfigureAwait(false);
-            powerChanged = power.Success;
+        RestoreOutcome tweaks = report.For("tweaks");
+        RestoreOutcome services = report.For("services");
 
-            if (!power.Success)
-            {
-                errors.Add(power.Message ?? "The power scheme could not be restored.");
-            }
-        }
-
-        foreach (BackupEntry entry in active.Where(e => e.Kind == BackupKind.DnsConfiguration))
-        {
-            OperationResult dns = await _network.RestoreDnsAsync(entry.Target, cancellationToken).ConfigureAwait(false);
-            if (!dns.Success)
-            {
-                errors.Add(dns.Message ?? "The DNS configuration could not be restored.");
-            }
-        }
-
-        if (active.Any(e => e.Kind == BackupKind.HostsFile))
-        {
-            OperationResult hosts = await _privacy.UnblockTelemetryHostsAsync(cancellationToken).ConfigureAwait(false);
-            if (!hosts.Success)
-            {
-                errors.Add(hosts.Message ?? "The hosts file could not be restored.");
-            }
-        }
-
-        // Everything SysTuneX recorded has been put back, so no profile is applied any more.
-        // Leaving the record would let the page keep naming a profile whose tweaks are gone.
-        WriteApplied(null);
+        // Everything recorded has been put back, so no profile is applied any more. Leaving the
+        // record would let the page keep naming a profile whose tweaks are gone.
+        _applied.Write(null);
 
         return new ProfileApplyResult
         {
-            Tweaks = tweakResult,
-            ServicesChanged = servicesChanged,
-            ServicesFailed = servicesFailed,
-            PowerSchemeChanged = powerChanged,
+            Tweaks = new BatchResult(tweaks.Changed, tweaks.Failed, 0, tweaks.Errors),
+            ServicesChanged = services.Changed,
+            ServicesFailed = services.Failed,
+            PowerSchemeChanged = report.For("power").Changed > 0,
             Errors = errors,
         };
     }

@@ -18,11 +18,22 @@ public sealed class FakeEnvironment : IEnvironmentService
         DisplayVersion = "24H2",
     };
 
-    public string DataDirectory { get; set; } = Path.GetTempPath();
+    /// <summary>
+    /// A fresh directory per instance, not the shared temp root.
+    ///
+    /// Services take their data directory from here now, so two tests that both construct a fake
+    /// environment and default it to %TEMP% would write the same gamemode.json, profile.json and
+    /// snapshots.json - and one would read what the other left. That is exactly the cross-test
+    /// leakage the whole change was meant to end, and it showed up the moment it could.
+    /// </summary>
+    public string DataDirectory { get; set; } =
+        Path.Combine(Path.GetTempPath(), "SysTuneX.Tests", Guid.NewGuid().ToString("N"));
 
     public OperationResult RestartElevated() => OperationResult.Ok();
 
     public Task<OperationResult> RestartExplorerAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult(OperationResult.Ok());
+    public Task<OperationResult> RestartWindowsAsync(CancellationToken cancellationToken = default) =>
         Task.FromResult(OperationResult.Ok());
 }
 
@@ -163,6 +174,10 @@ public sealed class FakePowerService : IPowerService
     public Task<OperationResult> RestorePreviousSchemeAsync(CancellationToken cancellationToken = default) =>
         Task.FromResult(OperationResult.Ok());
 
+    /// <summary>Answered from the scheme, since this fake never duplicates one.</summary>
+    public async Task<bool> IsHighPerformanceActiveAsync(CancellationToken cancellationToken = default) =>
+        await GetActiveSchemeAsync(cancellationToken).ConfigureAwait(false) is { IsHighPerformance: true };
+
     public Task<OperationResult> SetActiveSchemeAsync(Guid schemeGuid, CancellationToken cancellationToken = default)
     {
         ActiveScheme = schemeGuid;
@@ -175,27 +190,39 @@ public sealed class FakePowerService : IPowerService
 
     public Task<bool> IsCoreParkingDisabledAsync(CancellationToken cancellationToken = default) => Task.FromResult(true);
 
-    public Task<OperationResult> SetHibernationAsync(bool enabled, CancellationToken cancellationToken = default) =>
-        Task.FromResult(OperationResult.Ok());
+    /// <summary>Scheme settings written, keyed "subgroup/setting", so a test can check what was asked for.</summary>
+    public Dictionary<string, int> SchemeSettings { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    public Task<OperationResult> SetSchemeSettingAsync(
+        string subgroup,
+        string setting,
+        int value,
+        MessageTemplate failureCode,
+        CancellationToken cancellationToken = default)
+    {
+        SchemeSettings[$"{subgroup}/{setting}"] = value;
+        return Task.FromResult(OperationResult.Ok());
+    }
+
+    public Task<int?> GetSchemeSettingAsync(
+        string subgroup,
+        string setting,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult(SchemeSettings.TryGetValue($"{subgroup}/{setting}", out int value) ? value : (int?)null);
+
 }
 
-public sealed class FakeProcessService : IProcessService
+public sealed class FakeProcessService : IMemoryTrimmer
 {
     public int TrimCount { get; private set; }
 
     public long FreedBytes { get; set; } = 512L * 1024 * 1024;
-
-    public OperationResult SetPriority(int processId, ProcessPriorityClass priority) => OperationResult.Ok();
-
-    public OperationResult SetAffinity(int processId, nint affinityMask) => OperationResult.Ok();
 
     public Task<MemoryTrimResult> TrimMemoryAsync(CancellationToken cancellationToken = default)
     {
         TrimCount++;
         return Task.FromResult(new MemoryTrimResult(12, StandbyPurged: true, FreedBytes));
     }
-
-    public IReadOnlyList<ProcessInfo> GetTopProcessesByMemory(int count = 10) => [];
 }
 
 /// <summary>A watcher whose detection the test drives directly.</summary>

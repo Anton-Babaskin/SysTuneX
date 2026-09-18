@@ -184,5 +184,8 @@ public sealed class BackupServiceTests : IDisposable
 
         public Task<OperationResult> RestartExplorerAsync(CancellationToken cancellationToken = default) =>
             Task.FromResult(OperationResult.Ok());
+
+    public Task<OperationResult> RestartWindowsAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult(OperationResult.Ok());
     }
 }

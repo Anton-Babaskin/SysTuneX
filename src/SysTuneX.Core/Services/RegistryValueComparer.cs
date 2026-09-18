@@ -1,3 +1,4 @@
+using Microsoft.Win32;
 using System.Globalization;
 
 namespace SysTuneX.Core.Services;
@@ -69,6 +70,49 @@ public static class RegistryValueComparer
             default:
                 result = 0;
                 return false;
+        }
+    }
+
+    /// <summary>
+    /// Turns a recorded value back into something the registry will accept.
+    ///
+    /// The journal stores every value as text, because one file has to hold DWORDs, strings and
+    /// byte arrays alike. Putting one back means knowing which it was - and this lived inside
+    /// TweakEngine as a private method, which meant the restorer that puts back a registry value
+    /// nothing else owns had no way to reach it and would have grown a second copy.
+    /// </summary>
+    /// <param name="recordedKind">What the journal says it was.</param>
+    /// <param name="fallbackKind">
+    /// What to assume when the journal does not say - an entry written before the kind was
+    /// recorded. The catalogue knows what the value should be, so it is the better guess than text.
+    /// </param>
+    public static object? Materialize(
+        string text,
+        RegistryValueKind recordedKind,
+        RegistryValueKind fallbackKind = RegistryValueKind.String)
+    {
+        RegistryValueKind kind = recordedKind == RegistryValueKind.Unknown ? fallbackKind : recordedKind;
+
+        return kind switch
+        {
+            RegistryValueKind.DWord => int.TryParse(text, out int dword) ? dword : null,
+            RegistryValueKind.QWord => long.TryParse(text, out long qword) ? qword : null,
+            RegistryValueKind.Binary => TryParseHex(text),
+            RegistryValueKind.MultiString => text.Split(MultiStringSeparator, StringSplitOptions.RemoveEmptyEntries),
+            _ => text,
+        };
+    }
+
+    private static byte[]? TryParseHex(string text)
+    {
+        try
+        {
+            return Convert.FromHexString(text);
+        }
+        catch (FormatException)
+        {
+            // A journal entry that is not hex is not a byte array; saying so beats writing rubbish.
+            return null;
         }
     }
 }

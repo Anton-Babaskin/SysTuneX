@@ -15,13 +15,19 @@ public sealed class NetworkService : INetworkService
 
     private readonly ILogger<NetworkService> _logger;
     private readonly IRegistryService _registry;
-    private readonly IBackupService _backup;
+    private readonly IChangeJournalWriter _backup;
+    private readonly IProcessRunner _processes;
 
-    public NetworkService(ILogger<NetworkService> logger, IRegistryService registry, IBackupService backup)
+    public NetworkService(
+        ILogger<NetworkService> logger,
+        IRegistryService registry,
+        IChangeJournalWriter backup,
+        IProcessRunner processes)
     {
         _logger = logger;
         _registry = registry;
         _backup = backup;
+        _processes = processes;
     }
 
     /// <summary>
@@ -124,7 +130,7 @@ public sealed class NetworkService : INetworkService
             .ConfigureAwait(false);
 
         // validate=no keeps netsh from blocking for several seconds probing the new resolver.
-        ProcessRunResult setPrimary = await ProcessRunner.RunAsync(
+        ProcessRunResult setPrimary = await _processes.RunAsync(
                 "netsh.exe",
                 $"interface ipv4 set dnsservers name={index} source=static address={primary} register=primary validate=no",
                 TimeSpan.FromSeconds(20),
@@ -138,7 +144,7 @@ public sealed class NetworkService : INetworkService
 
         if (!string.IsNullOrWhiteSpace(secondary) && System.Net.IPAddress.TryParse(secondary, out _))
         {
-            ProcessRunResult setSecondary = await ProcessRunner.RunAsync(
+            ProcessRunResult setSecondary = await _processes.RunAsync(
                     "netsh.exe",
                     $"interface ipv4 add dnsservers name={index} address={secondary} index=2 validate=no",
                     TimeSpan.FromSeconds(20),
@@ -207,7 +213,7 @@ public sealed class NetworkService : INetworkService
             return OperationResult.Fail(CoreMessages.NetworkNoIpv4Interface);
         }
 
-        ProcessRunResult result = await ProcessRunner.RunAsync(
+        ProcessRunResult result = await _processes.RunAsync(
                 "netsh.exe",
                 $"interface ipv4 set dnsservers name={index} source=dhcp",
                 TimeSpan.FromSeconds(20),
@@ -225,7 +231,7 @@ public sealed class NetworkService : INetworkService
 
     public async Task<OperationResult> FlushDnsCacheAsync(CancellationToken cancellationToken = default)
     {
-        ProcessRunResult result = await ProcessRunner
+        ProcessRunResult result = await _processes
             .RunAsync("ipconfig.exe", "/flushdns", TimeSpan.FromSeconds(15), cancellationToken)
             .ConfigureAwait(false);
 

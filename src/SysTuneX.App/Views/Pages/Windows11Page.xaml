@@ -29,6 +29,7 @@
                 <StackPanel>
                     <TextBlock Text="{loc:Loc Windows11_Title}" Style="{StaticResource PageTitle}" />
                     <TextBlock Text="{loc:Loc Windows11_Subtitle}" Style="{StaticResource PageSubtitle}" />
+                    <Border Style="{StaticResource TitleAccent}" />
                     <TextBlock Text="{Binding WindowsDescription}" Style="{StaticResource CaptionText}" Margin="0,4,0,0" />
                 </StackPanel>
 

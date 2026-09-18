@@ -28,6 +28,18 @@ public sealed class EtwFrameRateProbe : IFrameRateProbe
     private const int PresentStartEventId = 42;
 
     /// <summary>
+    /// Microsoft-Windows-D3D9, for games older than DXGI.
+    ///
+    /// A Direct3D 9 title never calls IDXGISwapChain::Present, so with DXGI alone the counter sat
+    /// at nothing for every game from that era and gave no hint why. PresentMon listens to both
+    /// for the same reason.
+    /// </summary>
+    private static readonly Guid Direct3D9Provider = new("783ACA0A-790E-4D7F-8451-AA850511C6B9");
+
+    /// <summary>IDirect3DDevice9::Present, start.</summary>
+    private const int Direct3D9PresentStartEventId = 1;
+
+    /// <summary>
     /// A fixed name, so a session orphaned by a crash can be found and stopped on the next run.
     /// ETW sessions outlive the process that made them; leaking one every crash would eventually
     /// exhaust the machine's session slots and need a reboot to clear.
@@ -61,6 +73,9 @@ public sealed class EtwFrameRateProbe : IFrameRateProbe
 
     private volatile string _targetProcessName = string.Empty;
 
+    private long _presentEvents;
+    private long _targetPresentEvents;
+
     public EtwFrameRateProbe(ILogger<EtwFrameRateProbe> logger) => _logger = logger;
 
     public bool IsRunning { get; private set; }
@@ -80,8 +95,12 @@ public sealed class EtwFrameRateProbe : IFrameRateProbe
             {
                 StopStaleSession();
 
+                Interlocked.Exchange(ref _presentEvents, 0);
+                Interlocked.Exchange(ref _targetPresentEvents, 0);
+
                 _session = new TraceEventSession(SessionName) { StopOnDispose = true };
                 _session.EnableProvider(DxgiProvider, TraceEventLevel.Informational, DxgiAnalyticKeyword);
+                _session.EnableProvider(Direct3D9Provider, TraceEventLevel.Informational, DxgiAnalyticKeyword);
                 _session.Source.AllEvents += OnEvent;
 
                 // Process() blocks until the session stops, so it gets a thread of its own. Marked
@@ -121,8 +140,29 @@ public sealed class EtwFrameRateProbe : IFrameRateProbe
             return null;
         }
 
-        return _frames.Compute(DateTime.Now.Ticks / (double)TimeSpan.TicksPerMillisecond);
+        return _frames.Compute(NowMs());
     }
+
+    /// <summary>
+    /// The arrival clock: monotonic milliseconds since the machine booted.
+    ///
+    /// Deliberately not <c>DateTime.Now</c>. The window ages frames by comparing "now" against when
+    /// each one arrived, and a wall clock can move - a time zone, a daylight saving change, an NTP
+    /// correction - which would empty the window or freeze it. It also cannot be compared against
+    /// a trace timestamp, which is what the version of this code that reported no frame rate at all
+    /// was doing: presentation times from the trace, aged against the local wall clock. Every test
+    /// passed the same value for both, so nothing could see it.
+    /// </summary>
+    private static double NowMs() => Environment.TickCount64;
+
+    /// <summary>Present events seen since the session started, whichever process they came from.</summary>
+    public long PresentEventsSeen => Interlocked.Read(ref _presentEvents);
+
+    /// <summary>Present events attributed to the process being watched.</summary>
+    public long TargetPresentEventsSeen => Interlocked.Read(ref _targetPresentEvents);
+
+    /// <summary>The process the counter is pointed at, or empty when it is not pointed at anything.</summary>
+    public string TargetProcessName => _targetProcessName;
 
     /// <summary>
     /// Points the counter at whatever is in the foreground - except ourselves.
@@ -158,10 +198,17 @@ public sealed class EtwFrameRateProbe : IFrameRateProbe
 
     private void OnEvent(TraceEvent data)
     {
-        if ((int)data.ID != PresentStartEventId)
+        if (!IsPresentStart(data))
         {
             return;
         }
+
+        // Counted before the target filter, and that ordering is the diagnostic: seeing thousands
+        // of Present events but none for the target means the counter is pointed at the wrong
+        // process, while seeing none at all means the game is not presenting through an API we
+        // listen to - Vulkan and OpenGL titles go nowhere near these two providers. Those are
+        // different problems and they used to look identical from the outside.
+        Interlocked.Increment(ref _presentEvents);
 
         int target = _targetProcessId;
         if (target == 0 || data.ProcessID != target)
@@ -169,8 +216,22 @@ public sealed class EtwFrameRateProbe : IFrameRateProbe
             return;
         }
 
-        _frames.Add(target, _targetProcessName, data.TimeStamp.Ticks / (double)TimeSpan.TicksPerMillisecond);
+        Interlocked.Increment(ref _targetPresentEvents);
+
+        _frames.Add(
+            target,
+            _targetProcessName,
+            data.TimeStamp.Ticks / (double)TimeSpan.TicksPerMillisecond,
+            NowMs());
     }
+
+    /// <summary>
+    /// Whether this event is a frame being presented. The event id alone is not enough: 42 means
+    /// something different in every provider, and this session now listens to two.
+    /// </summary>
+    private static bool IsPresentStart(TraceEvent data) =>
+        (data.ProviderGuid == DxgiProvider && (int)data.ID == PresentStartEventId) ||
+        (data.ProviderGuid == Direct3D9Provider && (int)data.ID == Direct3D9PresentStartEventId);
 
     private void Pump()
     {

@@ -27,6 +27,7 @@
                 <StackPanel Margin="{StaticResource SectionGap}">
                     <TextBlock Text="{loc:Loc Settings_Title}" Style="{StaticResource PageTitle}" />
                     <TextBlock Text="{loc:Loc Settings_Subtitle}" Style="{StaticResource PageSubtitle}" />
+                    <Border Style="{StaticResource TitleAccent}" />
                 </StackPanel>
 
                 <!-- ── Open: the two that get changed ────────────────────────────────── -->
@@ -129,7 +130,8 @@
                            Style="{StaticResource SectionTitle}"
                            Margin="0,4,0,12" />
 
-                <ui:CardExpander Icon="{ui:SymbolIcon XboxController24}" Margin="0,0,0,8" IsExpanded="False">
+                <ui:CardExpander DataContext="{Binding Games}"
+                                 Icon="{ui:SymbolIcon XboxController24}" Margin="0,0,0,8" IsExpanded="False">
                     <ui:CardExpander.Header>
                         <StackPanel>
                             <TextBlock Text="{loc:Loc Settings_AutoGameMode}" FontWeight="SemiBold"
@@ -209,7 +211,8 @@
                     </StackPanel>
                 </ui:CardExpander>
 
-                <ui:CardExpander Icon="{ui:SymbolIcon Clock24}" Margin="0,0,0,8" IsExpanded="False">
+                <ui:CardExpander DataContext="{Binding Schedule}"
+                                 Icon="{ui:SymbolIcon Clock24}" Margin="0,0,0,8" IsExpanded="False">
                     <ui:CardExpander.Header>
                         <StackPanel>
                             <TextBlock Text="{loc:Loc Settings_Schedule}" FontWeight="SemiBold"
@@ -268,7 +271,8 @@
                     </StackPanel>
                 </ui:CardExpander>
 
-                <ui:CardExpander Icon="{ui:SymbolIcon Battery1024}" Margin="0,0,0,8" IsExpanded="False">
+                <ui:CardExpander DataContext="{Binding Power}"
+                                 Icon="{ui:SymbolIcon Battery1024}" Margin="0,0,0,8" IsExpanded="False">
                     <ui:CardExpander.Header>
                         <StackPanel>
                             <TextBlock Text="{loc:Loc Settings_PowerPlan}" FontWeight="SemiBold"
@@ -320,7 +324,56 @@
                     </StackPanel>
                 </ui:CardExpander>
 
-                <ui:CardExpander Icon="{ui:SymbolIcon DocumentBulletList24}" Margin="0,0,0,8" IsExpanded="False">
+                <ui:CardExpander DataContext="{Binding Compact}"
+                                 Icon="{ui:SymbolIcon PictureInPicture20}" Margin="0,0,0,8" IsExpanded="False">
+                    <ui:CardExpander.Header>
+                        <StackPanel>
+                            <TextBlock Text="{loc:Loc Settings_Compact}" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                            <TextBlock Text="{Binding CompactSummary}" Style="{StaticResource CaptionText}" />
+                        </StackPanel>
+                    </ui:CardExpander.Header>
+
+                    <StackPanel>
+                        <TextBlock Text="{loc:Loc Settings_Compact_Hint}"
+                                   Style="{StaticResource BodyText}"
+                                   Margin="0,0,0,14" />
+
+                        <ui:ToggleSwitch IsChecked="{Binding CompactHotkeyEnabled, Mode=TwoWay}"
+                                         Content="{loc:Loc Settings_Compact_HotkeyEnabled}"
+                                         Margin="0,0,0,12" />
+
+                        <TextBlock Text="{loc:Loc Settings_Compact_Hotkey}"
+                                   Style="{StaticResource CaptionText}"
+                                   Margin="0,0,0,4" />
+
+                        <!--
+                            UpdateSourceTrigger is left at its default, so the key is re-registered
+                            when the box loses focus rather than on every keystroke. Half-typed text
+                            would otherwise ask Windows for "Ctrl+A", then "Ctrl+Al", then give up.
+                        -->
+                        <ui:TextBox Text="{Binding CompactHotkey, Mode=TwoWay}"
+                                    IsEnabled="{Binding CompactHotkeyEnabled}"
+                                    PlaceholderText="Ctrl+Shift+M"
+                                    MinWidth="220"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,0,0,6" />
+
+                        <!-- What Windows actually got, which is not always what was typed. -->
+                        <TextBlock Text="{Binding CompactHotkeyStatus}"
+                                   Style="{StaticResource CaptionText}"
+                                   TextWrapping="Wrap"
+                                   MaxWidth="420"
+                                   HorizontalAlignment="Left"
+                                   Margin="0,0,0,14" />
+
+                        <ui:ToggleSwitch IsChecked="{Binding CompactOpenOnStartup, Mode=TwoWay}"
+                                         Content="{loc:Loc Settings_Compact_OpenOnStartup}" />
+                    </StackPanel>
+                </ui:CardExpander>
+
+                <ui:CardExpander DataContext="{Binding Diagnostics}"
+                                 Icon="{ui:SymbolIcon DocumentBulletList24}" Margin="0,0,0,8" IsExpanded="False">
                     <ui:CardExpander.Header>
                         <StackPanel>
                             <TextBlock Text="{loc:Loc Settings_Diagnostics}" FontWeight="SemiBold"

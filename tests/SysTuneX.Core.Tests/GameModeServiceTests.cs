@@ -283,6 +283,12 @@ public sealed class GameModeServiceTests : IDisposable
         Assert.NotEmpty(result.Notes);
     }
 
+    /// <summary>
+    /// One machine per test class, cleaned up afterwards.
+    ///
+    /// Shared on purpose: the interrupted-session test builds two services to stand for a crash
+    /// and a relaunch, and they have to see the same disk or the second finds nothing to recover.
+    /// </summary>
     private GameModeService Service(
         FakeServiceManager services,
         FakePowerService? power = null,
@@ -290,11 +296,10 @@ public sealed class GameModeServiceTests : IDisposable
         FakeEnvironment? environment = null) =>
         new(
             NullLogger<GameModeService>.Instance,
-            environment ?? new FakeEnvironment(),
+            environment ?? new FakeEnvironment { DataDirectory = _directory },
             services,
             power ?? new FakePowerService(),
-            processes ?? new FakeProcessService(),
-            _directory);
+            processes ?? new FakeProcessService());
 
     public void Dispose()
     {

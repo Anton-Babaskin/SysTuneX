@@ -10,7 +10,7 @@
 
 Optimizador de Windows gratuito y de código abierto para gamers: perfiles de rendimiento, modo juego y monitorización de **FPS, 1% low, frame time, CPU, GPU, RAM y temperaturas**.
 
-[English](README.md) · [Русский](README.ru.md) · [Українська](README.uk.md) · [Español](README.es.md)
+[![English](https://img.shields.io/badge/English-5A6570)](README.md) [![Русский](https://img.shields.io/badge/%D0%A0%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9-5A6570)](README.ru.md) [![Українська](https://img.shields.io/badge/%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%B0-5A6570)](README.uk.md) [![Español](https://img.shields.io/badge/Espa%C3%B1ol-0078D4)](README.es.md)
 
 [⬇️ **Descargar SysTuneX**](https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SysTuneX.exe) · [Última versión](https://github.com/Anton-Babaskin/SysTuneX/releases/latest) · [SHA-256](https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SHA256SUMS.txt) · [Informar de un error](https://github.com/Anton-Babaskin/SysTuneX/issues)
 
@@ -18,6 +18,7 @@ Optimizador de Windows gratuito y de código abierto para gamers: perfiles de re
 [![Release](https://img.shields.io/github/v/release/Anton-Babaskin/SysTuneX?include_prereleases\&sort=semver)](https://github.com/Anton-Babaskin/SysTuneX/releases)
 [![License](https://img.shields.io/github/license/Anton-Babaskin/SysTuneX)](LICENSE)
 ![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows11\&logoColor=white)
+![UI languages](https://img.shields.io/badge/UI-English%20%C2%B7%20%D0%A0%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9%20%C2%B7%20%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%B0-5C2D91)
 
 </div>
 
@@ -27,10 +28,13 @@ Optimizador de Windows gratuito y de código abierto para gamers: perfiles de re
 
 - 🎮 Perfiles para FPS competitivos, battle royale, mundo abierto, simulación, streaming y máximo rendimiento.
 - 📈 Panel configurable: FPS, 1% low, frame time, carga y temperatura de CPU/GPU, RAM, ventilador y procesos.
+- 🪟 Panel compacto: las mismas cifras en una ventana pequeña siempre visible, con **Ctrl+Shift+M**, sobre juegos en ventana sin bordes y sin tocar el proceso del juego.
 - ⚡ Game Mode temporal que restaura los servicios y el plan de energía anterior al terminar.
 - ↩️ Registro de cambios y restauración exacta del estado real anterior.
 - 🛡️ Conteo de fotogramas mediante Windows ETW, sin inyectar código en el juego.
 - 🧹 Limpieza, red, privacidad, servicios y diagnóstico en una sola aplicación.
+
+> **Sobre el idioma.** Esta página está en español; la interfaz de la aplicación todavía no. SysTuneX se muestra en inglés, ruso o ucraniano, y se elige en Ajustes.
 
 ## Seguridad y límites claros
 

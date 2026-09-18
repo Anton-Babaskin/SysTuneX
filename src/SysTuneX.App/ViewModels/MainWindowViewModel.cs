@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SysTuneX.App.Localization;
+using SysTuneX.App.Services;
 using SysTuneX.Core.Abstractions;
 using SysTuneX.Core.Models;
 
@@ -11,6 +12,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
 {
     private readonly IEnvironmentService _environment;
     private readonly ILocalizationService _localization;
+    private readonly IUserInteraction _interaction;
+    private readonly IAppLifetime _lifetime;
 
     [ObservableProperty]
     private string _windowsDescription = string.Empty;
@@ -18,10 +21,16 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private bool _isRestartPending;
 
-    public MainWindowViewModel(IEnvironmentService environment, ILocalizationService localization)
+    public MainWindowViewModel(
+        IEnvironmentService environment,
+        ILocalizationService localization,
+        IUserInteraction interaction,
+        IAppLifetime lifetime)
     {
         _environment = environment;
         _localization = localization;
+        _interaction = interaction;
+        _lifetime = lifetime;
 
         WindowsVersionInfo windows = environment.Windows;
         IsElevated = environment.IsElevated;
@@ -50,13 +59,29 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
         if (result.Success)
         {
-            System.Windows.Application.Current.Shutdown();
+            _lifetime.Shutdown();
         }
     }
 
+    /// <summary>
+    /// Reboots the machine.
+    ///
+    /// The command lives here because the button does; the reboot itself does not. It used to be a
+    /// static call to a process runner from inside this view model - the most consequential thing
+    /// the app can do, in the layer whose job is to describe a screen, and unreachable from any
+    /// test. It is <see cref="IEnvironmentService"/>'s business now, alongside relaunching elevated
+    /// and restarting the shell.
+    /// </summary>
     [RelayCommand]
-    private static void RestartWindows() =>
-        _ = SysTuneX.Core.Services.ProcessRunner.RunAsync("shutdown.exe", "/r /t 5");
+    private async Task RestartWindowsAsync()
+    {
+        OperationResult result = await _environment.RestartWindowsAsync().ConfigureAwait(true);
+
+        if (!result.Success)
+        {
+            _interaction.ShowError(result.Describe(_localization));
+        }
+    }
 
     [RelayCommand]
     private void DismissRestartBanner() => IsRestartPending = false;

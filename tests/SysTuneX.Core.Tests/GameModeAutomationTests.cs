@@ -147,8 +147,7 @@ public sealed class GameModeAutomationTests : IDisposable
             new FakeEnvironment(),
             new FakeServiceManager().Add("DiagTrack", RiskLevel.Safe, running: true),
             new FakePowerService(),
-            new FakeProcessService(),
-            _directory);
+            new FakeProcessService());
 
         var automation = new GameModeAutomation(NullLogger<GameModeAutomation>.Instance, watcher, gameMode);
         return (watcher, gameMode, automation);

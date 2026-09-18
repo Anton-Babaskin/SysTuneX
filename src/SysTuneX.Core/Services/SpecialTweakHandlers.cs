@@ -16,9 +16,9 @@ namespace SysTuneX.Core.Services;
 [SupportedOSPlatform("windows")]
 public sealed class CoreParkingTweakHandler : ISpecialTweakHandler
 {
-    private readonly IPowerService _power;
+    private readonly IPowerSettingService _power;
 
-    public CoreParkingTweakHandler(IPowerService power) => _power = power;
+    public CoreParkingTweakHandler(IPowerSettingService power) => _power = power;
 
     public string Key => "core_parking";
 
@@ -45,17 +45,20 @@ public sealed class HypervisorLaunchTweakHandler : ISpecialTweakHandler
     private const string OwnerId = "tweak:hypervisor_launch_off";
 
     private readonly ILogger<HypervisorLaunchTweakHandler> _logger;
-    private readonly IBackupService _backup;
+    private readonly IChangeJournalWriter _backup;
     private readonly IEnvironmentService _environment;
+    private readonly IProcessRunner _processes;
 
     public HypervisorLaunchTweakHandler(
         ILogger<HypervisorLaunchTweakHandler> logger,
-        IBackupService backup,
-        IEnvironmentService environment)
+        IChangeJournalWriter backup,
+        IEnvironmentService environment,
+        IProcessRunner processes)
     {
         _logger = logger;
         _backup = backup;
         _environment = environment;
+        _processes = processes;
     }
 
     public string Key => "hypervisor_launch";
@@ -123,7 +126,7 @@ public sealed class HypervisorLaunchTweakHandler : ISpecialTweakHandler
 
     private async Task<string?> ReadLaunchTypeAsync(CancellationToken cancellationToken)
     {
-        ProcessRunResult result = await ProcessRunner
+        ProcessRunResult result = await _processes
             .RunAsync("bcdedit.exe", "/enum {current}", TimeSpan.FromSeconds(15), cancellationToken)
             .ConfigureAwait(false);
 
@@ -154,7 +157,7 @@ public sealed class HypervisorLaunchTweakHandler : ISpecialTweakHandler
 
     private async Task<OperationResult> SetLaunchTypeAsync(string value, CancellationToken cancellationToken)
     {
-        ProcessRunResult result = await ProcessRunner
+        ProcessRunResult result = await _processes
             .RunAsync("bcdedit.exe", $"/set hypervisorlaunchtype {value}", TimeSpan.FromSeconds(20), cancellationToken)
             .ConfigureAwait(false);
 
@@ -179,10 +182,10 @@ public sealed class NagleTweakHandler : ISpecialTweakHandler
     private const string OwnerId = "tweak:nagle_disable";
 
     private readonly IRegistryService _registry;
-    private readonly IBackupService _backup;
+    private readonly IChangeJournalWriter _backup;
     private readonly INetworkService _network;
 
-    public NagleTweakHandler(IRegistryService registry, IBackupService backup, INetworkService network)
+    public NagleTweakHandler(IRegistryService registry, IChangeJournalWriter backup, INetworkService network)
     {
         _registry = registry;
         _backup = backup;

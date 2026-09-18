@@ -16,10 +16,10 @@ public sealed class PrivacyService : IPrivacyService
     private const string OwnerId = "privacy:hosts";
 
     private readonly ILogger<PrivacyService> _logger;
-    private readonly IBackupService _backup;
+    private readonly IChangeJournalWriter _backup;
     private readonly IEnvironmentService _environment;
 
-    public PrivacyService(ILogger<PrivacyService> logger, IBackupService backup, IEnvironmentService environment)
+    public PrivacyService(ILogger<PrivacyService> logger, IChangeJournalWriter backup, IEnvironmentService environment)
     {
         _logger = logger;
         _backup = backup;

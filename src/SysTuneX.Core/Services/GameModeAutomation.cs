@@ -17,7 +17,7 @@ namespace SysTuneX.Core.Services;
 public sealed class GameModeAutomation : IDisposable
 {
     private readonly ILogger<GameModeAutomation> _logger;
-    private readonly IGameWatcher _watcher;
+    private readonly IGameDetector _watcher;
     private readonly IGameModeService _gameMode;
 
     private bool _isEnabled;
@@ -25,7 +25,7 @@ public sealed class GameModeAutomation : IDisposable
 
     public GameModeAutomation(
         ILogger<GameModeAutomation> logger,
-        IGameWatcher watcher,
+        IGameDetector watcher,
         IGameModeService gameMode)
     {
         _logger = logger;

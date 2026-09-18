@@ -29,6 +29,7 @@
                 <StackPanel>
                     <TextBlock Text="{loc:Loc Privacy_Title}" Style="{StaticResource PageTitle}" />
                     <TextBlock Text="{loc:Loc Privacy_Subtitle}" Style="{StaticResource PageSubtitle}" />
+                    <Border Style="{StaticResource TitleAccent}" />
                 </StackPanel>
 
                 <ContentControl Grid.Column="1" Template="{StaticResource TweakToolbarTemplate}" />

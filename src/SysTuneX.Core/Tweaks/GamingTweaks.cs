@@ -20,6 +20,9 @@ public static class GamingTweaks
     private const string GraphicsDrivers = @"HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers";
     private const string Mouse = @"HKCU\Control Panel\Mouse";
     private const string Desktop = @"HKCU\Control Panel\Desktop";
+    private const string StickyKeys = @"HKCU\Control Panel\Accessibility\StickyKeys";
+    private const string FilterKeys = @"HKCU\Control Panel\Accessibility\Keyboard Response";
+    private const string ToggleKeys = @"HKCU\Control Panel\Accessibility\ToggleKeys";
 
     public static IReadOnlyList<TweakDefinition> All { get; } =
     [
@@ -173,6 +176,53 @@ public static class GamingTweaks
             Risk = RiskLevel.Moderate,
             HandlerKey = "core_parking",
         },
+
+        new()
+        {
+            Id = "pcie_aspm_disable",
+            Category = TweakCategory.Gaming,
+            GroupKey = "Group_Scheduling",
+            Name = "Turn off PCI Express power saving",
+            Description =
+                "ASPM parks a PCIe link between transfers and wakes it on the next one. Waking takes " +
+                "microseconds - which matters only when it lands between a mouse report and the frame " +
+                "that should have used it, on the link carrying the drive a game streams from or the " +
+                "network card a match is on. Costs power: on a laptop running on battery this is a " +
+                "real loss, not a free win.",
+            Risk = RiskLevel.Moderate,
+            HandlerKey = "pcie_aspm",
+        },
+
+        new()
+        {
+            Id = "sticky_keys_disable",
+            Category = TweakCategory.Gaming,
+            GroupKey = "Group_Input",
+            Name = "Stop the accessibility key shortcuts",
+            Description =
+                "Five taps of Shift opens the Sticky Keys dialogue, which in a shooter means crouch, " +
+                "crouch, crouch and then a modal window over the game. Holding right Shift for eight " +
+                "seconds does the same for Filter Keys. This switches off the keyboard shortcuts that " +
+                "summon them - the features themselves stay available in Settings for anyone who uses " +
+                "them.",
+            Risk = RiskLevel.Safe,
+            Changes =
+            [
+                // REG_SZ, not DWORD: Windows stores these as text and ignores a number. Clearing
+                // bit 4 (HOTKEYACTIVE) is what removes the shortcut; every other flag is left as
+                // Windows set it, so the feature itself is untouched.
+                new(StickyKeys, "Flags", "506", "510", RegistryValueKind.String),
+                new(FilterKeys, "Flags", "122", "126", RegistryValueKind.String),
+                new(ToggleKeys, "Flags", "58", "62", RegistryValueKind.String),
+            ],
+        },
+
+        // There is deliberately no "audio latency" entry here, though every optimizer guide has
+        // one. On stock Windows 11 the MMCSS Audio task already sits at Priority 6 and Pro Audio at
+        // Scheduling Category High - the values those guides tell you to write. The single value
+        // that is not already set is the Audio task's category, Medium, and raising it to High puts
+        // the audio engine in the same scheduling band as the game. That is a trade, not a win, and
+        // shipping it as a speed-up would be a placebo with a real cost.
 
         new()
         {

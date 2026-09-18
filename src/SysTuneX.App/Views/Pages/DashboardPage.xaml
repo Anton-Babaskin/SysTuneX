@@ -27,6 +27,7 @@
                         <StackPanel>
                             <TextBlock Text="{loc:Loc Dashboard_Title}" Style="{StaticResource PageTitle}" />
                             <TextBlock Text="{loc:Loc Dashboard_Subtitle}" Style="{StaticResource PageSubtitle}" />
+                            <Border Style="{StaticResource TitleAccent}" />
                         </StackPanel>
 
                         <ui:Button Grid.Column="1"
@@ -52,10 +53,7 @@
                                                  Width="104" Height="104" />
                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                                     <TextBlock Text="{Binding Score, StringFormat={}{0:F0}}"
-                                               FontSize="26"
-                                               FontWeight="SemiBold"
-                                               HorizontalAlignment="Center"
-                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                               Style="{StaticResource DisplayValue}" />
                                     <TextBlock Text="/ 100"
                                                FontSize="11"
                                                HorizontalAlignment="Center"
@@ -66,9 +64,8 @@
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                 <TextBlock Text="{loc:Loc Dashboard_Score}" Style="{StaticResource SectionTitle}" />
                                 <TextBlock Text="{Binding ScoreCaption}"
-                                           FontSize="13"
-                                           Margin="0,2,0,6"
-                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                           Style="{StaticResource AccentCaption}"
+                                           Margin="0,2,0,6" />
                                 <TextBlock Text="{loc:Loc Dashboard_ScoreHint}" Style="{StaticResource CaptionText}" />
 
                                 <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
@@ -162,17 +159,17 @@
                                     <Border Style="{StaticResource Pill}"
                                             Margin="10,0,0,0"
                                             Background="{StaticResource RiskSafeBackgroundBrush}"
-                                            Visibility="{Binding IsGameModeOn, Converter={StaticResource BoolToVisibility}}">
-                                        <TextBlock Text="{Binding GameModeCaption}"
+                                            Visibility="{Binding GameMode.IsOn, Converter={StaticResource BoolToVisibility}}">
+                                        <TextBlock Text="{Binding GameMode.Caption}"
                                                    Style="{StaticResource PillText}"
                                                    Foreground="{StaticResource RiskSafeBrush}" />
                                     </Border>
-                                    <TextBlock Text="{Binding GameModeElapsed}"
+                                    <TextBlock Text="{Binding GameMode.Elapsed}"
                                                Style="{StaticResource CaptionText}"
                                                Margin="10,0,0,0"
                                                VerticalAlignment="Center" />
                                 </StackPanel>
-                                <TextBlock Text="{Binding GameModeDetail}"
+                                <TextBlock Text="{Binding GameMode.Detail}"
                                            Style="{StaticResource BodyText}"
                                            Margin="0,6,12,0" />
 
@@ -187,13 +184,13 @@
                                 -->
                                 <Border Style="{StaticResource SubtleCard}"
                                         Margin="0,12,12,0"
-                                        Visibility="{Binding IsGameModeOn, Converter={StaticResource BoolToVisibility}}">
+                                        Visibility="{Binding GameMode.IsOn, Converter={StaticResource BoolToVisibility}}">
                                     <StackPanel>
                                         <TextBlock Text="{loc:Loc GameMode_InEffect}"
                                                    Style="{StaticResource CaptionText}"
                                                    Margin="0,0,0,8" />
 
-                                        <ItemsControl ItemsSource="{Binding GameModeChanges}">
+                                        <ItemsControl ItemsSource="{Binding GameMode.Changes}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
                                                     <Grid Margin="0,0,0,6">
@@ -239,9 +236,9 @@
 
                             <ui:ToggleSwitch Grid.Column="2"
                                              VerticalAlignment="Center"
-                                             IsChecked="{Binding IsGameModeOn, Mode=OneWay}"
+                                             IsChecked="{Binding GameMode.IsOn, Mode=OneWay}"
                                              IsEnabled="{Binding IsElevated}"
-                                             Command="{Binding ToggleGameModeCommand}" />
+                                             Command="{Binding GameMode.ToggleCommand}" />
                         </Grid>
                     </Border>
 
@@ -249,7 +246,7 @@
                     <UniformGrid Columns="4" Margin="{StaticResource StackGap}">
                         <Border Style="{StaticResource Card}" Margin="0,0,6,0">
                             <Grid Height="118">
-                                <controls:Sparkline Values="{Binding CpuHistory}"
+                                <controls:Sparkline Values="{Binding Counters.CpuHistory}"
                                                     Maximum="100"
                                                     Capacity="60"
                                                     Margin="-20,32,-20,-20"
@@ -258,18 +255,18 @@
                                 <StackPanel VerticalAlignment="Top">
                                     <TextBlock Text="{loc:Loc Dashboard_Cpu}" Style="{StaticResource CaptionText}" />
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding CpuUsage, StringFormat={}{0:F0}}"
+                                        <TextBlock Text="{Binding Counters.CpuUsage, StringFormat={}{0:F0}}"
                                                    Style="{StaticResource MetricValue}" />
                                         <TextBlock Text="%" Style="{StaticResource MetricUnit}" />
                                     </StackPanel>
-                                    <TextBlock Text="{Binding CpuTopology}" Style="{StaticResource CaptionText}" />
+                                    <TextBlock Text="{Binding Hardware.CpuTopology}" Style="{StaticResource CaptionText}" />
                                 </StackPanel>
                             </Grid>
                         </Border>
 
                         <Border Style="{StaticResource Card}" Margin="6,0,6,0">
                             <Grid Height="118">
-                                <controls:Sparkline Values="{Binding RamHistory}"
+                                <controls:Sparkline Values="{Binding Counters.RamHistory}"
                                                     Maximum="100"
                                                     Capacity="60"
                                                     Margin="-20,32,-20,-20"
@@ -278,12 +275,12 @@
                                 <StackPanel VerticalAlignment="Top">
                                     <TextBlock Text="{loc:Loc Dashboard_Ram}" Style="{StaticResource CaptionText}" />
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding RamUsedMb, Converter={StaticResource MegabytesToSize}}"
+                                        <TextBlock Text="{Binding Counters.RamUsedMb, Converter={StaticResource MegabytesToSize}}"
                                                    Style="{StaticResource MetricValue}" />
                                     </StackPanel>
                                     <TextBlock Style="{StaticResource CaptionText}">
                                         <Run Text="{loc:Loc Common_Of}" />
-                                        <Run Text="{Binding RamTotalMb, Converter={StaticResource MegabytesToSize}, Mode=OneWay}" />
+                                        <Run Text="{Binding Counters.RamTotalMb, Converter={StaticResource MegabytesToSize}, Mode=OneWay}" />
                                     </TextBlock>
                                 </StackPanel>
                             </Grid>
@@ -292,15 +289,15 @@
                         <Border Style="{StaticResource Card}" Margin="6,0,6,0">
                             <StackPanel Height="118">
                                 <TextBlock Text="{loc:Loc Dashboard_Standby}" Style="{StaticResource CaptionText}" />
-                                <TextBlock Text="{Binding StandbyMb, Converter={StaticResource MegabytesToSize}}"
+                                <TextBlock Text="{Binding Counters.StandbyMb, Converter={StaticResource MegabytesToSize}}"
                                            Style="{StaticResource MetricValue}" />
                                 <TextBlock Style="{StaticResource CaptionText}" Margin="0,4,0,0">
                                     <Run Text="{loc:Loc Dashboard_Label_Processes}" />
-                                    <Run Text="{Binding ProcessCount, Mode=OneWay}" />
+                                    <Run Text="{Binding Counters.ProcessCount, Mode=OneWay}" />
                                 </TextBlock>
                                 <TextBlock Style="{StaticResource CaptionText}" Margin="0,2,0,0">
                                     <Run Text="{loc:Loc Dashboard_Label_Uptime}" />
-                                    <Run Text="{Binding Uptime, Converter={StaticResource TimeSpanToUptime}, Mode=OneWay}" />
+                                    <Run Text="{Binding Counters.Uptime, Converter={StaticResource TimeSpanToUptime}, Mode=OneWay}" />
                                 </TextBlock>
                             </StackPanel>
                         </Border>
@@ -308,14 +305,14 @@
                         <Border Style="{StaticResource Card}" Margin="6,0,0,0">
                             <StackPanel Height="118">
                                 <TextBlock Text="{loc:Loc Dashboard_Storage}" Style="{StaticResource CaptionText}" />
-                                <TextBlock Text="{Binding DriveFreeMb, Converter={StaticResource MegabytesToSize}}"
+                                <TextBlock Text="{Binding Counters.DriveFreeMb, Converter={StaticResource MegabytesToSize}}"
                                            Style="{StaticResource MetricValue}" />
                                 <TextBlock Style="{StaticResource CaptionText}">
                                     <Run Text="{loc:Loc Dashboard_Free}" />
                                     <Run Text="{loc:Loc Common_Of}" />
-                                    <Run Text="{Binding DriveTotalMb, Converter={StaticResource MegabytesToSize}, Mode=OneWay}" />
+                                    <Run Text="{Binding Counters.DriveTotalMb, Converter={StaticResource MegabytesToSize}, Mode=OneWay}" />
                                 </TextBlock>
-                                <TextBlock Text="{Binding DriveModel}"
+                                <TextBlock Text="{Binding Hardware.DriveModel}"
                                            Style="{StaticResource CaptionText}"
                                            Margin="0,4,0,0"
                                            TextTrimming="CharacterEllipsis" />
@@ -338,36 +335,36 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
-                                        Visibility="{Binding HasAnySensor, Converter={StaticResource BoolToVisibility}}">
+                                        Visibility="{Binding Counters.HasAnySensor, Converter={StaticResource BoolToVisibility}}">
                                 <StackPanel Orientation="Horizontal" Margin="0,0,20,0"
-                                            ToolTip="{Binding CpuTemperatureSource}"
-                                            Visibility="{Binding HasCpuTemperature, Converter={StaticResource BoolToVisibility}}">
+                                            ToolTip="{Binding Counters.CpuTemperatureSource}"
+                                            Visibility="{Binding Counters.HasCpuTemperature, Converter={StaticResource BoolToVisibility}}">
                                     <TextBlock Text="{loc:Loc Dashboard_CpuTemp}" Style="{StaticResource CaptionText}"
                                                VerticalAlignment="Center" Margin="0,0,6,0" />
                                     <TextBlock FontWeight="SemiBold" VerticalAlignment="Center"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}">
-                                        <Run Text="{Binding CpuTemperature, Mode=OneWay}" /><Run Text="°C" />
+                                        <Run Text="{Binding Counters.CpuTemperature, Mode=OneWay}" /><Run Text="°C" />
                                     </TextBlock>
                                 </StackPanel>
 
                                 <StackPanel Orientation="Horizontal" Margin="0,0,20,0"
-                                            ToolTip="{Binding GpuTemperatureSource}"
-                                            Visibility="{Binding HasGpuTemperature, Converter={StaticResource BoolToVisibility}}">
+                                            ToolTip="{Binding Counters.GpuTemperatureSource}"
+                                            Visibility="{Binding Counters.HasGpuTemperature, Converter={StaticResource BoolToVisibility}}">
                                     <TextBlock Text="{loc:Loc Dashboard_GpuTemp}" Style="{StaticResource CaptionText}"
                                                VerticalAlignment="Center" Margin="0,0,6,0" />
                                     <TextBlock FontWeight="SemiBold" VerticalAlignment="Center"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}">
-                                        <Run Text="{Binding GpuTemperature, Mode=OneWay}" /><Run Text="°C" />
+                                        <Run Text="{Binding Counters.GpuTemperature, Mode=OneWay}" /><Run Text="°C" />
                                     </TextBlock>
                                 </StackPanel>
 
                                 <StackPanel Orientation="Horizontal"
-                                            Visibility="{Binding HasGpuUsage, Converter={StaticResource BoolToVisibility}}">
+                                            Visibility="{Binding Counters.HasGpuUsage, Converter={StaticResource BoolToVisibility}}">
                                     <TextBlock Text="{loc:Loc Dashboard_GpuLoad}" Style="{StaticResource CaptionText}"
                                                VerticalAlignment="Center" Margin="0,0,6,0" />
                                     <TextBlock FontWeight="SemiBold" VerticalAlignment="Center"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}">
-                                        <Run Text="{Binding GpuUsage, Mode=OneWay}" /><Run Text="%" />
+                                        <Run Text="{Binding Counters.GpuUsage, Mode=OneWay}" /><Run Text="%" />
                                     </TextBlock>
                                 </StackPanel>
                             </StackPanel>
@@ -375,7 +372,7 @@
                             <TextBlock Text="{loc:Loc Dashboard_NoSensorsShort}"
                                        Style="{StaticResource CaptionText}"
                                        VerticalAlignment="Center"
-                                       Visibility="{Binding HasAnySensor, Converter={StaticResource InverseBoolToVisibility}}" />
+                                       Visibility="{Binding Counters.HasAnySensor, Converter={StaticResource InverseBoolToVisibility}}" />
 
                             <ui:HyperlinkButton Grid.Column="1"
                                                 Content="{loc:Loc Dashboard_OpenMonitor}"
@@ -393,32 +390,32 @@
                             <UniformGrid Columns="2">
                                 <StackPanel Margin="0,0,16,14">
                                     <TextBlock Text="{loc:Loc Dashboard_Label_Cpu}" Style="{StaticResource CaptionText}" />
-                                    <TextBlock Text="{Binding CpuName}" FontWeight="SemiBold" TextWrapping="Wrap"
+                                    <TextBlock Text="{Binding Hardware.CpuName}" FontWeight="SemiBold" TextWrapping="Wrap"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
                                 </StackPanel>
 
                                 <StackPanel Margin="0,0,0,14">
                                     <TextBlock Text="{loc:Loc Dashboard_Label_Gpu}" Style="{StaticResource CaptionText}" />
-                                    <TextBlock Text="{Binding GpuName}" FontWeight="SemiBold" TextWrapping="Wrap"
+                                    <TextBlock Text="{Binding Hardware.GpuName}" FontWeight="SemiBold" TextWrapping="Wrap"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
-                                    <TextBlock Text="{Binding GpuDetail}" Style="{StaticResource CaptionText}" />
+                                    <TextBlock Text="{Binding Hardware.GpuDetail}" Style="{StaticResource CaptionText}" />
                                 </StackPanel>
 
                                 <StackPanel Margin="0,0,16,14">
                                     <TextBlock Text="{loc:Loc Dashboard_Label_Memory}" Style="{StaticResource CaptionText}" />
-                                    <TextBlock Text="{Binding MemorySummary}" FontWeight="SemiBold"
+                                    <TextBlock Text="{Binding Hardware.MemorySummary}" FontWeight="SemiBold"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
                                 </StackPanel>
 
                                 <StackPanel Margin="0,0,0,14">
                                     <TextBlock Text="{loc:Loc Dashboard_Label_Os}" Style="{StaticResource CaptionText}" />
-                                    <TextBlock Text="{Binding WindowsSummary}" FontWeight="SemiBold" TextWrapping="Wrap"
+                                    <TextBlock Text="{Binding Hardware.WindowsSummary}" FontWeight="SemiBold" TextWrapping="Wrap"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
                                 </StackPanel>
 
                                 <StackPanel Margin="0,0,16,0">
                                     <TextBlock Text="{loc:Loc Dashboard_Label_Motherboard}" Style="{StaticResource CaptionText}" />
-                                    <TextBlock Text="{Binding Motherboard}" FontWeight="SemiBold" TextWrapping="Wrap"
+                                    <TextBlock Text="{Binding Hardware.Motherboard}" FontWeight="SemiBold" TextWrapping="Wrap"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
                                 </StackPanel>
 

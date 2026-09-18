@@ -24,11 +24,90 @@ public class FrameTimeWindowTests
 
         for (int i = 0; i < frames; i++)
         {
-            window.Add(processId, GameName, at);
+            window.Add(processId, GameName, at, at);
             at += intervalMs;
         }
 
         return at - intervalMs;
+    }
+
+    // ── The two clocks ───────────────────────────────────────────────────────
+    //
+    // Everything above this line passes the same value for when a frame was presented and when we
+    // heard about it, which is fine for testing the arithmetic and is exactly how the bug below
+    // stayed invisible. In the real probe those are different clocks: presentation times come from
+    // the trace, arrival times from this process. The old code aged trace timestamps against the
+    // local wall clock, so on any machine where the two did not line up the window emptied itself
+    // on every read and the counter reported nothing, forever, with no error anywhere.
+
+    /// <summary>
+    /// The regression test for that, in the direction that actually broke. The arrival clock here
+    /// is a wall clock in the trillions of milliseconds while presentation times are milliseconds
+    /// since boot, so ageing presentation times against "now" puts every frame hours in the past
+    /// and empties the window on the first read - which is exactly what a user saw as a counter
+    /// that never showed a number.
+    /// </summary>
+    [Fact]
+    public void Presentation_times_from_a_different_clock_are_still_reported()
+    {
+        FrameTimeWindow window = Window(seconds: 2);
+
+        const double wallClockNowMs = 1_770_000_000_000;   // the arrival clock
+        double presentedAt = 60_000;                       // uptime milliseconds, from the trace
+
+        for (int i = 0; i < 60; i++)
+        {
+            window.Add(Game, GameName, presentedAt + (i * 1000.0 / 60), wallClockNowMs + (i * 1000.0 / 60));
+        }
+
+        FrameRateReading reading = Reading(window.Compute(wallClockNowMs + 1000));
+
+        Assert.Equal(60, reading.RoundedFps);
+    }
+
+    /// <summary>
+    /// And the other half: the window still empties when the frames stop, judged on the arrival
+    /// clock. A fix that simply stopped ageing the window would leave a stale number on screen
+    /// after the game closed, which is worse than showing none.
+    /// </summary>
+    [Fact]
+    public void A_stale_window_is_still_dropped_on_the_arrival_clock()
+    {
+        FrameTimeWindow window = Window(seconds: 2);
+
+        const double wallClockEpochMs = 1_770_000_000_000;
+        double receivedAt = 60_000;
+
+        for (int i = 0; i < 60; i++)
+        {
+            window.Add(Game, GameName, wallClockEpochMs + (i * 1000.0 / 60), receivedAt + (i * 1000.0 / 60));
+        }
+
+        Assert.NotNull(window.Compute(receivedAt + 1000));
+        Assert.Null(window.Compute(receivedAt + 5000));
+    }
+
+    /// <summary>
+    /// Frame rate is measured from presentation times, not from when the events reached us. ETW
+    /// hands over buffered events in bursts, so a whole second of frames can arrive at one instant;
+    /// measuring the intervals between arrivals would report an absurd rate and a meaningless 1%
+    /// low.
+    /// </summary>
+    [Fact]
+    public void The_rate_comes_from_presentation_times_not_from_when_the_events_arrived()
+    {
+        FrameTimeWindow window = Window(seconds: 2);
+
+        // Sixty frames at a steady 60 fps, all delivered in a single burst.
+        for (int i = 0; i < 60; i++)
+        {
+            window.Add(Game, GameName, i * 1000.0 / 60, 10_000);
+        }
+
+        FrameRateReading reading = Reading(window.Compute(10_000));
+
+        Assert.Equal(60, reading.RoundedFps);
+        Assert.Equal(60, reading.RoundedOnePercentLowFps);
     }
 
     /// <summary>Asserts a reading was produced and hands it back, since Assert.NotNull returns void.</summary>
@@ -50,7 +129,7 @@ public class FrameTimeWindowTests
         // One timestamp is no interval, and a frame rate is made of intervals. Reporting anything
         // here would mean inventing a number.
         FrameTimeWindow window = Window();
-        window.Add(Game, GameName, 0);
+        window.Add(Game, GameName, 0, 0);
 
         Assert.Null(window.Compute(0));
     }
@@ -79,11 +158,11 @@ public class FrameTimeWindowTests
         double at = 0;
         for (int i = 0; i < 100; i++)
         {
-            window.Add(Game, GameName, at);
+            window.Add(Game, GameName, at, at);
             at += i == 50 ? 100 : 10;
         }
 
-        window.Add(Game, GameName, at);
+        window.Add(Game, GameName, at, at);
 
         FrameRateReading reading = Reading(window.Compute(at));
 
@@ -166,7 +245,7 @@ public class FrameTimeWindowTests
 
         for (int i = 0; i < 10; i++)
         {
-            window.Add(Game, GameName, 500);
+            window.Add(Game, GameName, 500, 500);
         }
 
         Assert.Null(window.Compute(500));

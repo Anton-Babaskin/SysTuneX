@@ -1883,10 +1883,112 @@
   <data name="Monitor_Caption_Used" xml:space="preserve">
     <value>занято</value>
   </data>
+  <data name="Compact_Open" xml:space="preserve">
+    <value>Компактная панель</value>
+  </data>
+  <data name="Compact_Close" xml:space="preserve">
+    <value>Закрыть панель</value>
+  </data>
+  <data name="Compact_Empty" xml:space="preserve">
+    <value>На странице мониторинга ничего не отмечено — показывать нечего.</value>
+  </data>
+  <data name="Compact_Hotkey_Hint" xml:space="preserve">
+    <value>{0} — открыть из любого окна</value>
+  </data>
+  <data name="Compact_Hotkey_Off" xml:space="preserve">
+    <value>Горячая клавиша выключена</value>
+  </data>
+  <data name="Compact_Hotkey_Active" xml:space="preserve">
+    <value>{0} зарегистрирована и работает, пока игра в фокусе.</value>
+  </data>
+  <data name="Compact_Hotkey_Taken" xml:space="preserve">
+    <value>{0} уже занята другой программой. Выберите другое сочетание.</value>
+  </data>
+  <data name="Compact_Hotkey_UnknownKey" xml:space="preserve">
+    <value>Windows не знает клавиши «{0}».</value>
+  </data>
+  <data name="Compact_Hotkey_Refused" xml:space="preserve">
+    <value>Windows отказала в {0} (ошибка {1}).</value>
+  </data>
+  <data name="Compact_Hotkey_Fallback" xml:space="preserve">
+    <value>«{0}» — не горячая клавиша, поэтому используется {1}.</value>
+  </data>
+  <data name="Settings_Compact" xml:space="preserve">
+    <value>Компактная панель</value>
+  </data>
+  <data name="Settings_Compact_Hint" xml:space="preserve">
+    <value>Маленькое окно с теми же показателями, что и на странице мониторинга, поверх других окон. Это не оверлей — в игру ничего не внедряется, — поэтому оно видно над игрой в оконном режиме без рамки, но не над полноэкранной эксклюзивной. Перетаскивается куда угодно и открывается там же, где его оставили.</value>
+  </data>
+  <data name="Settings_Compact_HotkeyEnabled" xml:space="preserve">
+    <value>Вызывать горячей клавишей</value>
+  </data>
+  <data name="Settings_Compact_Hotkey" xml:space="preserve">
+    <value>Сочетание клавиш</value>
+  </data>
+  <data name="Settings_Compact_OpenOnStartup" xml:space="preserve">
+    <value>Открывать при запуске SysTuneX</value>
+  </data>
   <data name="Profiles_ActiveBadge" xml:space="preserve">
     <value>Применён</value>
   </data>
   <data name="Profiles_PartiallyHeldBadge" xml:space="preserve">
     <value>Частично держится</value>
+  </data>
+  <data name="Monitor_Fps_NoEvents" xml:space="preserve">
+    <value>Счётчик работает, но на этом ПК никто не выводит кадры через DirectX. Игра на Vulkan или OpenGL не считается — как и игра, которая сейчас ничего не рисует.</value>
+  </data>
+  <data name="Monitor_Fps_WrongTarget" xml:space="preserve">
+    <value>Кадры выводятся, но не в {0} — окне, на которое наведён счётчик. Разверните игру на секунду, и счётчик перейдёт на неё.</value>
+  </data>
+  <data name="Monitor_Fps_NoTarget" xml:space="preserve">
+    <value>Счётчик работает и ждёт. Разверните игру один раз — дальше он останется на ней, даже пока вы смотрите эту страницу.</value>
+  </data>
+  <data name="Core_Power_SettingRejected" xml:space="preserve">
+    <value>powercfg отклонил изменение параметра питания: {0}</value>
+  </data>
+  <data name="Core_Power_SettingUnavailable" xml:space="preserve">
+    <value>Этот параметр питания недоступен на этом ПК.</value>
+  </data>
+  <data name="Core_ScheduledTask_QueryFailed" xml:space="preserve">
+    <value>Windows не сообщила, в каком состоянии эти задачи планировщика.</value>
+  </data>
+  <data name="Core_ScheduledTask_ChangeFailed" xml:space="preserve">
+    <value>Некоторые задачи планировщика изменить не удалось: {0}</value>
+  </data>
+  <data name="Core_ScheduledTask_NeedsAdministrator" xml:space="preserve">
+    <value>Для изменения задач планировщика Windows нужны права администратора.</value>
+  </data>
+  <data name="History_Kind_PowerSetting" xml:space="preserve">
+    <value>Параметр питания</value>
+  </data>
+  <data name="History_Kind_ScheduledTask" xml:space="preserve">
+    <value>Задача планировщика</value>
+  </data>
+  <data name="Tweak_pcie_aspm_disable_Name" xml:space="preserve">
+    <value>Отключить энергосбережение PCI Express</value>
+  </data>
+  <data name="Tweak_pcie_aspm_disable_Desc" xml:space="preserve">
+    <value>ASPM переводит линию PCIe в энергосберегающее состояние между передачами и будит её на следующей. Пробуждение занимает микросекунды — и это неважно ровно до тех пор, пока оно не попадёт между отчётом мыши и кадром, который должен был его использовать, на линии с NVMe-диском, откуда игра подгружает данные, или с сетевой картой, на которой идёт матч. Стоит энергии: на ноутбуке от батареи это реальная потеря, а не бесплатный выигрыш.</value>
+  </data>
+  <data name="Tweak_sticky_keys_disable_Name" xml:space="preserve">
+    <value>Отключить горячие клавиши специальных возможностей</value>
+  </data>
+  <data name="Tweak_sticky_keys_disable_Desc" xml:space="preserve">
+    <value>Пять нажатий Shift открывают окно залипания клавиш — в шутере это присесть, присесть, присесть и модальное окно поверх игры. Удержание правого Shift восемь секунд делает то же самое для фильтрации ввода. Отключаются именно сочетания, которые их вызывают; сами функции остаются доступны в параметрах Windows для тех, кто ими пользуется.</value>
+  </data>
+  <data name="Tweak_telemetry_tasks_disable_Name" xml:space="preserve">
+    <value>Отключить задачи сбора данных</value>
+  </data>
+  <data name="Tweak_telemetry_tasks_disable_Desc" xml:space="preserve">
+    <value>Семь задач планировщика существуют, чтобы сообщать, как используется этот ПК: Compatibility Appraiser, который обходит все установленные программы и может занимать ядро минутами, и шесть задач поменьше из Customer Experience Improvement Program. Ни одна из них не нужна ни для работы Windows, ни для установки обновлений, ни для запуска игры. Отключаются только те, что действительно работают, и включаются обратно только они же — задачу, которую вы отключили сами, SysTuneX не трогает.</value>
+  </data>
+  <data name="Core_Environment_RestartRefused" xml:space="preserve">
+    <value>Windows отказалась перезагрузить компьютер: {0}</value>
+  </data>
+  <data name="Core_Shell_OpenFailed" xml:space="preserve">
+    <value>Не удалось открыть {0}: {1}</value>
+  </data>
+  <data name="Core_Shell_RefusedAddress" xml:space="preserve">
+    <value>{0} — не веб-адрес, поэтому он не был открыт.</value>
   </data>
 </root>

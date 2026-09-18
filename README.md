@@ -10,7 +10,7 @@
 
 A free, open-source Windows optimizer for gamers. Apply smart performance profiles, reduce background load, monitor **FPS, 1% lows, frame time, CPU, GPU, RAM and temperatures**, and restore the exact settings you started with.
 
-[English](README.md) · [Русский](README.ru.md) · [Українська](README.uk.md) · [Español](README.es.md)
+[![English](https://img.shields.io/badge/English-0078D4)](README.md) [![Русский](https://img.shields.io/badge/%D0%A0%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9-5A6570)](README.ru.md) [![Українська](https://img.shields.io/badge/%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%B0-5A6570)](README.uk.md) [![Español](https://img.shields.io/badge/Espa%C3%B1ol-5A6570)](README.es.md)
 
 [⬇️ **Download SysTuneX**](https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SysTuneX.exe) · [Latest release](https://github.com/Anton-Babaskin/SysTuneX/releases/latest) · [SHA-256](https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SHA256SUMS.txt) · [Report an issue](https://github.com/Anton-Babaskin/SysTuneX/issues)
 
@@ -21,6 +21,7 @@ A free, open-source Windows optimizer for gamers. Apply smart performance profil
 [![Downloads](https://img.shields.io/github/downloads/Anton-Babaskin/SysTuneX/total?label=downloads)](https://github.com/Anton-Babaskin/SysTuneX/releases)
 [![License](https://img.shields.io/github/license/Anton-Babaskin/SysTuneX)](LICENSE)
 ![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows11\&logoColor=white)
+![UI languages](https://img.shields.io/badge/UI-English%20%C2%B7%20%D0%A0%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9%20%C2%B7%20%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%B0-5C2D91)
 ![x64](https://img.shields.io/badge/x64-single--file-5C2D91)
 
 </div>
@@ -29,6 +30,7 @@ A free, open-source Windows optimizer for gamers. Apply smart performance profil
 
 - 🎮 **Gaming optimizer:** competitive FPS, battle royale, open-world, racing, streaming and maximum-performance profiles.
 - 📈 **Your performance dashboard:** enable only the readings you want—FPS, 1% low, frame time, CPU/GPU load and temperature, memory, fan and process count.
+- 🪟 **Compact readout:** the same numbers in a small always-on-top window, one keypress away (**Ctrl+Shift+M**) — over borderless windowed games, without touching the game.
 - ⚡ **Game Mode:** temporarily stops safe background services, raises the power scheme and restores the session when you are done.
 - 🔎 **Measure, do not guess:** compare configuration before and after, watch frame-time behaviour and see real errors.
 - ↩️ **Exact rollback:** SysTuneX records the real previous state before supported changes instead of writing an invented "default".
@@ -36,7 +38,7 @@ A free, open-source Windows optimizer for gamers. Apply smart performance profil
 
 ![SysTuneX customizable FPS, CPU, GPU, RAM and temperature monitor](docs/images/systunex-monitor-ru.png)
 
-> **Full power, honest limits.** SysTuneX can help remove bottlenecks and improve consistency, but no optimizer can guarantee the same FPS gain on every PC. The current monitor is a configurable second-screen dashboard, not an in-game overlay.
+> **Full power, honest limits.** SysTuneX can help remove bottlenecks and improve consistency, but no optimizer can guarantee the same FPS gain on every PC. The monitor is a configurable dashboard with a small always-on-top companion window — not an in-game overlay, so it cannot draw over exclusive fullscreen.
 
 ---
 
@@ -178,12 +180,12 @@ Security reports go through [SECURITY.md](SECURITY.md), privately, rather than a
 | Area            | What SysTuneX does                                                                                                       |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | **Dashboard**   | Live CPU and memory monitoring, tuning status, Quick Optimize and full restore                                           |
-| **Monitor**     | Frame rate with its 1% low and frame time, CPU and GPU load and temperature, memory — measured without touching the game, and only what you tick |
+| **Monitor**     | Frame rate with its 1% low and frame time, CPU and GPU load and temperature, memory — measured without touching the game, and only what you tick. Ctrl+Shift+M puts the same numbers in a small window above everything else |
 | **Profiles**    | Ready-made tuning profiles for different gaming and workload scenarios                                                   |
-| **Gaming**      | Game Bar, Game DVR, fullscreen optimizations, mouse acceleration, CPU scheduling and more                                |
+| **Gaming**      | Game Bar, Game DVR, fullscreen optimizations, mouse acceleration, CPU scheduling, PCIe link power saving, accessibility shortcuts and more |
 | **Windows 11**  | VBS, HVCI, hypervisor, Recall, Copilot, widgets, search features and other build-aware settings                          |
 | **Services**    | Safe service tuning with the original startup configuration recorded before changes                                      |
-| **Privacy**     | Telemetry, advertising ID, activity history, suggestions, location, clipboard sync and optional telemetry hosts blocking |
+| **Privacy**     | Telemetry and its scheduled tasks, advertising ID, activity history, suggestions, location, clipboard sync and optional telemetry hosts blocking |
 | **Network**     | Nagle tuning, network throttling and DNS latency testing                                                                 |
 | **Cleanup**     | Temporary files, update caches, crash dumps, shader caches, thumbnails and other disposable data                         |
 | **Game mode**   | One switch that stops background services, raises the power scheme and frees memory — and undoes all of it              |
@@ -192,6 +194,7 @@ Security reports go through [SECURITY.md](SECURITY.md), privately, rather than a
 | **Search**      | One box across every tweak, service and cleanup target — it navigates to the page and filters it down to the result     |
 | **Tray**        | Live counters on hover and the game mode switch in the menu                                                            |
 | **Appearance**  | Follows the Windows light/dark setting by default, or pin light or dark by hand; Mica, Acrylic or plain backdrop        |
+| **Language**    | English, Russian and Ukrainian — the whole interface, including every tweak, service and profile with its description    |
 | **Before/after**| Record the machine either side of a change and see exactly what moved                                                   |
 | **Diagnostics** | Persistent logs, verbose logging and a complete diagnostic report                                                        |
 | **Change log**  | Full history of recorded changes with individual or complete rollback                                                    |
@@ -251,7 +254,9 @@ SysTuneX counts frames through **Event Tracing for Windows**, reading the Presen
 
 **Nothing is injected into the game.** RTSS, Afterburner and Fraps hook the graphics API from inside the game process; that is how they draw an overlay, and it is also exactly what anti-cheat looks for. A tool whose whole point is to be run before playing cannot ship something that risks a ban.
 
-The cost of that choice is stated rather than hidden: there is **no overlay** over a fullscreen game. Alt-tab to the Monitor page to read the numbers. The counter deliberately stays pointed at the game when SysTuneX comes to the foreground — retargeting to our own window would show SysTuneX's frame rate, which is worse than useless.
+The cost of that choice is stated rather than hidden: there is **no overlay** over a fullscreen game. The counter deliberately stays pointed at the game when SysTuneX comes to the foreground — retargeting to our own window would show SysTuneX's frame rate, which is worse than useless.
+
+What there *is* instead is a **compact readout**: a small window with the same numbers, kept above other windows and summoned with **Ctrl+Shift+M** from wherever you are. It is an ordinary window with its chrome removed, not an overlay — so it appears over a game running **borderless windowed**, which is how most people play, and it will **not** appear over one running in **exclusive fullscreen**, which owns the display outright. That limit is real and is the price of never touching the game process. Drag it anywhere; it reopens where you left it, and it shows whatever you ticked on the Monitor page. The key can be changed, or switched off, in Settings — and if another program already owns the combination, Settings says so rather than leaving you pressing a key that does nothing.
 
 Alongside the average, the Monitor shows the **1% low** — the frame rate of the worst one percent of frames. An average of 144 with a 1% low of 40 stutters, and a steady 90 does not; an average on its own hides the exact problem this tool exists to fix.
 
@@ -433,23 +438,30 @@ SysTuneX separates operating-system logic from the desktop interface.
 SysTuneX/
 ├── src/
 │   ├── SysTuneX.Core/
-│   │   ├── Abstractions/
-│   │   ├── Models/
+│   │   ├── Abstractions/          # the contracts the app depends on
+│   │   ├── Diagnostics/
+│   │   ├── Models/                # records and the pure functions over them
 │   │   ├── Native/
 │   │   ├── Services/
-│   │   └── Tweaks/
+│   │   │   └── Sensors/
+│   │   └── Tweaks/                # the tweak, service, profile and cleanup catalogues
 │   │
 │   └── SysTuneX.App/
+│       ├── Assets/
 │       ├── Controls/
 │       ├── Converters/
+│       ├── Diagnostics/
 │       ├── Localization/
-│       ├── Resources/
+│       ├── Resources/             # Strings.resx and one Strings.<lang>.resx per language
+│       ├── Services/              # everything the UI needs that is not a screen
 │       ├── ViewModels/
+│       │   └── Settings/
 │       └── Views/
+│           └── Pages/
 │
 ├── tests/
-│   ├── SysTuneX.Core.Tests/
-│   └── SysTuneX.App.Tests/
+│   ├── SysTuneX.Core.Tests/       # also the checks that read the app's markup and source
+│   └── SysTuneX.App.Tests/        # needs Windows; CI runs it
 │
 └── .github/workflows/
 ```
@@ -586,7 +598,7 @@ the short version, when adding or changing a tweak:
 * validate Windows build requirements
 * prefer documented Windows APIs and policies
 * add or update catalog tests
-* give every user-visible string an entry in both `Strings.resx` and `Strings.ru.resx`
+* give every user-visible string an entry in `Strings.resx` and in every `Strings.<lang>.resx`
 
 Releases are cut per merge; see **[RELEASING.md](RELEASING.md)**. Security reports go through
 **[SECURITY.md](SECURITY.md)** rather than a public issue.
