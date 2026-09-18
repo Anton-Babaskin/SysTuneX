@@ -228,7 +228,7 @@ public sealed class TweakEngine : ITweakEngine
                 }
                 else
                 {
-                    object? restored = Materialize(entry.OriginalValue, entry.OriginalValueKind, change.ValueKind);
+                    object? restored = RegistryValueComparer.Materialize(entry.OriginalValue, entry.OriginalValueKind, change.ValueKind);
                     result = restored is null
                         ? _registry.DeleteValue(change.KeyPath, change.ValueName)
                         : _registry.SetValue(
@@ -401,29 +401,4 @@ public sealed class TweakEngine : ITweakEngine
     }
 
     /// <summary>Turns a journal string back into a value of the right registry type.</summary>
-    private static object? Materialize(string text, RegistryValueKind recordedKind, RegistryValueKind fallbackKind)
-    {
-        RegistryValueKind kind = recordedKind == RegistryValueKind.Unknown ? fallbackKind : recordedKind;
-
-        return kind switch
-        {
-            RegistryValueKind.DWord => int.TryParse(text, out int dword) ? dword : null,
-            RegistryValueKind.QWord => long.TryParse(text, out long qword) ? qword : null,
-            RegistryValueKind.Binary => TryParseHex(text),
-            RegistryValueKind.MultiString => text.Split(RegistryValueComparer.MultiStringSeparator, StringSplitOptions.RemoveEmptyEntries),
-            _ => text,
-        };
-    }
-
-    private static byte[]? TryParseHex(string text)
-    {
-        try
-        {
-            return Convert.FromHexString(text);
-        }
-        catch
-        {
-            return null;
-        }
-    }
 }

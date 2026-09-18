@@ -40,6 +40,20 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ISpecialTweakHandler, PcieAspmTweakHandler>();
         services.AddSingleton<ISpecialTweakHandler, TelemetryTaskTweakHandler>();
 
+        // Restorers are resolved as a set; each claims the journal entries it is responsible for,
+        // and the rollback reports anything nobody claimed rather than dropping it.
+        services.AddSingleton<IChangeRestorer, TweakChangeRestorer>();
+        services.AddSingleton<IChangeRestorer, ServiceChangeRestorer>();
+        services.AddSingleton<IChangeRestorer, PowerSchemeChangeRestorer>();
+        services.AddSingleton<IChangeRestorer, PowerSettingChangeRestorer>();
+        services.AddSingleton<IChangeRestorer, DnsChangeRestorer>();
+        services.AddSingleton<IChangeRestorer, HostsChangeRestorer>();
+        services.AddSingleton<IChangeRestorer, BootChangeRestorer>();
+        services.AddSingleton<IChangeRestorer, ScheduledTaskChangeRestorer>();
+        services.AddSingleton<IChangeRestorer, RegistryChangeRestorer>();
+        services.AddSingleton<IChangeRollbackService, ChangeRollbackService>();
+        services.AddSingleton<IAppliedProfileStore, AppliedProfileStore>();
+
         services.AddSingleton<ITweakEngine, TweakEngine>();
         services.AddSingleton<IProfileService, ProfileService>();
         services.AddSingleton<IDiagnosticsService, DiagnosticsService>();

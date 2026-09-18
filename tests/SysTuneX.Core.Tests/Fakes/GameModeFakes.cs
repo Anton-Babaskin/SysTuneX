@@ -18,7 +18,16 @@ public sealed class FakeEnvironment : IEnvironmentService
         DisplayVersion = "24H2",
     };
 
-    public string DataDirectory { get; set; } = Path.GetTempPath();
+    /// <summary>
+    /// A fresh directory per instance, not the shared temp root.
+    ///
+    /// Services take their data directory from here now, so two tests that both construct a fake
+    /// environment and default it to %TEMP% would write the same gamemode.json, profile.json and
+    /// snapshots.json - and one would read what the other left. That is exactly the cross-test
+    /// leakage the whole change was meant to end, and it showed up the moment it could.
+    /// </summary>
+    public string DataDirectory { get; set; } =
+        Path.Combine(Path.GetTempPath(), "SysTuneX.Tests", Guid.NewGuid().ToString("N"));
 
     public OperationResult RestartElevated() => OperationResult.Ok();
 

@@ -238,7 +238,9 @@ public sealed class ProfilePreviewTests
             null!,
             null!,
             new FakeEnvironment(),
-            registry);
+            registry,
+            new FakeAppliedProfileStore(),
+            null!);
 
         var profile = new GameProfile
         {
