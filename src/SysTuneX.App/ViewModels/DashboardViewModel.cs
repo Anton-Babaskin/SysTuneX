@@ -34,6 +34,7 @@ public sealed partial class DashboardViewModel : PageViewModel
     private readonly IPowerSchemeService _power;
     private readonly IProfileService _profiles;
     private readonly IChangeJournalReader _backup;
+    private readonly IUiDispatcher _dispatcher;
     private readonly IEnvironmentService _environment;
     private readonly IUserInteraction _interaction;
     private readonly ILocalizationService _localization;
@@ -153,6 +154,7 @@ public sealed partial class DashboardViewModel : PageViewModel
         IPowerSchemeService power,
         IProfileService profiles,
         IChangeJournalReader backup,
+        IUiDispatcher dispatcher,
         IEnvironmentService environment,
         IUserInteraction interaction,
         ILocalizationService localization,
@@ -167,6 +169,7 @@ public sealed partial class DashboardViewModel : PageViewModel
         _power = power;
         _profiles = profiles;
         _backup = backup;
+        _dispatcher = dispatcher;
         _environment = environment;
         _interaction = interaction;
         _localization = localization;
@@ -493,20 +496,7 @@ public sealed partial class DashboardViewModel : PageViewModel
     /// while the user was shown an error saying it had not. The tray icon already guards the same
     /// event the same way.
     /// </summary>
-    internal void RefreshGameMode()
-    {
-        Dispatcher? dispatcher = System.Windows.Application.Current?.Dispatcher;
-
-        if (dispatcher is null || dispatcher.CheckAccess())
-        {
-            UpdateGameMode();
-            return;
-        }
-
-        // Posted rather than blocking: this is a redraw, nothing waits on it, and Invoke from a
-        // thread the UI may be waiting on is a deadlock waiting to be discovered.
-        dispatcher.BeginInvoke(UpdateGameMode);
-    }
+    internal void RefreshGameMode() => _dispatcher.Post(UpdateGameMode);
 
     private void UpdateGameMode()
     {

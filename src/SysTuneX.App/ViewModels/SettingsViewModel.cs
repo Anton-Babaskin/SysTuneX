@@ -31,6 +31,7 @@ public sealed partial class SettingsViewModel : PageViewModel
     private readonly GameModeScheduler _scheduler;
     private readonly ICompactMonitorService _compact;
     private readonly IShellLauncher _shell;
+    private readonly IWindowAppearance _appearance;
     private readonly ILogger<SettingsViewModel> _logger;
 
     private bool _isLoading = true;
@@ -118,6 +119,7 @@ public sealed partial class SettingsViewModel : PageViewModel
         GameModeScheduler scheduler,
         ICompactMonitorService compact,
         IShellLauncher shell,
+        IWindowAppearance appearance,
         ILogger<SettingsViewModel> logger)
     {
         _settings = settings;
@@ -132,6 +134,7 @@ public sealed partial class SettingsViewModel : PageViewModel
         _scheduler = scheduler;
         _compact = compact;
         _shell = shell;
+        _appearance = appearance;
         _logger = logger;
 
         _compact.StateChanged += (_, _) => OnPropertyChanged(nameof(CompactHotkeyStatus));
@@ -261,31 +264,7 @@ public sealed partial class SettingsViewModel : PageViewModel
         };
 
         _settings.Current.Theme = theme;
-
-        System.Windows.Window? mainWindow = System.Windows.Application.Current.MainWindow;
-
-        if (theme == ApplicationTheme.Unknown)
-        {
-            ApplicationThemeManager.ApplySystemTheme();
-
-            if (mainWindow is not null)
-            {
-                SystemThemeWatcher.Watch(mainWindow);
-            }
-        }
-        else
-        {
-            // Stop following Windows before applying the choice. The watcher used to be left
-            // running, so picking Dark by hand worked until the next time Windows changed its own
-            // theme - at which point the watcher applied that over the top and the manual setting
-            // silently stopped holding.
-            if (mainWindow is not null)
-            {
-                SystemThemeWatcher.UnWatch(mainWindow);
-            }
-
-            ApplicationThemeManager.Apply(theme);
-        }
+        _appearance.ApplyTheme(theme);
 
         Save();
     }
@@ -299,24 +278,11 @@ public sealed partial class SettingsViewModel : PageViewModel
 
         _settings.Current.Backdrop = backdrop;
 
-        if (System.Windows.Application.Current.MainWindow is FluentWindow window &&
-            window.WindowBackdropType != backdrop)
+        // The preference is saved either way; only the live change is allowed to fail. Saying so
+        // is the difference between "this takes effect next launch" and a button that did nothing.
+        if (!_appearance.ApplyBackdrop(backdrop))
         {
-            try
-            {
-                window.WindowBackdropType = backdrop;
-            }
-            catch (Exception ex)
-            {
-                // WPF-UI rebuilds the window chrome on this change, and replacing a WindowChrome
-                // that already has an inheritance context throws from inside WPF. Picking a
-                // backdrop here was where that first happened - and because the choice was saved
-                // before it was applied, it then threw again on every launch, leaving the window
-                // with no content at all. The preference is still saved; only the live change is
-                // allowed to fail, and it takes effect on the next start.
-                _logger.LogWarning(ex, "Could not switch the window backdrop to {Backdrop} live", backdrop);
-                _interaction.ShowInfo(_localization["Settings_Backdrop_NeedsRestart"]);
-            }
+            _interaction.ShowInfo(_localization["Settings_Backdrop_NeedsRestart"]);
         }
 
         Save();

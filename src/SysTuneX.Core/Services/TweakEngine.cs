@@ -16,6 +16,7 @@ public sealed class TweakEngine : ITweakEngine
     private readonly IRegistryService _registry;
     private readonly IChangeJournalWriter _backup;
     private readonly IEnvironmentService _environment;
+    private readonly IReadOnlyList<IPostApplyEffect> _postApply;
     private readonly IReadOnlyDictionary<string, ISpecialTweakHandler> _handlers;
 
     // Handler status means shelling out to powercfg or bcdedit, which costs the better part
@@ -28,13 +29,15 @@ public sealed class TweakEngine : ITweakEngine
         IRegistryService registry,
         IChangeJournalWriter backup,
         IEnvironmentService environment,
-        IEnumerable<ISpecialTweakHandler> handlers)
+        IEnumerable<ISpecialTweakHandler> handlers,
+        IEnumerable<IPostApplyEffect> postApply)
     {
         _logger = logger;
         _registry = registry;
         _backup = backup;
         _environment = environment;
         _handlers = handlers.ToDictionary(h => h.Key, StringComparer.OrdinalIgnoreCase);
+        _postApply = [.. postApply];
     }
 
     public IReadOnlyList<TweakDefinition> GetSupportedTweaks(TweakCategory? category = null)
@@ -370,6 +373,16 @@ public sealed class TweakEngine : ITweakEngine
     /// Pushes a change into the running session. Without this, tweaks like mouse acceleration
     /// and menu delay look like they did nothing until the next sign-out.
     /// </summary>
+    /// <summary>
+    /// Tells Windows to re-read what was just written.
+    ///
+    /// One effect per flag, resolved from the container. This used to be a chain of HasFlag
+    /// branches each calling a static P/Invoke helper, which meant the engine knew about every
+    /// kind of refresh there is and none of it could be reached from a test.
+    ///
+    /// A refresh that throws is logged and swallowed: the value is written either way, and the
+    /// worst case is that it takes effect at the next sign-in rather than now.
+    /// </summary>
     private void RunPostApply(TweakDefinition tweak, bool applying)
     {
         if (tweak.PostApply == PostApplyAction.None)
@@ -377,28 +390,17 @@ public sealed class TweakEngine : ITweakEngine
             return;
         }
 
-        try
+        foreach (IPostApplyEffect effect in _postApply.Where(e => tweak.PostApply.HasFlag(e.Flag)))
         {
-            if (tweak.PostApply.HasFlag(PostApplyAction.RefreshMouseSettings))
+            try
             {
-                NativeHelpers.ApplyMouseSettings(accelerationEnabled: !applying);
+                effect.Run(applying);
             }
-
-            if (tweak.PostApply.HasFlag(PostApplyAction.RefreshVisualEffects))
+            catch (Exception ex)
             {
-                NativeHelpers.ApplyUiEffects(enabled: !applying);
+                _logger.LogDebug(ex, "Post-apply refresh {Flag} for {Id} failed", effect.Flag, tweak.Id);
             }
-
-            if (tweak.PostApply.HasFlag(PostApplyAction.BroadcastSettingChange))
-            {
-                NativeHelpers.BroadcastSettingChange();
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogDebug(ex, "Post-apply refresh for {Id} failed", tweak.Id);
         }
     }
 
-    /// <summary>Turns a journal string back into a value of the right registry type.</summary>
 }

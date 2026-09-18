@@ -59,6 +59,9 @@ public partial class App : Application
                 services.AddSingleton<INavigationService, NavigationService>();
                 services.AddSingleton<ISnackbarService, SnackbarService>();
                 services.AddSingleton<IContentDialogService, ContentDialogService>();
+                services.AddSingleton<IUiDispatcher, UiDispatcher>();
+                services.AddSingleton<IAppLifetime, AppLifetime>();
+                services.AddSingleton<IWindowAppearance, WindowAppearance>();
                 services.AddSingleton<IUserInteraction, UserInteraction>();
                 services.AddSingleton<IShellLauncher, ShellLauncher>();
                 services.AddSingleton<ITrayIconService, TrayIconService>();

@@ -36,6 +36,8 @@ public sealed class TrayIconService : ITrayIconService
     private readonly ISensorService _sensors;
     private readonly IGameModeService _gameMode;
     private readonly ILocalizationService _localization;
+    private readonly IUiDispatcher _dispatcher;
+    private readonly IAppLifetime _lifetime;
 
     private Forms.NotifyIcon? _icon;
     private DispatcherTimer? _timer;
@@ -47,13 +49,17 @@ public sealed class TrayIconService : ITrayIconService
         ISystemInfoService systemInfo,
         ISensorService sensors,
         IGameModeService gameMode,
-        ILocalizationService localization)
+        ILocalizationService localization,
+        IUiDispatcher dispatcher,
+        IAppLifetime lifetime)
     {
         _logger = logger;
         _systemInfo = systemInfo;
         _sensors = sensors;
         _gameMode = gameMode;
         _localization = localization;
+        _dispatcher = dispatcher;
+        _lifetime = lifetime;
     }
 
     public bool IsVisible => _icon is { Visible: true };
@@ -136,7 +142,7 @@ public sealed class TrayIconService : ITrayIconService
             return;
         }
 
-        Application.Current?.Dispatcher.Invoke(() =>
+        _dispatcher.Invoke(() =>
         {
             Forms.ContextMenuStrip? previous = _icon.ContextMenuStrip;
             _icon.ContextMenuStrip = BuildMenu();
@@ -232,20 +238,9 @@ public sealed class TrayIconService : ITrayIconService
         }
     }
 
-    private static void RestoreWindow() =>
-        Application.Current?.Dispatcher.Invoke(() =>
-        {
-            if (Application.Current.MainWindow is not { } window)
-            {
-                return;
-            }
+    private void RestoreWindow() => _lifetime.RestoreMainWindow();
 
-            window.Show();
-            window.WindowState = WindowState.Normal;
-            window.Activate();
-        });
-
-    private static void Quit() => Application.Current?.Dispatcher.Invoke(() => Application.Current.Shutdown());
+    private void Quit() => _lifetime.Shutdown();
 
     /// <summary>Reads the icon compiled into the assembly rather than a file beside the exe.</summary>
     private static Icon LoadIcon()

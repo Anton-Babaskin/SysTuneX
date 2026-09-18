@@ -110,7 +110,7 @@ public sealed class SensorCompositionTests
         var first = new StubProbe("A", new GpuReading(60, null, null));
         var second = new StubProbe("B", null);
 
-        var service = new SensorService(NullLogger<SensorService>.Instance, [first, second]);
+        var service = new SensorService(NullLogger<SensorService>.Instance, [first, second], new StubCpuProbe());
         service.Dispose();
 
         Assert.True(first.Disposed);
@@ -123,14 +123,30 @@ public sealed class SensorCompositionTests
         var throwing = new ThrowingProbe();
         var normal = new StubProbe("B", null);
 
-        var service = new SensorService(NullLogger<SensorService>.Instance, [throwing, normal]);
+        var service = new SensorService(NullLogger<SensorService>.Instance, [throwing, normal], new StubCpuProbe());
         service.Dispose();
 
         Assert.True(normal.Disposed);
     }
 
     private static SensorService Service(params IGpuSensorProbe[] probes) =>
-        new(NullLogger<SensorService>.Instance, probes);
+        Service(null, probes);
+
+    private static SensorService Service(TemperatureReading? cpu, params IGpuSensorProbe[] probes) =>
+        new(NullLogger<SensorService>.Instance, probes, new StubCpuProbe(cpu));
+
+    /// <summary>
+    /// A CPU probe that answers whatever the test says.
+    ///
+    /// These tests used to run a real WMI query against root\WMI on whatever machine they ran on,
+    /// because the thermal zone read was inline in the service. So they were slow, they depended
+    /// on the firmware of the test machine, and the one thing they could not do was pin what the
+    /// service does with a CPU reading.
+    /// </summary>
+    private sealed class StubCpuProbe(TemperatureReading? reading = null) : ICpuTemperatureProbe
+    {
+        public TemperatureReading? Read() => reading;
+    }
 
     private static IGpuSensorProbe Probe(string vendor, GpuReading? reading) => new StubProbe(vendor, reading);
 
@@ -152,5 +168,29 @@ public sealed class SensorCompositionTests
         public GpuReading? Read() => throw new InvalidOperationException("driver library exploded");
 
         public void Dispose() => throw new InvalidOperationException("and again on the way out");
+    }
+
+    /// <summary>
+    /// A CPU reading reaches the readings object. Trivially true, and it could not be checked at
+    /// all until the probe became something a test could supply - which is the whole argument for
+    /// the seam.
+    /// </summary>
+    [Fact]
+    public async Task A_cpu_reading_is_passed_through()
+    {
+        SensorReadings readings = await Service(new TemperatureReading(58, "ACPI thermal zone")).ReadAsync();
+
+        Assert.Equal(58, readings.Cpu!.Celsius);
+        Assert.Equal("ACPI thermal zone", readings.Cpu.Source);
+    }
+
+    /// <summary>
+    /// A machine whose firmware exposes nothing reports nothing, rather than a zero that would be
+    /// drawn on the dashboard as a real temperature.
+    /// </summary>
+    [Fact]
+    public async Task A_machine_with_no_thermal_zone_reports_no_cpu_temperature()
+    {
+        Assert.Null((await Service(cpu: null).ReadAsync()).Cpu);
     }
 }

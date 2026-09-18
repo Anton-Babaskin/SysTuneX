@@ -13,6 +13,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private readonly IEnvironmentService _environment;
     private readonly ILocalizationService _localization;
     private readonly IUserInteraction _interaction;
+    private readonly IAppLifetime _lifetime;
 
     [ObservableProperty]
     private string _windowsDescription = string.Empty;
@@ -23,11 +24,13 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public MainWindowViewModel(
         IEnvironmentService environment,
         ILocalizationService localization,
-        IUserInteraction interaction)
+        IUserInteraction interaction,
+        IAppLifetime lifetime)
     {
         _environment = environment;
         _localization = localization;
         _interaction = interaction;
+        _lifetime = lifetime;
 
         WindowsVersionInfo windows = environment.Windows;
         IsElevated = environment.IsElevated;
@@ -56,7 +59,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
         if (result.Success)
         {
-            System.Windows.Application.Current.Shutdown();
+            _lifetime.Shutdown();
         }
     }
 

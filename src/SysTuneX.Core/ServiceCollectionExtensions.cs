@@ -65,6 +65,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IChangeRollbackService, ChangeRollbackService>();
         services.AddSingleton<IAppliedProfileStore, AppliedProfileStore>();
 
+        // One effect per PostApplyAction flag, so the engine does not need to know what kinds of
+        // refresh exist.
+        services.AddSingleton<IPostApplyEffect, MouseSettingsRefresh>();
+        services.AddSingleton<IPostApplyEffect, VisualEffectsRefresh>();
+        services.AddSingleton<IPostApplyEffect, SettingChangeBroadcast>();
+
         services.AddSingleton<ITweakEngine, TweakEngine>();
         services.AddSingleton<IProfileService, ProfileService>();
         services.AddSingleton<IDiagnosticsService, DiagnosticsService>();
@@ -72,6 +78,7 @@ public static class ServiceCollectionExtensions
         // so this needs no detection - the probe for a driver that is not installed says so.
         services.AddSingleton<IGpuSensorProbe, NvidiaGpuProbe>();
         services.AddSingleton<IGpuSensorProbe, AmdGpuProbe>();
+        services.AddSingleton<ICpuTemperatureProbe, AcpiCpuTemperatureProbe>();
         services.AddSingleton<ISensorService, SensorService>();
         // Started on demand rather than here: an ETW session is a machine-wide resource, and
         // there is no reason to hold one open for someone who never opens the monitor.

@@ -19,6 +19,7 @@ public partial class MainWindow : FluentWindow
     private readonly ITrayIconService _tray;
     private readonly IGlobalSearch _search;
     private readonly INavigationService _navigation;
+    private readonly INavigationViewPageProvider _pages;
     private readonly ICompactMonitorService _compactMonitor;
     private readonly ILogger<MainWindow> _logger;
 
@@ -44,6 +45,7 @@ public partial class MainWindow : FluentWindow
         _tray = tray;
         _search = search;
         _navigation = navigationService;
+        _pages = pageProvider;
         _compactMonitor = compactMonitor;
         _logger = logger;
 
@@ -211,8 +213,11 @@ public partial class MainWindow : FluentWindow
 
         // Put the item's own name in the destination page's filter, so it is the one row on
         // screen rather than one of thirty.
+        // Through the page provider the constructor already receives, not the static container.
+        // Reaching for App.Services from inside a window is the shape that makes a class need a
+        // running application to exist at all.
         if (!string.IsNullOrEmpty(hit.Filter) &&
-            App.Services.GetService(hit.PageType) is FrameworkElement { DataContext: IFilterablePage page })
+            _pages.GetPage(hit.PageType) is FrameworkElement { DataContext: IFilterablePage page })
         {
             page.SearchText = hit.Filter;
         }

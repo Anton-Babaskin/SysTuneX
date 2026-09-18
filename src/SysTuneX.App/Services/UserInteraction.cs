@@ -45,17 +45,20 @@ public sealed class UserInteraction : IUserInteraction
     private readonly IContentDialogService _dialogs;
     private readonly ILocalizationService _localization;
     private readonly ILogger<UserInteraction> _logger;
+    private readonly IUiDispatcher _dispatcher;
 
     public UserInteraction(
         ISnackbarService snackbar,
         IContentDialogService dialogs,
         ILocalizationService localization,
-        ILogger<UserInteraction> logger)
+        ILogger<UserInteraction> logger,
+        IUiDispatcher dispatcher)
     {
         _snackbar = snackbar;
         _dialogs = dialogs;
         _localization = localization;
         _logger = logger;
+        _dispatcher = dispatcher;
     }
 
     // Everything the user is told goes through here, so logging at this one point means the log
@@ -308,9 +311,9 @@ public sealed class UserInteraction : IUserInteraction
             }
         }
 
-        if (Application.Current?.Dispatcher.CheckAccess() == false)
+        if (!_dispatcher.IsOnUiThread)
         {
-            Application.Current.Dispatcher.Invoke(Show);
+            _dispatcher.Invoke(Show);
         }
         else
         {
