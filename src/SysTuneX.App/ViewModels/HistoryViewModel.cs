@@ -23,7 +23,6 @@ public sealed partial class HistoryViewModel : PageViewModel
     private readonly IUserInteraction _interaction;
     private readonly ILocalizationService _localization;
     private readonly CatalogText _text;
-    private readonly ISnapshotService _snapshots;
     private readonly IShellLauncher _shell;
 
     [ObservableProperty]
@@ -34,20 +33,6 @@ public sealed partial class HistoryViewModel : PageViewModel
 
     [ObservableProperty]
     private string _searchText = string.Empty;
-
-    [ObservableProperty]
-    private SystemStateSnapshot? _firstSnapshot;
-
-    [ObservableProperty]
-    private SystemStateSnapshot? _secondSnapshot;
-
-    [ObservableProperty]
-    private string _snapshotLabel = string.Empty;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasComparison))]
-    [NotifyPropertyChangedFor(nameof(ComparisonSummary))]
-    private SnapshotComparison? _comparison;
 
     public HistoryViewModel(
         IChangeJournalReader backup,
@@ -65,36 +50,23 @@ public sealed partial class HistoryViewModel : PageViewModel
         _interaction = interaction;
         _localization = localization;
         _text = text;
-        _snapshots = snapshots;
         _shell = shell;
+
+        Snapshots = new SnapshotsViewModel(snapshots, interaction, localization, this);
 
         localization.LanguageChanged += (_, _) => Reload();
     }
 
     public ObservableCollection<BackupEntryViewModel> Entries { get; } = [];
 
-    public ObservableCollection<SystemStateSnapshot> Snapshots { get; } = [];
-
-    public ObservableCollection<SnapshotChange> Differences { get; } = [];
-
-    public bool HasComparison => Comparison is not null;
-
-    /// <summary>
-    /// Says plainly when two snapshots are identical. "Nothing changed" is a real answer and a
-    /// useful one - it means the thing you applied did not take.
-    /// </summary>
-    public string ComparisonSummary => Comparison switch
-    {
-        null => string.Empty,
-        { HasChanges: false } => _localization["Snapshot_NoDifference"],
-        var c => string.Format(_localization["Snapshot_Differences"], c.Changes.Count),
-    };
+    /// <summary>The other half of this page, which shares only the spinner with this one.</summary>
+    public SnapshotsViewModel Snapshots { get; }
 
     public bool IsEmpty => Entries.Count == 0;
 
     protected override Task OnEnterAsync()
     {
-        _ = LoadSnapshotsAsync();
+        _ = Snapshots.LoadAsync();
         Reload();
         return Task.CompletedTask;
     }
@@ -102,79 +74,6 @@ public sealed partial class HistoryViewModel : PageViewModel
     partial void OnShowRevertedChanged(bool value) => Reload();
 
     partial void OnSearchTextChanged(string value) => Reload();
-
-    /// <summary>
-    /// Records the machine as it is now. Runs off the UI thread: reading every tweak's status
-    /// means real registry work and, for a few of them, running powercfg.
-    /// </summary>
-    [RelayCommand]
-    private async Task CaptureSnapshotAsync()
-    {
-        await RunBusyAsync(
-            _localization["Snapshot_Capturing"],
-            async token =>
-            {
-                string label = string.IsNullOrWhiteSpace(SnapshotLabel)
-                    ? DateTime.Now.ToString("g")
-                    : SnapshotLabel;
-
-                await Task.Run(() => _snapshots.CaptureAsync(label, token), token).ConfigureAwait(true);
-
-                SnapshotLabel = string.Empty;
-                await LoadSnapshotsAsync().ConfigureAwait(true);
-            }).ConfigureAwait(true);
-    }
-
-    [RelayCommand]
-    private void CompareSnapshots()
-    {
-        if (FirstSnapshot is null || SecondSnapshot is null || ReferenceEquals(FirstSnapshot, SecondSnapshot))
-        {
-            _interaction.ShowInfo(_localization["Snapshot_PickTwo"]);
-            return;
-        }
-
-        Comparison = _snapshots.Compare(FirstSnapshot, SecondSnapshot);
-
-        Differences.Clear();
-        foreach (SnapshotChange change in Comparison.Changes)
-        {
-            Differences.Add(change);
-        }
-    }
-
-    [RelayCommand]
-    private async Task DeleteSnapshotAsync(SystemStateSnapshot? snapshot)
-    {
-        if (snapshot is null)
-        {
-            return;
-        }
-
-        await _snapshots.DeleteAsync(snapshot.Id).ConfigureAwait(true);
-        await LoadSnapshotsAsync().ConfigureAwait(true);
-    }
-
-    private async Task LoadSnapshotsAsync()
-    {
-        await _snapshots.LoadAsync().ConfigureAwait(true);
-
-        Snapshots.Clear();
-        foreach (SystemStateSnapshot snapshot in _snapshots.Snapshots)
-        {
-            Snapshots.Add(snapshot);
-        }
-
-        // A snapshot that was compared and then deleted must not leave a stale table behind.
-        if (Comparison is { } current && !(Contains(current.Before) && Contains(current.After)))
-        {
-            Comparison = null;
-            Differences.Clear();
-        }
-
-        bool Contains(SystemStateSnapshot snapshot) =>
-            Snapshots.Any(s => string.Equals(s.Id, snapshot.Id, StringComparison.Ordinal));
-    }
 
     [RelayCommand]
     private void Refresh() => Reload();

@@ -71,7 +71,8 @@
             <ui:CardExpander Header="{loc:Loc Snapshot_Section}"
                              Icon="{ui:SymbolIcon Pulse24}"
                              Margin="0,0,0,16"
-                             IsExpanded="False">
+                             IsExpanded="False"
+                             DataContext="{Binding Snapshots}">
                 <StackPanel>
                     <TextBlock Text="{loc:Loc Snapshot_Hint}"
                                Style="{StaticResource BodyText}"
@@ -97,7 +98,7 @@
 
                         <StackPanel Grid.Column="0" Margin="0,0,8,0">
                             <TextBlock Text="{loc:Loc Snapshot_First}" Style="{StaticResource CaptionText}" />
-                            <ComboBox ItemsSource="{Binding Snapshots}"
+                            <ComboBox ItemsSource="{Binding Captured}"
                                       SelectedItem="{Binding FirstSnapshot, Mode=TwoWay}"
                                       DisplayMemberPath="Label"
                                       Margin="0,4,0,0" />
@@ -105,7 +106,7 @@
 
                         <StackPanel Grid.Column="1" Margin="0,0,8,0">
                             <TextBlock Text="{loc:Loc Snapshot_Second}" Style="{StaticResource CaptionText}" />
-                            <ComboBox ItemsSource="{Binding Snapshots}"
+                            <ComboBox ItemsSource="{Binding Captured}"
                                       SelectedItem="{Binding SecondSnapshot, Mode=TwoWay}"
                                       DisplayMemberPath="Label"
                                       Margin="0,4,0,0" />
@@ -120,7 +121,7 @@
 
                     <TextBlock Text="{loc:Loc Snapshot_Empty}"
                                Style="{StaticResource CaptionText}"
-                               Visibility="{Binding Snapshots.Count, Converter={StaticResource EmptyToVisibility}}" />
+                               Visibility="{Binding Captured.Count, Converter={StaticResource EmptyToVisibility}}" />
 
                     <StackPanel Visibility="{Binding HasComparison, Converter={StaticResource BoolToVisibility}}">
                         <TextBlock Text="{Binding ComparisonSummary}"

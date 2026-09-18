@@ -6,7 +6,7 @@ namespace SysTuneX.App.ViewModels;
 /// Shared plumbing for the page view models: a busy flag with a caption, first-load tracking
 /// and a cancellation token that is cut when the user leaves the page.
 /// </summary>
-public abstract partial class PageViewModel : ObservableObject
+public abstract partial class PageViewModel : ObservableObject, IBusyScope
 {
     private CancellationTokenSource? _pageScope;
 
@@ -28,6 +28,8 @@ public abstract partial class PageViewModel : ObservableObject
 
     /// <summary>Cancelled when the page is navigated away from, so long scans stop with it.</summary>
     protected CancellationToken PageToken => (_pageScope ??= new CancellationTokenSource()).Token;
+
+    CancellationToken IBusyScope.Token => PageToken;
 
     public async Task EnterAsync()
     {
@@ -65,6 +67,9 @@ public abstract partial class PageViewModel : ObservableObject
     protected virtual Task OnEnterAsync() => Task.CompletedTask;
 
     protected virtual Task OnLeaveAsync() => Task.CompletedTask;
+
+    Task IBusyScope.RunAsync(string message, Func<CancellationToken, Task> operation) =>
+        RunBusyAsync(message, operation);
 
     /// <summary>Runs an operation with the busy flag set, and always clears it again.</summary>
     protected async Task RunBusyAsync(string message, Func<CancellationToken, Task> operation)
