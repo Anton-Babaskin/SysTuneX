@@ -169,6 +169,24 @@ A card can also say **partly held**: applied, but since reverted in part by hand
 simply "on" would be the comfortable half of the truth, and calling it off would throw away what
 the user did.
 
+### Ukrainian
+
+All 644 strings, picked from the language menu like the other two. That is the whole interface plus
+the catalogues: every tweak, service, profile and cleanup target carries its name and its
+description, because a page that lists "Вимкнути Game Bar" next to an English paragraph explaining
+it is not translated, it is half-translated.
+
+Adding it meant the checks that hold the languages together stopped naming them. They discovered
+two files and were hard-coded to compare exactly those two, so a third language would have shipped
+with none of them — which is precisely the language that needs them. They now find every
+`Strings.<lang>.resx` there is and hold each one to the English original: same keys, same
+placeholders, nothing blank, nothing defined twice.
+
+One of them is new. The catalogue names live in C# in English and in the resource files
+translated, so a translation legitimately carries keys the English file does not — and that meant
+a second translation could silently miss a whole catalogue and no check would notice. The
+translations are now held to each other as well as to the original.
+
 ---
 
 ## v2.10.2

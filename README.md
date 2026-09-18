@@ -589,7 +589,7 @@ the short version, when adding or changing a tweak:
 * validate Windows build requirements
 * prefer documented Windows APIs and policies
 * add or update catalog tests
-* give every user-visible string an entry in both `Strings.resx` and `Strings.ru.resx`
+* give every user-visible string an entry in `Strings.resx` and in every `Strings.<lang>.resx`
 
 Releases are cut per merge; see **[RELEASING.md](RELEASING.md)**. Security reports go through
 **[SECURITY.md](SECURITY.md)** rather than a public issue.

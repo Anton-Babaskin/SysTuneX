@@ -11,10 +11,25 @@ namespace SysTuneX.Core.Tests;
 /// </summary>
 public sealed class CoreMessageCoverageTests
 {
-    private const string EnglishResx = "../../../../../src/SysTuneX.App/Resources/Strings.resx";
-    private const string RussianResx = "../../../../../src/SysTuneX.App/Resources/Strings.ru.resx";
+    private const string ResourceRoot = "../../../../../src/SysTuneX.App/Resources";
 
-    public static TheoryData<string> Languages => [EnglishResx, RussianResx];
+    /// <summary>
+    /// Every language file there is, found rather than listed - so adding a language cannot leave
+    /// it with none of these checks, which is exactly when they matter most.
+    /// </summary>
+    public static TheoryData<string> Languages =>
+        [.. Directory.EnumerateFiles(ResourceRoot, "Strings*.resx").Order(StringComparer.Ordinal)];
+
+    /// <summary>Guards the discovery above: finding no languages would pass everything trivially.</summary>
+    [Fact]
+    public void The_languages_are_found()
+    {
+        List<string> found = [.. Directory.EnumerateFiles(ResourceRoot, "Strings*.resx").Select(Path.GetFileName).OfType<string>()];
+
+        Assert.Contains("Strings.resx", found);
+        Assert.Contains("Strings.ru.resx", found);
+        Assert.True(found.Count >= 2, $"Only {found.Count} language file(s) were found.");
+    }
 
     [Fact]
     public void Every_template_is_listed_in_All()

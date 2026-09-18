@@ -585,7 +585,7 @@ Issues и pull requests приветствуются. Полное руково�
 * проверяйте требования к версии Windows
 * отдавайте предпочтение документированным Windows API и policies
 * добавляйте или обновляйте catalog tests
-* для каждой строки интерфейса заводите запись и в `Strings.resx`, и в `Strings.ru.resx`
+* для каждой строки интерфейса заводите запись в `Strings.resx` и в каждом `Strings.<lang>.resx`
 
 Релиз выпускается на каждый merge — см. **[RELEASING.md](RELEASING.md)**. Об уязвимостях
 сообщайте по **[SECURITY.md](SECURITY.md)**, а не в публичном issue.

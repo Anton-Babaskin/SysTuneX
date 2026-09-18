@@ -23,7 +23,26 @@ public sealed partial class UiStringCoverageTests
     [GeneratedRegex(@"[Ll]ocalization(?:\[\s*|\.(?:Get|Format)\(\s*)""([A-Za-z0-9_]+)""")]
     private static partial Regex CodeKey { get; }
 
-    public static TheoryData<string> Languages => ["Strings.resx", "Strings.ru.resx"];
+    /// <summary>
+    /// Every language file there is, found rather than listed.
+    ///
+    /// Listing them meant adding a language was two edits in two projects, and forgetting the
+    /// second one left the new language with none of these checks - which is exactly when they
+    /// matter most.
+    /// </summary>
+    public static TheoryData<string> Languages => [.. LanguageFiles()];
+
+    /// <summary>The translations, without the English original they are translations of.</summary>
+    public static TheoryData<string> Translations =>
+        [.. LanguageFiles().Where(name => !string.Equals(name, English, StringComparison.Ordinal))];
+
+    private const string English = "Strings.resx";
+
+    private static IEnumerable<string> LanguageFiles() =>
+        Directory.EnumerateFiles(Path.Combine(AppRoot, "Resources"), "Strings*.resx")
+            .Select(Path.GetFileName)
+            .OfType<string>()
+            .Order(StringComparer.Ordinal);
 
     /// <summary>
     /// Prefixes whose keys are built at run time from an enum member or a catalogue id, so no
@@ -91,16 +110,49 @@ public sealed partial class UiStringCoverageTests
     }
 
     /// <summary>
-    /// A key present in English but not Russian falls back to English, which reads as a bug
-    /// rather than as a translation gap - and nobody notices until a user screenshots it.
+    /// A key present in English but missing from a translation falls back to English, which reads
+    /// as a bug rather than as a translation gap - and nobody notices until a user screenshots it.
     /// </summary>
-    [Fact]
-    public void Both_languages_carry_the_same_keys()
+    [Theory]
+    [MemberData(nameof(Translations))]
+    public void Every_language_carries_the_same_keys(string resx)
     {
-        HashSet<string> english = Keys("Strings.resx");
-        HashSet<string> russian = Keys("Strings.ru.resx");
+        HashSet<string> english = Keys(English);
+        HashSet<string> translated = Keys(resx);
 
-        Assert.Empty(english.Except(russian, StringComparer.Ordinal).Order(StringComparer.Ordinal));
+        Assert.Empty(english.Except(translated, StringComparer.Ordinal).Order(StringComparer.Ordinal));
+    }
+
+    /// <summary>
+    /// The catalogue's own names and descriptions are English in C# and translated here, so a
+    /// translation carries keys the English file does not. Which is fine - but it also means a
+    /// second translation can silently miss a whole catalogue, so the translations are held to
+    /// each other as well as to the original.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Translations))]
+    public void Every_language_carries_the_same_catalogue_entries(string resx)
+    {
+        var everyCatalogueKey = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (string language in LanguageFiles().Where(f => !string.Equals(f, English, StringComparison.Ordinal)))
+        {
+            everyCatalogueKey.UnionWith(
+                Keys(language).Where(key => BuiltAtRunTime.Any(p => key.StartsWith(p, StringComparison.Ordinal))));
+        }
+
+        Assert.Empty(everyCatalogueKey.Except(Keys(resx), StringComparer.Ordinal).Order(StringComparer.Ordinal));
+    }
+
+    /// <summary>Guards the discovery above: finding no languages would pass everything trivially.</summary>
+    [Fact]
+    public void The_languages_are_found()
+    {
+        List<string> found = [.. LanguageFiles()];
+
+        Assert.Contains(English, found);
+        Assert.Contains("Strings.ru.resx", found);
+        Assert.True(found.Count >= 2, $"Only {found.Count} language file(s) were found.");
     }
 
     [Theory]
@@ -134,27 +186,28 @@ public sealed partial class UiStringCoverageTests
     /// Placeholders have to agree across languages: a translation with one fewer <c>{0}</c>
     /// silently drops a value, and one with an extra throws in front of the user.
     /// </summary>
-    [Fact]
-    public void Translations_take_the_same_arguments_as_the_original()
+    [Theory]
+    [MemberData(nameof(Translations))]
+    public void A_translation_takes_the_same_arguments_as_the_original(string resx)
     {
-        Dictionary<string, string> english = Entries("Strings.resx");
-        Dictionary<string, string> russian = Entries("Strings.ru.resx");
+        Dictionary<string, string> english = Entries(English);
+        Dictionary<string, string> translated = Entries(resx);
 
         var wrong = new List<string>();
 
         foreach ((string key, string text) in english)
         {
-            if (!russian.TryGetValue(key, out string? translated))
+            if (!translated.TryGetValue(key, out string? other))
             {
                 continue;
             }
 
             int expected = PlaceholderCount(text);
-            int actual = PlaceholderCount(translated);
+            int actual = PlaceholderCount(other);
 
             if (expected != actual)
             {
-                wrong.Add($"{key}: English uses {expected} placeholder(s), Russian uses {actual}");
+                wrong.Add($"{key}: English uses {expected} placeholder(s), {resx} uses {actual}");
             }
         }
 
