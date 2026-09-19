@@ -49,7 +49,7 @@
   ];
   /* the six positions shown on the home page */
   var FEATURED = ['u1','u2','u3','u10','u13','u15'];
-  var IMG = 'https://arc-trading.com/img/';
+  var IMG = 'img/';
   var GLABEL = {};
   GROUPS.forEach(function(g){ GLABEL[g[0]] = g[1]; });
   window.ARC = { PRODUCTS: PRODUCTS, GROUPS: GROUPS, IMG: IMG };
