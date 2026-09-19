@@ -451,6 +451,16 @@
   });
 
   /* ============================================================
+     map — the embed only takes gestures once it is asked for
+     ============================================================ */
+  var map = $('#map');
+  if (map){
+    var wake = function(){ map.classList.add('live'); };
+    map.addEventListener('click', wake);
+    map.addEventListener('touchstart', wake, { passive: true });
+  }
+
+  /* ============================================================
      contact form
      ============================================================ */
   var form = $('#form'), submit = $('#submit');

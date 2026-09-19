@@ -474,24 +474,35 @@ html.loaded .hero h1 .ch{animation:chIn .85s var(--ease) forwards}
 }
 .info__i svg{flex:none;margin-top:3px;color:var(--amber-2)}
 .info__i b{display:block;font-family:var(--font-d);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2);font-weight:600;margin-bottom:5px}
-.info__i span{font-size:16.5px}
-.copy{margin-left:auto;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);opacity:0;transition:opacity .3s}
+.info__i span,.info__i a{font-size:16.5px;color:var(--ink)}
+.info__i a{border-bottom:1px solid transparent;transition:border-color .3s}
+.info__i .copy{margin-left:auto;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);opacity:0;transition:opacity .3s}
 .map{
-  position:relative;margin-top:26px;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);
-  background:
-    radial-gradient(120% 120% at 30% 20%,#fff,var(--bg-alt) 60%,var(--bg-deep)),
-    var(--bg-alt);
-  aspect-ratio:16/8;
+  position:relative;margin-top:26px;border-radius:var(--r);overflow:hidden;
+  border:1px solid var(--line);background:var(--bg-alt);aspect-ratio:16/10;
 }
-.map svg{position:absolute;inset:0;width:100%;height:100%}
-.map .pin{position:absolute;left:34%;top:42%;width:18px;height:18px}
-.map .pin i{position:absolute;inset:0;border-radius:50%;background:var(--amber);box-shadow:0 0 0 4px rgba(255,200,44,.3)}
-.map .pin i::after{content:"";position:absolute;inset:-14px;border-radius:50%;border:1px solid var(--amber);animation:ping 2.4s var(--ease) infinite}
-@keyframes ping{0%{transform:scale(.4);opacity:.9}100%{transform:scale(1.5);opacity:0}}
-.map__label{
-  position:absolute;left:14px;bottom:14px;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);
-  border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:12.5px;color:var(--ink-2);
+@media(max-width:820px){.map{aspect-ratio:4/3}}
+.map iframe{
+  position:absolute;inset:0;width:100%;height:100%;border:0;display:block;
+  /* the embed would otherwise swallow a page swipe on a phone */
+  pointer-events:none;
 }
+.map.live iframe{pointer-events:auto}
+.map__hint{
+  position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:2;
+  background:rgba(17,16,31,.86);color:#fff;border-radius:999px;padding:8px 16px;
+  font-size:12.5px;letter-spacing:.02em;pointer-events:none;
+  transition:opacity .35s var(--ease);
+}
+.map.live .map__hint{opacity:0}
+@media (hover:hover) and (pointer:fine){.map__hint{display:none}}
+.maplink{
+  display:inline-flex;align-items:center;gap:9px;margin-top:16px;
+  font-family:var(--font-d);font-weight:600;font-size:14px;color:var(--ink);
+  border-bottom:1px solid var(--line-2);padding-bottom:3px;transition:color .3s,border-color .3s;
+}
+.maplink svg{color:var(--amber-2)}
+
 
 /* ============================================================
    footer
@@ -689,6 +700,7 @@ html.loaded .hero h1 .ch{animation:chIn .85s var(--ease) forwards}
    instead.
    ============================================================ */
 @media (hover:hover) and (pointer:fine){
+  .maplink:hover{color:var(--amber-2);border-color:var(--amber)}
   .logo:hover::after{transform:scaleX(1)}
   .nav a:hover{color:#fff}
   .nav a:hover::after{width:100%}

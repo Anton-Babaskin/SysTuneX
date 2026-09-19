@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="format-detection" content="telephone=no,date=no,address=no,email=no">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Arc Trading</title>
 <link rel="icon" href="img/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=7">
+<link rel="stylesheet" href="assets/site.css?v=8">
 </head>
 <body>
 
@@ -214,32 +215,25 @@
       <div class="info">
         <div class="info__i" data-copy="+90(212)2147460">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
-          <div><b>Phone</b><span>+90(212)2147460</span></div><span class="copy">Copy</span>
+          <div><b>Phone</b><a href="tel:+902122147460">+90(212)2147460</a></div><span class="copy">Copy</span>
         </div>
         <div class="info__i" data-copy="office@arc-trading.com">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></svg>
-          <div><b>E-mail</b><span>office@arc-trading.com</span></div><span class="copy">Copy</span>
+          <div><b>E-mail</b><a href="mailto:office@arc-trading.com">office@arc-trading.com</a></div><span class="copy">Copy</span>
         </div>
         <div class="info__i" data-copy="Ayazağa Mahallesi, Kemerburgaz Caddesi, Vadistanbul 7B Ofis Blok,16. Kat/ no 62, Sarıyer/İSTANBUL - 34396">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
           <div><b>Office</b><span>Ayazağa Mahallesi, Kemerburgaz Caddesi, Vadistanbul 7B Ofis Blok,16. Kat/ no 62, Sarıyer/İSTANBUL - 34396</span></div><span class="copy">Copy</span>
         </div>
       </div>
-      <div class="map">
-        <svg viewBox="0 0 800 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-          <g stroke="rgba(14,17,22,.10)" fill="none" stroke-width="1">
-            <path d="M0 250 C120 230 200 262 300 240 C420 214 520 250 640 226 C710 212 760 224 800 214"/>
-            <path d="M0 292 C140 276 220 306 330 286 C450 264 540 296 660 272 C720 260 770 270 800 262"/>
-            <path d="M120 0 V400 M340 0 V400 M560 0 V400"/>
-            <path d="M0 120 H800 M0 330 H800"/>
-          </g>
-          <path d="M0 250 C120 230 200 262 300 240 C420 214 520 250 640 226 C710 212 760 224 800 214 L800 400 L0 400 Z" fill="rgba(14,17,22,.035)"/>
-          <g stroke="rgba(229,169,0,.6)" stroke-width="2" fill="none">
-            <path d="M180 400 C230 300 250 240 272 170"/><path d="M272 170 C340 150 420 168 520 140"/>
-          </g>
-        </svg>
-        <div class="pin"><i></i></div>
-        <div class="map__label">Vadistanbul 7B · Sarıyer / İSTANBUL</div>
+      <div class="map" id="map">
+        <iframe title="Arc Trading office on Google Maps" src="https://maps.google.com/maps?q=7B%20Plaza%20Vadistanbul%2C%20Kemerburgaz%20Caddesi%2C%20Ayaza%C4%9Fa%2C%20Sar%C4%B1yer%2C%20%C4%B0stanbul&t=&z=17&ie=UTF8&iwloc=B&output=embed"
+                loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+        <span class="map__hint">Tap the map to move it</span>
+      </div>
+      <a class="maplink" href="https://www.google.com/maps/search/?api=1&query=7B%20Plaza%20Vadistanbul%2C%20Kemerburgaz%20Caddesi%2C%20Ayaza%C4%9Fa%2C%20Sar%C4%B1yer%2C%20%C4%B0stanbul" target="_blank" rel="noopener">Open in Google Maps
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg>
+      </a>
       </div>
     </div>
   </div>
@@ -290,6 +284,6 @@
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-<script src="assets/site.js?v=7" defer></script>
+<script src="assets/site.js?v=8" defer></script>
 </body>
 </html>
