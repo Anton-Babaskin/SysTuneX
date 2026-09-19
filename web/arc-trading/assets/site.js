@@ -83,8 +83,46 @@
   if (grid){
     if (grid.dataset.mode === 'all'){
       renderCards(grid, PRODUCTS, 4);
+      /* arriving from a "More details" link — go to that card and mark it */
+      var hash = location.hash.replace('#','');
+      if (hash){
+        var target = document.getElementById(hash);
+        if (target){
+          target.classList.add('in','card--hit');
+          requestAnimationFrame(function(){
+            target.scrollIntoView({ block: 'center', behavior: RM ? 'auto' : 'smooth' });
+          });
+          setTimeout(function(){ target.classList.remove('card--hit'); }, 3500);
+        }
+      }
     } else {
       renderCards(grid, PRODUCTS.filter(function(p){ return FEATURED.indexOf(p[1]) > -1; }), 3);
+      /* last card of the phone rail — the way out to the full catalogue */
+      var more = document.createElement('a');
+      more.className = 'card card--more';
+      more.href = 'products.html';
+      more.innerHTML = '<div><b>All 25 positions</b>' +
+        '<span>Long products, semi-finished, ferroalloys, chemicals, raw materials and gases</span>' +
+        '<em>Open the catalogue ' + ARROW + '</em></div>';
+      grid.appendChild(more);
+
+      /* rail progress indicator */
+      var bar = document.createElement('div');
+      bar.className = 'cbar';
+      bar.innerHTML = '<i></i>';
+      grid.parentNode.insertBefore(bar, grid.nextSibling);
+      var fill = bar.firstChild;
+      var sync = function(){
+        var max = grid.scrollWidth - grid.clientWidth;
+        if (max < 8){ bar.classList.remove('on'); return; }
+        bar.classList.add('on');
+        var frac = grid.clientWidth / grid.scrollWidth;
+        fill.style.width = (frac * 100) + '%';
+        fill.style.transform = 'translateX(' + (grid.scrollLeft / max) * ((1 - frac) / frac) * 100 + '%)';
+      };
+      grid.addEventListener('scroll', sync, { passive: true });
+      addEventListener('resize', sync);
+      sync();
     }
   }
 
@@ -220,28 +258,28 @@
   }
 
   /* ============================================================
-     preloader / page transition
+     splash — entry page only, once per browser session
      ============================================================ */
-  var curtain = $('#curtain');
-  function boot(){
-    document.documentElement.classList.add('loaded');
-    setTimeout(function(){ var p = $('#preloader'); if (p) p.remove(); }, 700);
+  var pre = $('#preloader');
+  if (pre){
+    var seen = false;
+    try { seen = !!sessionStorage.getItem('arc-visited'); } catch (e) {}
+    if (seen){ pre.remove(); pre = null; }
+    else { try { sessionStorage.setItem('arc-visited','1'); } catch (e) {} }
   }
-  window.addEventListener('load', function(){ setTimeout(boot, RM ? 0 : 1000); });
-  setTimeout(boot, 3200);
-
-  document.addEventListener('click', function(e){
-    var a = e.target.closest('a[href]');
-    if (!a) return;
-    var href = a.getAttribute('href');
-    if (!href || href.charAt(0) === '#' || a.target === '_blank' ||
-        href.indexOf('mailto:') === 0 || href.indexOf('tel:') === 0) return;
-    if (location.protocol === 'file:') return;
-    if (a.origin !== location.origin) return;
-    e.preventDefault();
-    if (curtain) curtain.classList.add('in');
-    setTimeout(function(){ location.href = href; }, 460);
-  });
+  if (!pre){
+    document.documentElement.classList.add('loaded');
+  } else {
+    var booted = false;
+    var boot = function(){
+      if (booted) return;
+      booted = true;
+      document.documentElement.classList.add('loaded');
+      setTimeout(function(){ if (pre) pre.remove(); }, 700);
+    };
+    window.addEventListener('load', function(){ setTimeout(boot, RM ? 0 : 900); });
+    setTimeout(boot, 2600);   /* never hold the page hostage to a slow asset */
+  }
 
   /* ============================================================
      smooth scroll
