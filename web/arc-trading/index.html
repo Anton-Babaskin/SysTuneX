@@ -303,19 +303,14 @@ html.loaded .hero h1 .ch{animation:chIn .85s var(--ease) forwards}
    ============================================================ */
 .prod__head{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;flex-wrap:wrap;margin-bottom:34px}
 .prod__head h2{font-size:clamp(34px,5vw,68px)}
-.chips{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 clamp(28px,4vw,46px)}
-.chip{
-  border:1px solid var(--line-2);border-radius:999px;padding:9px 18px;
-  font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--ink-2);
-  transition:color .3s,border-color .3s,background .3s,transform .3s var(--ease);
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(16px,1.8vw,26px);margin-top:clamp(24px,3vw,40px)}
+@media(max-width:980px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.grid{grid-template-columns:1fr}}
+.prod__foot{
+  display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;
+  margin-top:clamp(30px,4vw,52px);padding-top:clamp(24px,3vw,36px);border-top:1px solid var(--line);
 }
-.chip:hover{transform:translateY(-2px);border-color:var(--amber);color:var(--ink)}
-.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
-.chip em{font-style:normal;opacity:.55;margin-left:7px;font-size:11px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(14px,1.6vw,24px)}
-@media(max-width:1180px){.grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:820px){.grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:480px){.grid{grid-template-columns:1fr}}
+.prod__foot span{color:var(--ink-2);font-size:15.5px;max-width:60ch}
 .card{
   position:relative;background:#fff;border:1px solid var(--line);border-radius:var(--r);
   overflow:hidden;display:flex;flex-direction:column;
@@ -328,7 +323,7 @@ html.loaded .hero h1 .ch{animation:chIn .85s var(--ease) forwards}
 .card[data-rv].in{opacity:1;transform:none;
   transition:box-shadow .5s var(--ease),border-color .5s var(--ease),transform .35s var(--ease)}
 .card:hover{box-shadow:var(--shadow-lg);border-color:transparent}
-.card__ph{position:relative;aspect-ratio:4/3;overflow:hidden;background:var(--bg-deep)}
+.card__ph{position:relative;aspect-ratio:16/11;overflow:hidden;background:var(--bg-deep)}
 .card__ph img{width:100%;height:100%;object-fit:cover;filter:saturate(.5) contrast(1.02);transition:transform .9s var(--ease),filter .6s var(--ease)}
 .card:hover .card__ph img{transform:scale(1.09);filter:saturate(1)}
 .card__ph::after{
@@ -340,13 +335,13 @@ html.loaded .hero h1 .ch{animation:chIn .85s var(--ease) forwards}
   position:absolute;left:12px;top:12px;z-index:2;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);
   border-radius:999px;padding:5px 12px;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);
 }
-.card__body{padding:20px 20px 22px;display:flex;flex-direction:column;gap:14px;flex:1;position:relative;z-index:1}
+.card__body{padding:24px 24px 26px;display:flex;flex-direction:column;gap:14px;flex:1;position:relative;z-index:1}
 .card__body::before{
   content:"";position:absolute;inset:0;background:var(--bg-alt);z-index:-1;
   transform:scaleY(0);transform-origin:bottom;transition:transform .45s var(--ease);
 }
 .card:hover .card__body::before{transform:scaleY(1)}
-.card h3{font-size:16px;font-weight:600;letter-spacing:-.01em;line-height:1.3;text-transform:uppercase}
+.card h3{font-size:17.5px;font-weight:600;letter-spacing:-.01em;line-height:1.3;text-transform:uppercase}
 .card__more{
   margin-top:auto;display:inline-flex;align-items:center;gap:8px;
   font-family:var(--font-d);font-size:13px;font-weight:600;color:var(--ink-2);transition:color .3s;
@@ -624,11 +619,19 @@ html.loaded .hero h1 .ch{animation:chIn .85s var(--ease) forwards}
         <p class="eyebrow" data-rv>Catalogue</p>
         <h2 data-rv>Our products</h2>
       </div>
+      <a class="btn btn--amber" href="/service/" data-rv data-mag>View all 25 products
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
     </div>
     <p class="lede" data-rv>Arc Trading supplies high-quality ferrous and non-ferrous metals, including rebar, wire rod, and various metal structures, as well as essential industrial chemicals.</p>
     <p class="lede" data-rv style="margin-bottom:34px">We ensure reliable deliveries tailored to diverse industries worldwide. Explore our full product range below to find the right solutions for your business.</p>
-    <div class="chips" id="chips" data-rv></div>
     <div class="grid" id="grid"></div>
+    <div class="prod__foot" data-rv>
+      <span>Rebar, wire rod, structures, semi-finished products, ferroalloys, chemicals and industrial gases — 25 positions in total.</span>
+      <a class="btn btn--ghost" href="/service/" data-mag>Full product range
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
   </div>
 </section>
 
@@ -846,6 +849,8 @@ html.loaded .hero h1 .ch{animation:chIn .85s var(--ease) forwards}
   ];
   var GLABEL = {};
   GROUPS.forEach(function(g){GLABEL[g[0]] = g[1];});
+  /* the six positions shown on the home page — the full range lives on /service/ */
+  var FEATURED = ['u1','u2','u3','u10','u13','u15'];
   var ARROW = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 
   /* ---- marquee ---- */
@@ -855,25 +860,14 @@ html.loaded .hero h1 .ch{animation:chIn .85s var(--ease) forwards}
     mq.innerHTML = strip + strip;
   }
 
-  /* ---- chips ---- */
-  var chips = $('#chips');
-  GROUPS.forEach(function(g){
-    var n = g[0] === 'all' ? PRODUCTS.length : PRODUCTS.filter(function(p){return p[2] === g[0];}).length;
-    var b = document.createElement('button');
-    b.className = 'chip' + (g[0] === 'all' ? ' on' : '');
-    b.dataset.g = g[0];
-    b.innerHTML = g[1] + '<em>' + n + '</em>';
-    chips.appendChild(b);
-  });
-
   /* ---- cards ---- */
   var grid = $('#grid');
-  PRODUCTS.forEach(function(p, i){
+  PRODUCTS.filter(function(p){ return FEATURED.indexOf(p[1]) > -1; }).forEach(function(p, i){
     var el = document.createElement('article');
     el.className = 'card';
     el.dataset.g = p[2];
     el.dataset.tilt = '';
-    el.style.transitionDelay = (i % 8) * 55 + 'ms';
+    el.style.transitionDelay = (i % 3) * 90 + 'ms';
     el.setAttribute('data-rv','');
     el.innerHTML =
       '<div class="card__ph">' +
@@ -886,28 +880,6 @@ html.loaded .hero h1 .ch{animation:chIn .85s var(--ease) forwards}
       '</div>' +
       '<a class="card__link" href="/service/#' + p[1] + '" aria-label="' + p[0] + ' — More details"></a>';
     grid.appendChild(el);
-  });
-
-  /* ---- FLIP filtering ---- */
-  chips.addEventListener('click', function(e){
-    var chip = e.target.closest('.chip');
-    if (!chip) return;
-    $$('.chip').forEach(function(c){c.classList.toggle('on', c === chip);});
-    var g = chip.dataset.g, cards = $$('.card', grid);
-    var first = {};
-    cards.forEach(function(c,i){ first[i] = c.getBoundingClientRect(); });
-    cards.forEach(function(c){ c.classList.toggle('hide', g !== 'all' && c.dataset.g !== g); });
-    if (RM) return;
-    cards.forEach(function(c,i){
-      if (c.classList.contains('hide')) return;
-      var last = c.getBoundingClientRect();
-      var dx = first[i].left - last.left, dy = first[i].top - last.top;
-      if (!dx && !dy) return;
-      c.animate(
-        [{transform:'translate(' + dx + 'px,' + dy + 'px)'},{transform:'none'}],
-        {duration:520, easing:'cubic-bezier(.22,1,.36,1)'}
-      );
-    });
   });
 
   /* ============================================================
@@ -1091,7 +1063,7 @@ html.loaded .hero h1 .ch{animation:chIn .85s var(--ease) forwards}
       ring.style.transform = 'translate3d(' + rx + 'px,' + ry + 'px,0)';
       requestAnimationFrame(loop);
     })();
-    var HOT = 'a,button,.card,.row,.chip,input,textarea';
+    var HOT = 'a,button,.card,.row,input,textarea';
     document.addEventListener('mouseover', function(e){ if (e.target.closest(HOT)) document.body.classList.add('cur-hot'); });
     document.addEventListener('mouseout',  function(e){ if (e.target.closest(HOT)) document.body.classList.remove('cur-hot'); });
 
