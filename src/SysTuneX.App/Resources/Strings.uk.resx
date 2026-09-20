@@ -1561,6 +1561,9 @@
   <data name="Core_Backup_ExportFailed" xml:space="preserve">
     <value>Не вдалося виконати експорт: {0}</value>
   </data>
+  <data name="Core_Rollback_RestorerFailed" xml:space="preserve">
+    <value>Не вдалося відновити змін типу «{1}»: {0}. Причина: {2}</value>
+  </data>
   <data name="Core_Diagnostics_ReportFailed" xml:space="preserve">
     <value>Не вдалося записати звіт діагностики: {0}</value>
   </data>

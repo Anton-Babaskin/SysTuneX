@@ -973,6 +973,9 @@
   <data name="Core_Backup_ExportFailed" xml:space="preserve">
     <value>Export failed: {0}</value>
   </data>
+  <data name="Core_Rollback_RestorerFailed" xml:space="preserve">
+    <value>Could not restore {0} changes of type '{1}': {2}</value>
+  </data>
   <data name="Core_Diagnostics_ReportFailed" xml:space="preserve">
     <value>Could not write the diagnostics report: {0}</value>
   </data>

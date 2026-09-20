@@ -46,8 +46,7 @@ public sealed class ChangeRollbackService : IChangeRollbackService
             // both think it is theirs - the tweak restorer and the registry one overlap by design.
             remaining.RemoveAll(restorer.Handles);
 
-            outcomes[restorer.Id] = await restorer
-                .RestoreAsync(mine, progress, cancellationToken)
+            outcomes[restorer.Id] = await RestoreOneAsync(restorer, mine, progress, cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -63,5 +62,45 @@ public sealed class ChangeRollbackService : IChangeRollbackService
         }
 
         return new RollbackReport(outcomes, remaining);
+    }
+
+    /// <summary>
+    /// Runs one restorer and turns an unexpected throw into that restorer's own failure.
+    ///
+    /// Restorers run in order, so without this one of them throwing takes every later one with it -
+    /// and the report built to make a silently skipped change visible is never returned at all. The
+    /// user would be told the rollback failed, with nothing saying which half of it went through.
+    ///
+    /// No restorer is known to throw today: each one's underlying service answers with an
+    /// <see cref="OperationResult"/>, including the hosts file, which Defender can refuse. But they
+    /// reach bcdedit, netsh, the registry, the task scheduler and PowerShell, and "everything down
+    /// there reports rather than throws" is not a property this class can rely on. So a throw
+    /// becomes what a refusal already is: named, counted, and not the end of the rollback.
+    ///
+    /// Cancellation is not a failure and is left to propagate - the caller cut the token.
+    /// </summary>
+    private async Task<RestoreOutcome> RestoreOneAsync(
+        IChangeRestorer restorer,
+        IReadOnlyList<BackupEntry> mine,
+        IProgress<BatchProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await restorer.RestoreAsync(mine, progress, cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "The {Restorer} restorer threw; {Count} changes were not put back", restorer.Id, mine.Count);
+
+            return new RestoreOutcome(
+                0,
+                mine.Count,
+                [CoreMessages.RollbackRestorerFailed.Render(mine.Count, restorer.Id, ex.Message)]);
+        }
     }
 }
