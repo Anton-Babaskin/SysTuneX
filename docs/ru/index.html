@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>SysTuneX — бесплатный оптимизатор Windows 11 для игр и счётчик FPS</title>
+<meta name="description" content="Бесплатный оптимизатор Windows 10/11 с открытым кодом. Игровые профили, мониторинг FPS, 1% низких, времени кадра, CPU и GPU — и точный откат каждого изменения. Без внедрения в игру и без телеметрии.">
+
+<link rel="canonical" href="https://anton-babaskin.github.io/SysTuneX/ru/">
+<link rel="alternate" hreflang="en" href="https://anton-babaskin.github.io/SysTuneX/">
+<link rel="alternate" hreflang="ru" href="https://anton-babaskin.github.io/SysTuneX/ru/">
+<link rel="alternate" hreflang="x-default" href="https://anton-babaskin.github.io/SysTuneX/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SysTuneX">
+<meta property="og:title" content="SysTuneX — бесплатный оптимизатор Windows 11 для игр и счётчик FPS">
+<meta property="og:description" content="Оптимизируй Windows. Считай каждый кадр. Откатывай точно. Бесплатно и с открытым кодом.">
+<meta property="og:url" content="https://anton-babaskin.github.io/SysTuneX/ru/">
+<meta property="og:image" content="https://anton-babaskin.github.io/SysTuneX/images/systunex-monitor-ru.png">
+<meta property="og:image:width" content="2370">
+<meta property="og:image:height" content="1332">
+<meta property="og:image:alt" content="Монитор SysTuneX: частота кадров, 1% низких, время кадра, загрузка и температура CPU и GPU">
+<meta property="og:locale" content="ru">
+<meta property="og:locale:alternate" content="en">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SysTuneX — бесплатный оптимизатор Windows 11 для игр и счётчик FPS">
+<meta name="twitter:description" content="Оптимизируй Windows. Считай каждый кадр. Откатывай точно. Бесплатно и с открытым кодом.">
+<meta name="twitter:image" content="https://anton-babaskin.github.io/SysTuneX/images/systunex-monitor-ru.png">
+
+<meta name="theme-color" content="#08080d">
+<link rel="icon" href="../images/logo.png" type="image/png">
+<link rel="apple-touch-icon" href="../images/logo.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "SysTuneX",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Windows 10 1809 и новее, Windows 11",
+  "processorRequirements": "x64",
+  "softwareVersion": "2.12.0",
+  "url": "https://anton-babaskin.github.io/SysTuneX/ru/",
+  "downloadUrl": "https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SysTuneX.exe",
+  "license": "https://github.com/Anton-Babaskin/SysTuneX/blob/main/LICENSE",
+  "isAccessibleForFree": true,
+  "inLanguage": ["ru", "en", "uk"],
+  "description": "Бесплатный оптимизатор Windows 10/11 для игр и счётчик FPS с открытым кодом. Игровые профили, игровой режим, очистка и подсчёт кадров через трассировку событий Windows — без внедрения кода в игру. Каждое изменение записывается до применения и откатывается точно.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Person", "name": "Anton Babaskin", "url": "https://github.com/Anton-Babaskin" },
+  "codeRepository": "https://github.com/Anton-Babaskin/SysTuneX"
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Безопасно ли это с античитами?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Счётчик кадров читает трассировку событий Windows — тот же источник, что у PresentMon и Xbox Game Bar. В процесс игры ничего не внедряется и драйвер не загружается, поэтому античиту не к чему придраться. Плата за это — нет оверлея над полноэкранной эксклюзивной игрой."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Можно ли отменить изменения?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Да. Каждое поддерживаемое изменение записывается до применения — с тем значением, которое реально было на машине, — и откатывается по одному или всё сразу из журнала изменений. Исключение одно: удалённые при очистке файлы вернуть нельзя, и приложение предупреждает об этом заранее."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Почему SmartScreen показывает предупреждение?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Исполняемый файл не подписан: сертификат стоит несколько сотен долларов в год и требует зарегистрированной компании. Вместо этого к каждому релизу публикуется SHA-256, который совпадает с числом в публичном логе сборки GitHub Actions — это доказывает, что файл собран из помеченного тегом исходного кода."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Нужно ли устанавливать .NET?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Нет, это самодостаточный один файл. Права администратора нужны: ключи реестра лежат в HKEY_LOCAL_MACHINE, смена типа запуска службы идёт через диспетчер служб, а счётчику кадров нужна сессия трассировки."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Сколько FPS это добавит?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Честный инструмент не может назвать число: результат зависит от железа, игры и того, что уже запущено. SysTuneX сделан так, чтобы вы измерили сами — запишите состояние машины до и после и прогоните один и тот же бенчмарк."
+      }
+    }
+  ]
+}
+</script>
+
+<script>document.documentElement.classList.add('js')</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+
+<header id="top">
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="./"><img src="../images/logo.png" alt="" width="28" height="28">SysTuneX</a>
+      <div class="navlinks">
+        <a href="#features" data-opt>Возможности</a>
+        <a href="#monitor" data-opt>Монитор</a>
+        <a href="#trust" data-opt>Доверие</a>
+        <a href="#faq" data-opt>Вопросы</a>
+        <a href="../" hreflang="en">EN</a>
+        <a class="btn btn-ghost btn-sm" href="https://github.com/Anton-Babaskin/SysTuneX">GitHub</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="aurora" aria-hidden="true">
+    <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  </div>
+  <div class="grid-bg" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <span class="pill"><i class="dot"></i> Версия <span id="ver">2.12.0</span> · бесплатно навсегда</span>
+
+    <h1>Оптимизируй Windows.<br><span class="grad">Считай каждый кадр.</span></h1>
+
+    <p class="lead">
+      Бесплатный оптимизатор для игр и счётчик FPS для Windows&nbsp;10 и&nbsp;11 с открытым кодом.
+      Каждое изменение записывается до того, как будет сделано — поэтому возвращается всё, и точно.
+    </p>
+
+    <div class="cta">
+      <a class="btn btn-primary" id="dl"
+         href="https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SysTuneX.exe">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="19" height="19" aria-hidden="true"><path d="M12 3v12m0 0 4.5-4.5M12 15l-4.5-4.5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        Скачать для Windows
+      </a>
+      <a class="btn btn-ghost" href="https://github.com/Anton-Babaskin/SysTuneX">Исходный код</a>
+    </div>
+
+    <p class="meta">
+      <b id="size" data-unit="МБ">~81 МБ</b> · один файл, без установщика · Windows 10 1809+ / 11 · x64 ·
+      <a href="https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SHA256SUMS.txt" style="color:var(--ink-2)">SHA-256</a>
+    </p>
+
+    <div class="trust">
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Лицензия MIT</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Без аккаунта и рекламы</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Без телеметрии</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> .NET ставить не нужно</span>
+    </div>
+
+    <div class="readout" aria-hidden="true">
+      <div class="readout-top">
+        <div class="fps tnum"><span id="fpsval">144</span><small>FPS</small></div>
+        <div class="readout-stats tnum">
+          <div><b id="lowval">118</b>1% низких</div>
+          <div><b id="ftval">6.9</b>мс кадр</div>
+          <div><b id="gpuval">71</b>°C GPU</div>
+        </div>
+      </div>
+      <div class="bars" id="bars"></div>
+    </div>
+  </div>
+</section>
+
+<section id="monitor" style="padding-top:20px">
+  <div class="wrap">
+    <div class="shot reveal">
+      <img src="../images/systunex-monitor-ru.png" width="2370" height="1332" loading="lazy"
+           alt="Страница мониторинга SysTuneX: частота кадров с 1% низких, время кадра, загрузка и температура CPU и GPU, занятая память">
+    </div>
+  </div>
+</section>
+
+<section id="why" style="padding-top:34px">
+  <div class="wrap">
+    <div class="sec-head mid reveal">
+      <p class="eyebrow">Почему этот</p>
+      <h2>Большинство оптимизаторов просят <span class="grad">верить на слово</span></h2>
+      <p>Этот показывает свою работу. Три решения определяют в нём всё остальное.</p>
+    </div>
+
+    <div class="cards">
+      <article class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></div>
+        <h3>Точный откат, а не подставленное «по умолчанию»</h3>
+        <p>Перед записью SysTuneX сохраняет значение, которое реально было на вашей машине. Откат вернёт именно его — а не число, которое кто-то счёл стандартным. Настройки, изменённые вами вручную, не трогаются никогда.</p>
+      </article>
+      <article class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h3>В игру ничего не внедряется</h3>
+        <p>Счётчик кадров читает трассировку событий Windows — тот же источник, что у PresentMon и Xbox Game Bar. Никаких перехватов и драйверов, ничего, что античит мог бы принять за чит.</p>
+      </article>
+      <article class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 14 3-4 4 3 5-7"/></svg></div>
+        <h3>Измеряйте, а не верьте нам</h3>
+        <p>Запишите состояние машины до изменения и после, затем сравните. Никаких обещанных цифр прироста — честный инструмент их не назовёт, это решают ваше железо и ваша игра.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="eyebrow">Что внутри</p>
+      <h2>Одно приложение вместо шести</h2>
+      <p>Настройка, мониторинг, службы, приватность, сеть и очистка — и каждое говорит, чего касается и чем за это платит.</p>
+    </div>
+
+    <div class="stats reveal tnum" style="margin-bottom:34px">
+      <div class="stat"><b class="grad">45</b><span>обратимых твиков</span></div>
+      <div class="stat"><b class="grad">38</b><span>служб в каталоге</span></div>
+      <div class="stat"><b class="grad">6</b><span>игровых профилей</span></div>
+      <div class="stat"><b class="grad">3</b><span>языка интерфейса</span></div>
+    </div>
+
+    <div class="cards">
+      <article class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 11h4M8 9v4M15 12h.01M18 10h.01"/><rect x="2" y="6" width="20" height="12" rx="4"/></svg></div>
+        <h3>Игровые твики</h3>
+        <p>Game Bar и Game DVR, оптимизации полноэкранного режима, ускорение мыши, планировщик процессора, разрешение таймера, энергосбережение шины PCIe и горячие клавиши спецвозможностей, открывающие окно посреди матча.</p>
+      </article>
+      <article class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></div>
+        <h3>Особенности Windows 11</h3>
+        <p>VBS, HVCI, гипервизор, Recall, Copilot, виджеты и функции поиска — с учётом сборки: твик, который к вашей не применяется, скрывается, а не предлагается впустую.</p>
+      </article>
+      <article class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2m10-10 2-2"/></svg></div>
+        <h3>Игровой режим, отменяемый на выходе</h3>
+        <p>Один переключатель останавливает фоновые службы, поднимает схему питания и освобождает память — и возвращает всё обратно при выключении. Без перезагрузки и без следов в реестре.</p>
+      </article>
+      <article class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/></svg></div>
+        <h3>Автоматика на ваших условиях</h3>
+        <p>Игровой режим может следовать за игрой или за расписанием. Ни то, ни другое не отменяет включённое вручную: расписание выключает только ту сессию, которую само и начало.</p>
+      </article>
+      <article class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg></div>
+        <h3>Очистка, которая говорит, что удаляет</h3>
+        <p>Кэши шейдеров, остатки обновлений, дампы сбоев, эскизы и временные файлы — сначала измеряются, показываются по размеру, и это единственное действие, о необратимости которого приложение предупреждает.</p>
+      </article>
+      <article class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12h6"/></svg></div>
+        <h3>Приватность, не ломающая Windows</h3>
+        <p>Телеметрия и её задачи планировщика, рекламный идентификатор, журнал действий, рекомендации, геолокация и синхронизация буфера. Адреса обновлений, активации, Store и Defender намеренно не трогаются.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="compact">
+  <div class="wrap split">
+    <div class="reveal">
+      <p class="eyebrow">Компактная панель</p>
+      <h2>Ваши цифры — <span class="grad">поверх игры</span></h2>
+      <p style="color:var(--ink-2);margin-top:16px">
+        Одно нажатие выводит на экран маленькое окно поверх остальных с теми же показателями, что
+        и на странице мониторинга. Это обычное окно без рамки, а не оверлей, — поэтому оно видно
+        над играми в оконном режиме без рамки и не трогает процесс игры.
+      </p>
+      <ul class="checklist">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Вызывается <b>Ctrl+Shift+M</b> откуда угодно, клавиша меняется</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Показывает только отмеченные показатели и следует за изменениями</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Открывается там же, где его оставили — с поправкой, если того экрана уже нет</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Показание, которого машина не даёт, пропускается, а не рисуется нулём</li>
+      </ul>
+      <p style="color:var(--ink-3);font-size:.9rem;margin-top:20px">
+        Честное ограничение: <strong>не</strong> появится над игрой в полноэкранном эксклюзивном
+        режиме, который владеет экраном целиком. Это цена того, что игру не трогают вообще.
+      </p>
+    </div>
+    <div class="reveal">
+      <div class="readout" style="margin:0;max-width:none">
+        <div class="readout-top">
+          <div class="fps tnum" style="font-size:3.2rem">165<small>FPS</small></div>
+          <div class="readout-stats tnum">
+            <div><b>142</b>1% низких</div>
+            <div><b>6.1</b>мс</div>
+          </div>
+        </div>
+        <div class="readout-stats tnum" style="gap:26px;border-top:1px solid var(--line);padding-top:15px">
+          <div><b>38</b>% CPU</div>
+          <div><b>97</b>% GPU</div>
+          <div><b>64</b>°C</div>
+          <div><b>11.4</b>ГБ</div>
+        </div>
+      </div>
+      <p style="color:var(--ink-3);font-size:.84rem;margin-top:14px;text-align:center">
+        Моноширинные цифры: счётчик, идущий 99 → 100, не сдвигает вёрстку.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="trust">
+  <div class="wrap split">
+    <div class="reveal">
+      <p class="eyebrow">Доверие и безопасность</p>
+      <h2>Вы запускаете неподписанный <span class="grad">.exe от админа</span></h2>
+      <p style="color:var(--ink-2);margin-top:16px">
+        Это заслуживает проверки — и настоящая проверка есть. К каждому релизу рядом с файлом
+        публикуется его SHA-256, и то же самое число напечатано в публичном логе сборки GitHub
+        Actions, который никто не может изменить задним числом.
+      </p>
+      <p style="color:var(--ink-2);margin-top:14px">
+        Если все три сходятся — это именно тот файл, который раннер GitHub собрал из помеченного
+        тегом кода. Это более сильная гарантия, чем подпись: подпись доказывает только, кто выложил
+        файл, и ничего не говорит о том, что он делает.
+      </p>
+      <div class="cta" style="justify-content:flex-start;margin-top:28px">
+        <a class="btn btn-ghost btn-sm" href="https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SHA256SUMS.txt">Контрольные суммы</a>
+        <a class="btn btn-ghost btn-sm" href="https://github.com/Anton-Babaskin/SysTuneX/actions">Логи сборки</a>
+      </div>
+    </div>
+    <div class="reveal">
+      <div class="code"><b># PowerShell</b>
+Get-FileHash .\SysTuneX.exe -Algorithm SHA256
+
+<b># Сверьте все три:</b>
+<b>#</b>  SHA256SUMS.txt рядом с загрузкой
+<b>#</b>  шаг Checksum в логе Actions
+<b>#</b>  хеш, который вы только что посчитали</div>
+      <p style="color:var(--ink-3);font-size:.89rem;margin-top:20px">
+        <strong style="color:var(--warn)">SmartScreen предупредит.</strong> Файл не подписан:
+        сертификат стоит несколько сотен долларов в год и требует зарегистрированной компании.
+        Предупреждение считает, сколько людей уже запускали файл, а не то, что он делает.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap" style="max-width:830px">
+    <div class="sec-head mid reveal">
+      <p class="eyebrow">Вопросы</p>
+      <h2>Те, которые стоит задать</h2>
+    </div>
+
+    <div class="reveal">
+      <details open>
+        <summary>Безопасно ли это с античитами?</summary>
+        <p>Счётчик кадров читает трассировку событий Windows — тот же источник, что у PresentMon и Xbox Game Bar. В процесс игры ничего не внедряется и драйвер не загружается, поэтому античиту не к чему придраться. Плата за это — нет оверлея над полноэкранной эксклюзивной игрой: чтобы посмотреть цифры, вы переключаетесь на монитор, а счётчик всё это время остаётся на игре.</p>
+      </details>
+      <details>
+        <summary>Можно ли отменить изменения?</summary>
+        <p>Да. Каждое поддерживаемое изменение записывается до применения — с тем значением, которое реально было на машине, — и откатывается по одному или всё сразу из журнала изменений. Исключение одно: удалённые при очистке файлы вернуть нельзя, и приложение предупреждает об этом до удаления.</p>
+      </details>
+      <details>
+        <summary>Почему SmartScreen ругается?</summary>
+        <p>Исполняемый файл не подписан: сертификат стоит несколько сотен долларов в год и требует зарегистрированной компании. Вместо этого к каждому релизу публикуется SHA-256, который сверяется с публичным логом сборки. Выберите <em>Подробнее → Выполнить в любом случае</em>, либо сначала проверьте хеш, либо прогоните файл через VirusTotal.</p>
+      </details>
+      <details>
+        <summary>Нужно ли ставить .NET?</summary>
+        <p>Нет — это самодостаточный один файл. Права администратора нужны: ключи реестра лежат в HKEY_LOCAL_MACHINE, смена типа запуска службы идёт через диспетчер служб, а счётчику кадров нужна сессия трассировки. Все трое отказывают обычному токену.</p>
+      </details>
+      <details>
+        <summary>Сколько FPS это добавит?</summary>
+        <p>Честный инструмент не назовёт число — результат зависит от железа, игры и того, что уже запущено. SysTuneX сделан так, чтобы вы измерили сами: запишите состояние машины до и после и прогоните один и тот же бенчмарк с обеих сторон. Инструмент, который называет вам проценты, гадает.</p>
+      </details>
+      <details>
+        <summary>Это правда бесплатно?</summary>
+        <p>Бесплатно и с открытым кодом под лицензией MIT. Без платных версий, аккаунтов, рекламы и какой-либо телеметрии — исходники на GitHub, если это лучше, чем верить на слово.</p>
+      </details>
+      <details>
+        <summary>На каких языках интерфейс?</summary>
+        <p>Английский, русский и украинский — весь интерфейс, включая каждый твик, службу и профиль с полным описанием. Выбирается в настройках, перезапуск не нужен.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:20px">
+  <div class="wrap">
+    <div class="final reveal">
+      <h2>Попробуйте на своей машине</h2>
+      <p style="color:var(--ink-2);max-width:520px;margin:18px auto 0">
+        Один файл, без установщика, ничего не пишется, пока вы не выберете —
+        а всё написанное записано.
+      </p>
+      <div class="cta">
+        <a class="btn btn-primary"
+           href="https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SysTuneX.exe">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="19" height="19" aria-hidden="true"><path d="M12 3v12m0 0 4.5-4.5M12 15l-4.5-4.5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+          Скачать SysTuneX
+        </a>
+        <a class="btn btn-ghost" href="https://github.com/Anton-Babaskin/SysTuneX/releases">Все релизы</a>
+      </div>
+      <p class="meta">Бесплатно · MIT · Windows 10 1809+ и Windows 11 · x64</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <a class="brand" href="./" style="font-size:1rem"><img src="../images/logo.png" alt="" width="24" height="24">SysTuneX</a>
+    <span>© 2026 Anton Babaskin · MIT</span>
+    <span class="right">
+      <a href="https://github.com/Anton-Babaskin/SysTuneX">GitHub</a>
+      <a href="https://github.com/Anton-Babaskin/SysTuneX/releases">Релизы</a>
+      <a href="https://github.com/Anton-Babaskin/SysTuneX/issues">Сообщить об ошибке</a>
+      <a href="../" hreflang="en">English</a>
+    </span>
+  </div>
+</footer>
+
+<script src="../assets/site.js" defer></script>
+
+</body>
+</html>

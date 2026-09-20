@@ -12,7 +12,7 @@ Optimizador de Windows gratuito y de código abierto para gamers: perfiles de re
 
 [![English](https://img.shields.io/badge/English-5A6570)](README.md) [![Русский](https://img.shields.io/badge/%D0%A0%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9-5A6570)](README.ru.md) [![Українська](https://img.shields.io/badge/%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%B0-5A6570)](README.uk.md) [![Español](https://img.shields.io/badge/Espa%C3%B1ol-0078D4)](README.es.md)
 
-[⬇️ **Descargar SysTuneX**](https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SysTuneX.exe) · [Última versión](https://github.com/Anton-Babaskin/SysTuneX/releases/latest) · [SHA-256](https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SHA256SUMS.txt) · [Informar de un error](https://github.com/Anton-Babaskin/SysTuneX/issues)
+[🌐 **Sitio web**](https://anton-babaskin.github.io/SysTuneX/) · [⬇️ **Descargar SysTuneX**](https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SysTuneX.exe) · [Última versión](https://github.com/Anton-Babaskin/SysTuneX/releases/latest) · [SHA-256](https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SHA256SUMS.txt) · [Informar de un error](https://github.com/Anton-Babaskin/SysTuneX/issues)
 
 [![Build](https://github.com/Anton-Babaskin/SysTuneX/actions/workflows/build.yml/badge.svg)](https://github.com/Anton-Babaskin/SysTuneX/actions/workflows/build.yml)
 [![Release](https://img.shields.io/github/v/release/Anton-Babaskin/SysTuneX?include_prereleases\&sort=semver)](https://github.com/Anton-Babaskin/SysTuneX/releases)

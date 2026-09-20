@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://anton-babaskin.github.io/SysTuneX/sitemap.xml
