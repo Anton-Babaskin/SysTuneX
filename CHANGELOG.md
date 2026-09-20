@@ -3,6 +3,36 @@
 Every released version, newest first. The release workflow publishes only the section
 for the version being released, so a release page shows that version and nothing else.
 
+## v2.12.1
+
+### Restore All no longer ends early when one step throws
+
+Restorers run in order, so an exception in one took every later one with it — and the report that
+says which changes came back was never returned at all. You would be told the rollback failed, with
+nothing saying which half of it went through. A machine left mid-rollback is the worst state this
+application can put one in.
+
+Nothing was known to throw; that was checked rather than assumed. But the restorers reach bcdedit,
+netsh, the registry, the task scheduler and PowerShell, and "everything down there reports rather
+than throws" is not something the rollback can rely on. A throw is now what a refusal already was:
+counted, named in your language, and not the end of the rollback.
+
+### A website
+
+[systunex on GitHub Pages](https://anton-babaskin.github.io/SysTuneX/) — English and Russian, with
+the download button in the first screen. A release page is where you go once you have already
+decided; this is the page for someone who has not.
+
+### Two rules the settings page cannot enforce for itself
+
+Splitting that page into five sections last release turned one loading flag into six independent
+checks. A section that forgets it writes your settings file while the page is still filling its
+controls in — and applies each value as though you had just chosen it. A section the page forgets
+to load shows its defaults and then writes those over what you had. Neither is possible to add
+silently now.
+
+---
+
 ## v2.12.0
 
 ### A compact readout you can call up over a game
