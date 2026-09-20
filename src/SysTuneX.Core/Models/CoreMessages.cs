@@ -238,6 +238,13 @@ public static class CoreMessages
     public static readonly MessageTemplate BackupExportFailed =
         new("Backup_ExportFailed", "Export failed: {0}");
 
+    /// <summary>
+    /// One restorer threw instead of reporting a refusal. Named rather than swallowed: the whole
+    /// point of "Restore All" is that the user learns what did not come back.
+    /// </summary>
+    public static readonly MessageTemplate RollbackRestorerFailed =
+        new("Rollback_RestorerFailed", "Could not restore {0} changes of type '{1}': {2}");
+
     public static readonly MessageTemplate DiagnosticsReportFailed =
         new("Diagnostics_ReportFailed", "Could not write the diagnostics report: {0}");
 
@@ -263,6 +270,6 @@ public static class CoreMessages
         EnvironmentExecutableUnknown, EnvironmentElevationRefused, EnvironmentExplorerRestartFailed,
         RestartRefused, ShellOpenFailed, ShellRefusedAddress,
         GameModeNeedsAdministrator, GameModeAlreadyOn, GameModeNotOn, GameNameEmpty, GameAlreadyWatched,
-        BackupExportFailed, DiagnosticsReportFailed,
+        BackupExportFailed, DiagnosticsReportFailed, RollbackRestorerFailed,
     ];
 }

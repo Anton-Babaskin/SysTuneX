@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>SysTuneX — Free Windows 11 Gaming Optimizer &amp; FPS Monitor</title>
+<meta name="description" content="Free, open-source Windows 10/11 gaming optimizer. Apply performance profiles, watch FPS, 1% lows, frame time, CPU and GPU — and roll back every change exactly. No injection, no telemetry.">
+
+<link rel="canonical" href="https://anton-babaskin.github.io/SysTuneX/">
+<link rel="alternate" hreflang="en" href="https://anton-babaskin.github.io/SysTuneX/">
+<link rel="alternate" hreflang="ru" href="https://anton-babaskin.github.io/SysTuneX/ru/">
+<link rel="alternate" hreflang="x-default" href="https://anton-babaskin.github.io/SysTuneX/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SysTuneX">
+<meta property="og:title" content="SysTuneX — Free Windows 11 Gaming Optimizer &amp; FPS Monitor">
+<meta property="og:description" content="Optimize Windows. Track every frame. Keep every change reversible. Free and open source.">
+<meta property="og:url" content="https://anton-babaskin.github.io/SysTuneX/">
+<meta property="og:image" content="https://anton-babaskin.github.io/SysTuneX/images/systunex-monitor-ru.png">
+<meta property="og:image:width" content="2370">
+<meta property="og:image:height" content="1332">
+<meta property="og:image:alt" content="The SysTuneX monitor showing frame rate, 1% low, frame time, CPU and GPU load and temperature">
+<meta property="og:locale" content="en">
+<meta property="og:locale:alternate" content="ru">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SysTuneX — Free Windows 11 Gaming Optimizer &amp; FPS Monitor">
+<meta name="twitter:description" content="Optimize Windows. Track every frame. Keep every change reversible. Free and open source.">
+<meta name="twitter:image" content="https://anton-babaskin.github.io/SysTuneX/images/systunex-monitor-ru.png">
+
+<meta name="theme-color" content="#08080d">
+<link rel="icon" href="images/logo.png" type="image/png">
+<link rel="apple-touch-icon" href="images/logo.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "SysTuneX",
+  "applicationCategory": "UtilitiesApplication",
+  "applicationSubCategory": "Game optimizer and FPS monitor",
+  "operatingSystem": "Windows 10 1809 or newer, Windows 11",
+  "processorRequirements": "x64",
+  "softwareVersion": "2.12.0",
+  "url": "https://anton-babaskin.github.io/SysTuneX/",
+  "downloadUrl": "https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SysTuneX.exe",
+  "installUrl": "https://github.com/Anton-Babaskin/SysTuneX/releases/latest",
+  "license": "https://github.com/Anton-Babaskin/SysTuneX/blob/main/LICENSE",
+  "isAccessibleForFree": true,
+  "inLanguage": ["en", "ru", "uk"],
+  "description": "Free, open-source Windows 10/11 gaming optimizer and FPS monitor. Performance profiles, game mode, cleanup and a frame counter that measures through Event Tracing for Windows without injecting code into the game. Every change is recorded before it is made and can be rolled back exactly.",
+  "featureList": [
+    "45 reversible Windows tweaks across gaming, Windows 11, privacy and network",
+    "FPS, 1% low and frame time measured without injecting into the game",
+    "Compact always-on-top readout summoned with Ctrl+Shift+M",
+    "Six tuning profiles for different kinds of games",
+    "Game mode that stops background services and restores them afterwards",
+    "Exact rollback of every recorded change",
+    "English, Russian and Ukrainian interface"
+  ],
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "Anton Babaskin",
+    "url": "https://github.com/Anton-Babaskin"
+  },
+  "codeRepository": "https://github.com/Anton-Babaskin/SysTuneX"
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is SysTuneX safe to use with anti-cheat software?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The frame counter reads Event Tracing for Windows, the same source PresentMon and the Xbox Game Bar use. Nothing is injected into the game process and no driver is loaded, so there is no hook for an anti-cheat to object to. The trade is that there is no in-game overlay over exclusive fullscreen."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I undo what SysTuneX changes?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Every supported change is recorded before it is made, with the real previous value rather than an assumed default, and can be reverted individually or all at once from the change log. Cleanup is the one exception: deleted files cannot be brought back, and the app says so before deleting anything."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why does Windows SmartScreen warn about SysTuneX?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The executable is not code-signed, because a certificate costs several hundred dollars a year and requires a registered company. Instead every release publishes a SHA-256 checksum that you can match against the public GitHub Actions log that built it, which proves the file came from the tagged source."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does SysTuneX need .NET installed?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. SysTuneX.exe is a self-contained single file. It does need administrator rights, because it writes to HKEY_LOCAL_MACHINE, changes service start types and opens an Event Tracing session."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How much FPS will SysTuneX gain me?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No honest tool can promise a number. The gain depends on your hardware, your game and what is already running. SysTuneX is built so you can measure it yourself: record the machine before and after, and compare frame time in the same benchmark."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is SysTuneX free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, free and open source under the MIT licence. There is no paid tier, no account, no advertising and no telemetry of any kind."
+      }
+    }
+  ]
+}
+</script>
+
+<script>document.documentElement.classList.add('js')</script>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<header id="top">
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="./"><img src="images/logo.png" alt="" width="28" height="28">SysTuneX</a>
+      <div class="navlinks">
+        <a href="#features" data-opt>Features</a>
+        <a href="#monitor" data-opt>FPS monitor</a>
+        <a href="#trust" data-opt>Trust</a>
+        <a href="#faq" data-opt>FAQ</a>
+        <a href="ru/" hreflang="ru">RU</a>
+        <a class="btn btn-ghost btn-sm" href="https://github.com/Anton-Babaskin/SysTuneX">GitHub</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="aurora" aria-hidden="true">
+    <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  </div>
+  <div class="grid-bg" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <span class="pill"><i class="dot"></i> Version <span id="ver">2.12.0</span> · free forever</span>
+
+    <h1>Optimize Windows.<br><span class="grad">Track every frame.</span></h1>
+
+    <p class="lead">
+      A free, open-source gaming optimizer and FPS monitor for Windows&nbsp;10 and&nbsp;11.
+      Every change is written down before it is made — so all of it comes back, exactly.
+    </p>
+
+    <div class="cta">
+      <a class="btn btn-primary" id="dl"
+         href="https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SysTuneX.exe">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="19" height="19" aria-hidden="true"><path d="M12 3v12m0 0 4.5-4.5M12 15l-4.5-4.5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        Download for Windows
+      </a>
+      <a class="btn btn-ghost" href="https://github.com/Anton-Babaskin/SysTuneX">View source</a>
+    </div>
+
+    <p class="meta">
+      <b id="size" data-unit="MB">~81 MB</b> · single file, no installer · Windows 10 1809+ / 11 · x64 ·
+      <a href="https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SHA256SUMS.txt" style="color:var(--ink-2)">SHA-256</a>
+    </p>
+
+    <div class="trust">
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> MIT licensed</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> No account, no ads</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> No telemetry</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> No .NET to install</span>
+    </div>
+
+    <div class="readout" aria-hidden="true">
+      <div class="readout-top">
+        <div class="fps tnum"><span id="fpsval">144</span><small>FPS</small></div>
+        <div class="readout-stats tnum">
+          <div><b id="lowval">118</b>1% low</div>
+          <div><b id="ftval">6.9</b>ms frame</div>
+          <div><b id="gpuval">71</b>°C GPU</div>
+        </div>
+      </div>
+      <div class="bars" id="bars"></div>
+    </div>
+  </div>
+</section>
+
+<section id="monitor" style="padding-top:20px">
+  <div class="wrap">
+    <div class="shot reveal">
+      <img src="images/systunex-monitor-ru.png" width="2370" height="1332" loading="lazy"
+           alt="SysTuneX monitor page showing frame rate with its 1% low, frame time, CPU and GPU load and temperature, and memory use">
+    </div>
+  </div>
+</section>
+
+<section id="why" style="padding-top:34px">
+  <div class="wrap">
+    <div class="sec-head mid reveal">
+      <p class="eyebrow">Why this one</p>
+      <h2>Most optimizers ask to be <span class="grad">taken on trust</span></h2>
+      <p>This one shows its work. Three decisions shape everything else in it.</p>
+    </div>
+
+    <div class="cards">
+      <article class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></div>
+        <h3>Exact rollback, not a guessed default</h3>
+        <p>Before writing anything, SysTuneX records the value your machine actually had. Undo puts <em>that</em> back — not a number someone assumed Windows ships with. Settings you changed yourself are never touched.</p>
+      </article>
+      <article class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h3>Nothing is injected into your game</h3>
+        <p>The frame counter reads Event Tracing for Windows — the same source PresentMon and the Xbox Game Bar use. No hooks, no driver, nothing an anti-cheat could mistake for a cheat.</p>
+      </article>
+      <article class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 14 3-4 4 3 5-7"/></svg></div>
+        <h3>Measure it, don't take our word</h3>
+        <p>Record the machine before a change and after it, then compare. No claimed FPS numbers, because no honest tool can promise one — your hardware and your game decide.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="eyebrow">What's inside</p>
+      <h2>One application instead of six</h2>
+      <p>Tuning, monitoring, services, privacy, network and cleanup — each one showing what it touches and what it costs.</p>
+    </div>
+
+    <div class="stats reveal tnum" style="margin-bottom:34px">
+      <div class="stat"><b class="grad">45</b><span>reversible tweaks</span></div>
+      <div class="stat"><b class="grad">38</b><span>services catalogued</span></div>
+      <div class="stat"><b class="grad">6</b><span>tuning profiles</span></div>
+      <div class="stat"><b class="grad">3</b><span>interface languages</span></div>
+    </div>
+
+    <div class="cards">
+      <article class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 11h4M8 9v4M15 12h.01M18 10h.01"/><rect x="2" y="6" width="20" height="12" rx="4"/></svg></div>
+        <h3>Gaming tweaks</h3>
+        <p>Game Bar and Game DVR, fullscreen optimizations, mouse acceleration, CPU scheduling, timer resolution, PCIe link power saving and the accessibility key shortcuts that open a dialogue mid-match.</p>
+      </article>
+      <article class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></div>
+        <h3>Windows 11 specifics</h3>
+        <p>VBS, HVCI, the hypervisor, Recall, Copilot, widgets and search features — each one build-aware, so a tweak that does not apply to your build is hidden rather than offered and ignored.</p>
+      </article>
+      <article class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2m10-10 2-2"/></svg></div>
+        <h3>Game mode, undone on exit</h3>
+        <p>One switch stops background services, raises the power scheme and frees memory — and puts all of it back when you switch it off. No reboot, nothing left in the registry.</p>
+      </article>
+      <article class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/></svg></div>
+        <h3>Automatic, on your terms</h3>
+        <p>Game mode can follow the game or the clock. Neither one undoes what you switched on by hand — a schedule only ends the session the schedule started.</p>
+      </article>
+      <article class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg></div>
+        <h3>Cleanup that says what it deletes</h3>
+        <p>Shader caches, update leftovers, crash dumps, thumbnails and temp files — measured first, listed by size, and the one action the app warns you it cannot undo.</p>
+      </article>
+      <article class="card reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12h6"/></svg></div>
+        <h3>Privacy without breaking Windows</h3>
+        <p>Telemetry and its scheduled tasks, the advertising ID, activity history, suggestions, location and clipboard sync. Update, activation, Store and Defender endpoints are deliberately left alone.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="compact">
+  <div class="wrap split">
+    <div class="reveal">
+      <p class="eyebrow">Compact readout</p>
+      <h2>Your numbers, <span class="grad">over the game</span></h2>
+      <p style="color:var(--ink-2);margin-top:16px">
+        One keypress puts a small always-on-top window on screen with the same readings as the
+        monitor page. It is an ordinary window with its chrome removed — not an overlay — so it
+        appears over borderless windowed games without touching the game process.
+      </p>
+      <ul class="checklist">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Summoned with <b>Ctrl+Shift+M</b> from anywhere, rebindable</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Shows only the readings you ticked, and follows changes live</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Reopens where you left it, corrected if that screen is gone</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> A reading the machine cannot supply is left out, never drawn as zero</li>
+      </ul>
+      <p style="color:var(--ink-3);font-size:.9rem;margin-top:20px">
+        The honest limit: it will <strong>not</strong> appear over a game in exclusive fullscreen,
+        which owns the display outright. That is the price of never touching the game.
+      </p>
+    </div>
+    <div class="reveal">
+      <div class="readout" style="margin:0;max-width:none">
+        <div class="readout-top">
+          <div class="fps tnum" style="font-size:3.2rem">165<small>FPS</small></div>
+          <div class="readout-stats tnum">
+            <div><b>142</b>1% low</div>
+            <div><b>6.1</b>ms</div>
+          </div>
+        </div>
+        <div class="readout-stats tnum" style="gap:26px;border-top:1px solid var(--line);padding-top:15px">
+          <div><b>38</b>% CPU</div>
+          <div><b>97</b>% GPU</div>
+          <div><b>64</b>°C</div>
+          <div><b>11.4</b>GB</div>
+        </div>
+      </div>
+      <p style="color:var(--ink-3);font-size:.84rem;margin-top:14px;text-align:center">
+        Tabular figures, so a counter going 99 → 100 never shifts the layout.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="trust">
+  <div class="wrap split">
+    <div class="reveal">
+      <p class="eyebrow">Trust and safety</p>
+      <h2>You are about to run an&nbsp;unsigned <span class="grad">.exe as admin</span></h2>
+      <p style="color:var(--ink-2);margin-top:16px">
+        That deserves a check, and there is a real one. Every release publishes the SHA-256 of the
+        file next to it — and the same number is printed in the public GitHub Actions log of the run
+        that built it, which nobody can edit afterwards.
+      </p>
+      <p style="color:var(--ink-2);margin-top:14px">
+        If all three agree, this is the file GitHub's runner built from the tagged source. That is a
+        stronger guarantee than a code signature, which proves only who shipped a file and nothing
+        about what it does.
+      </p>
+      <div class="cta" style="justify-content:flex-start;margin-top:28px">
+        <a class="btn btn-ghost btn-sm" href="https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SHA256SUMS.txt">Checksums</a>
+        <a class="btn btn-ghost btn-sm" href="https://github.com/Anton-Babaskin/SysTuneX/actions">Build logs</a>
+      </div>
+    </div>
+    <div class="reveal">
+      <div class="code"><b># PowerShell</b>
+Get-FileHash .\SysTuneX.exe -Algorithm SHA256
+
+<b># Compare against all three:</b>
+<b>#</b>  SHA256SUMS.txt beside the download
+<b>#</b>  the Checksum step in the Actions log
+<b>#</b>  the hash you just computed</div>
+      <p style="color:var(--ink-3);font-size:.89rem;margin-top:20px">
+        <strong style="color:var(--warn)">SmartScreen will warn.</strong> The executable is not
+        code-signed — a certificate costs several hundred dollars a year and requires a registered
+        company. The warning counts how many people have run the file, not what it does.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap" style="max-width:830px">
+    <div class="sec-head mid reveal">
+      <p class="eyebrow">Questions</p>
+      <h2>The ones worth asking</h2>
+    </div>
+
+    <div class="reveal">
+      <details open>
+        <summary>Is it safe to use with anti-cheat software?</summary>
+        <p>The frame counter reads Event Tracing for Windows, the same source PresentMon and the Xbox Game Bar use. Nothing is injected into the game process and no driver is loaded, so there is no hook for an anti-cheat to object to. The trade is that there is no in-game overlay over exclusive fullscreen — you alt-tab to read the numbers, and the counter stays pointed at the game.</p>
+      </details>
+      <details>
+        <summary>Can I undo what it changes?</summary>
+        <p>Yes. Every supported change is recorded before it is made, with the value your machine actually had, and can be reverted individually or all at once from the change log. Cleanup is the one exception — deleted files cannot be brought back, and the app says so before deleting anything.</p>
+      </details>
+      <details>
+        <summary>Why does SmartScreen warn about it?</summary>
+        <p>The executable is not code-signed, because a certificate costs several hundred dollars a year and requires a registered company. Instead every release publishes a SHA-256 checksum you can match against the public build log, which proves the file came from the tagged source. Choose <em>More info → Run anyway</em>, or check the hash first, or put the file through VirusTotal.</p>
+      </details>
+      <details>
+        <summary>Does it need .NET installed?</summary>
+        <p>No — it is a self-contained single file. It does need administrator rights, because the registry keys it writes live under HKEY_LOCAL_MACHINE, changing a service's start type goes through the service control manager, and the frame counter opens an Event Tracing session. All three refuse a standard token.</p>
+      </details>
+      <details>
+        <summary>How much FPS will it gain me?</summary>
+        <p>No honest tool can promise a number — it depends on your hardware, your game and what is already running. SysTuneX is built so you can measure it yourself: record the machine before and after, and run the same benchmark on both sides. A tool that quotes you a percentage is guessing.</p>
+      </details>
+      <details>
+        <summary>Is it really free?</summary>
+        <p>Free and open source under the MIT licence. No paid tier, no account, no advertising, and no telemetry of any kind — the source is on GitHub if you would rather check that than believe it.</p>
+      </details>
+      <details>
+        <summary>Which languages does the interface speak?</summary>
+        <p>English, Russian and Ukrainian — the whole interface, including every tweak, service and profile with its full description. Picked from the language menu in Settings; no restart needed.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:20px">
+  <div class="wrap">
+    <div class="final reveal">
+      <h2>Try it on your machine</h2>
+      <p style="color:var(--ink-2);max-width:520px;margin:18px auto 0">
+        Single file, no installer, nothing written until you choose it —
+        and everything written is written down.
+      </p>
+      <div class="cta">
+        <a class="btn btn-primary"
+           href="https://github.com/Anton-Babaskin/SysTuneX/releases/latest/download/SysTuneX.exe">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="19" height="19" aria-hidden="true"><path d="M12 3v12m0 0 4.5-4.5M12 15l-4.5-4.5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+          Download SysTuneX
+        </a>
+        <a class="btn btn-ghost" href="https://github.com/Anton-Babaskin/SysTuneX/releases">All releases</a>
+      </div>
+      <p class="meta">Free · MIT · Windows 10 1809+ and Windows 11 · x64</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <a class="brand" href="./" style="font-size:1rem"><img src="images/logo.png" alt="" width="24" height="24">SysTuneX</a>
+    <span>© 2026 Anton Babaskin · MIT</span>
+    <span class="right">
+      <a href="https://github.com/Anton-Babaskin/SysTuneX">GitHub</a>
+      <a href="https://github.com/Anton-Babaskin/SysTuneX/releases">Releases</a>
+      <a href="https://github.com/Anton-Babaskin/SysTuneX/issues">Report an issue</a>
+      <a href="ru/" hreflang="ru">Русский</a>
+    </span>
+  </div>
+</footer>
+
+<script src="assets/site.js" defer></script>
+
+</body>
+</html>

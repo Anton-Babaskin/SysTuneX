@@ -27,6 +27,9 @@ public sealed class ChangeRollbackTests
 
         public RestoreOutcome Result { get; set; } = new(1, 0, []);
 
+        /// <summary>Set to make this restorer throw instead of reporting, as a real one might.</summary>
+        public Exception? Throws { get; set; }
+
         public bool Handles(BackupEntry entry) => handles(entry);
 
         public Task<RestoreOutcome> RestoreAsync(
@@ -35,7 +38,8 @@ public sealed class ChangeRollbackTests
             CancellationToken cancellationToken = default)
         {
             Received.AddRange(entries);
-            return Task.FromResult(Result);
+
+            return Throws is null ? Task.FromResult(Result) : Task.FromException<RestoreOutcome>(Throws);
         }
     }
 
@@ -64,6 +68,65 @@ public sealed class ChangeRollbackTests
 
         BackupEntry orphan = Assert.Single(report.Unclaimed);
         Assert.Equal(BackupKind.HostsFile, orphan.Kind);
+    }
+
+    /// <summary>
+    /// Restorers run in order, so one of them throwing used to take every later one with it - and
+    /// the report itself, which is the only thing that tells the user which half went through.
+    ///
+    /// A machine mid-rollback is the worst state this application can leave one in, so a throw is
+    /// treated the way a refusal already is: counted against that restorer, named in its errors,
+    /// and not the end of the rollback.
+    /// </summary>
+    [Fact]
+    public async Task A_restorer_that_throws_does_not_stop_the_ones_after_it()
+    {
+        var backup = new FakeBackupService();
+        await backup.RecordRawAsync(Entry(BackupKind.HostsFile));
+        await backup.RecordRawAsync(Entry(BackupKind.RegistryValue, @"HKCU\Software\Test"));
+
+        var hosts = new SpyRestorer("hosts", 40, e => e.Kind == BackupKind.HostsFile)
+        {
+            Throws = new UnauthorizedAccessException("Defender refused the hosts file"),
+        };
+        var registry = new SpyRestorer("registry", 90, e => e.Kind == BackupKind.RegistryValue);
+
+        RollbackReport report = await Rollback(backup, hosts, registry).RestoreEverythingAsync();
+
+        // The later restorer ran, and its work is in the report.
+        Assert.Single(registry.Received);
+        Assert.Equal(1, report.For("registry").Changed);
+
+        // The thrown one is a failure with a reason, not a gap.
+        Assert.Equal(0, report.For("hosts").Changed);
+        Assert.Equal(1, report.For("hosts").Failed);
+        Assert.Contains("Defender refused the hosts file", Assert.Single(report.For("hosts").Errors));
+
+        // Nothing is left looking unclaimed: the entry had an owner, it just could not be put back.
+        Assert.Empty(report.Unclaimed);
+    }
+
+    /// <summary>
+    /// Cancellation is the user leaving the page, not a restorer failing, so it propagates instead
+    /// of being recorded as one restorer's refusal and letting the rest carry on regardless.
+    /// </summary>
+    [Fact]
+    public async Task Cancellation_is_not_recorded_as_a_failure()
+    {
+        var backup = new FakeBackupService();
+        await backup.RecordRawAsync(Entry(BackupKind.HostsFile));
+        await backup.RecordRawAsync(Entry(BackupKind.RegistryValue, @"HKCU\Software\Test"));
+
+        var hosts = new SpyRestorer("hosts", 40, e => e.Kind == BackupKind.HostsFile)
+        {
+            Throws = new OperationCanceledException(),
+        };
+        var registry = new SpyRestorer("registry", 90, e => e.Kind == BackupKind.RegistryValue);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => Rollback(backup, hosts, registry).RestoreEverythingAsync());
+
+        Assert.Empty(registry.Received);
     }
 
     [Fact]
