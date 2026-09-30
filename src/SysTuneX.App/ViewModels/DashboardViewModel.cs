@@ -120,14 +120,18 @@ public sealed partial class DashboardViewModel : PageViewModel
     {
         _timer.Start();
 
+        // Together, not one after another. This is the first screen anyone sees, and its score used
+        // to wait for a WMI description of the motherboard - a second or two - before it read a
+        // single tweak. The cards are independent; each fills in as its own answer arrives.
+        List<Task> loads = [Counters.SampleSensorsAsync(), RefreshCountersAsync()];
+
         if (!IsInitialized)
         {
-            await Hardware.LoadAsync(PageToken).ConfigureAwait(true);
-            await GameMode.LoadAsync().ConfigureAwait(true);
+            loads.Add(Hardware.LoadAsync(PageToken));
+            loads.Add(GameMode.LoadAsync());
         }
 
-        await Counters.SampleSensorsAsync().ConfigureAwait(true);
-        await RefreshCountersAsync().ConfigureAwait(true);
+        await Task.WhenAll(loads).ConfigureAwait(true);
     }
 
     protected override Task OnLeaveAsync()
