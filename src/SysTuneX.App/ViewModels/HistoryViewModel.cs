@@ -34,6 +34,15 @@ public sealed partial class HistoryViewModel : PageViewModel
     [ObservableProperty]
     private string _searchText = string.Empty;
 
+    /// <summary>
+    /// The row shown for each entry, kept between reloads. An entry is immutable - reverting one
+    /// replaces it - so a row whose entry is still the same instance is still right, and searching
+    /// can move only the rows whose match changed. The list is not virtualised, and a journal holds
+    /// a row per registry value SysTuneX ever wrote: rebuilding all of them on every keystroke is
+    /// what made typing into this search box stall once the journal had some history in it.
+    /// </summary>
+    private Dictionary<BackupEntry, BackupEntryViewModel> _rows = new(ReferenceEqualityComparer.Instance);
+
     public HistoryViewModel(
         IChangeJournalReader backup,
         IProfileService profiles,
@@ -54,7 +63,13 @@ public sealed partial class HistoryViewModel : PageViewModel
 
         Snapshots = new SnapshotsViewModel(snapshots, interaction, localization, this);
 
-        localization.LanguageChanged += (_, _) => Reload();
+        // Rows carry text in the language they were built in, so a new language needs new rows.
+        localization.LanguageChanged += (_, _) =>
+        {
+            _rows.Clear();
+            Entries.Clear();
+            Reload();
+        };
     }
 
     public ObservableCollection<BackupEntryViewModel> Entries { get; } = [];
@@ -163,19 +178,19 @@ public sealed partial class HistoryViewModel : PageViewModel
     {
         IReadOnlyList<BackupEntry> entries = ShowReverted ? _backup.GetAll() : _backup.GetActive();
 
-        Entries.Clear();
+        // Rebuilt from the current entries so a row for an entry that has gone does not linger.
+        var rows = new Dictionary<BackupEntry, BackupEntryViewModel>(entries.Count, ReferenceEqualityComparer.Instance);
 
         foreach (BackupEntry entry in entries)
         {
-            var item = new BackupEntryViewModel(entry, _text, _localization);
-
-            if (!item.Matches(SearchText))
-            {
-                continue;
-            }
-
-            Entries.Add(item);
+            rows[entry] = _rows.TryGetValue(entry, out BackupEntryViewModel? existing)
+                ? existing
+                : new BackupEntryViewModel(entry, _text, _localization);
         }
+
+        _rows = rows;
+
+        FilteredView.ShowOnly(Entries, [.. entries.Select(entry => rows[entry]).Where(row => row.Matches(SearchText))]);
 
         ActiveCount = _backup.GetActive().Count;
         OnPropertyChanged(nameof(IsEmpty));
