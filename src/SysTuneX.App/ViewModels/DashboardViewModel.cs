@@ -147,9 +147,9 @@ public sealed partial class DashboardViewModel : PageViewModel
     [RelayCommand]
     private async Task QuickOptimizeAsync()
     {
-        await RunBusyAsync(
+        await RunChangeAsync(
             _localization["Common_Working"],
-            async token =>
+            async () =>
             {
                 var progress = new Progress<BatchProgress>(p =>
                 {
@@ -157,7 +157,7 @@ public sealed partial class DashboardViewModel : PageViewModel
                     Progress = p.Total == 0 ? -1 : p.Completed * 100.0 / p.Total;
                 });
 
-                QuickOptimizeResult result = await _quickOptimize.RunAsync(progress, token).ConfigureAwait(true);
+                QuickOptimizeResult result = await _quickOptimize.RunAsync(progress).ConfigureAwait(true);
 
                 await RefreshCountersAsync().ConfigureAwait(true);
 
@@ -195,9 +195,9 @@ public sealed partial class DashboardViewModel : PageViewModel
             return;
         }
 
-        await RunBusyAsync(
+        await RunChangeAsync(
             _localization["Common_Working"],
-            async token =>
+            async () =>
             {
                 var progress = new Progress<BatchProgress>(p =>
                 {
@@ -205,7 +205,7 @@ public sealed partial class DashboardViewModel : PageViewModel
                     Progress = p.Total == 0 ? -1 : p.Completed * 100.0 / p.Total;
                 });
 
-                ProfileApplyResult result = await _profiles.RestoreEverythingAsync(progress, token).ConfigureAwait(true);
+                ProfileApplyResult result = await _profiles.RestoreEverythingAsync(progress).ConfigureAwait(true);
                 await RefreshCountersAsync().ConfigureAwait(true);
 
                 int reverted = result.Tweaks.Succeeded + result.ServicesChanged;
@@ -216,11 +216,11 @@ public sealed partial class DashboardViewModel : PageViewModel
     [RelayCommand]
     private async Task TrimMemoryAsync()
     {
-        await RunBusyAsync(
+        await RunChangeAsync(
             _localization["Dashboard_TrimMemory"],
-            async token =>
+            async () =>
             {
-                MemoryTrimResult result = await _memory.TrimMemoryAsync(token).ConfigureAwait(true);
+                MemoryTrimResult result = await _memory.TrimMemoryAsync().ConfigureAwait(true);
                 string freed = Converters.BytesToSizeConverter.Format(result.FreedBytes);
 
                 _interaction.ShowSuccess(

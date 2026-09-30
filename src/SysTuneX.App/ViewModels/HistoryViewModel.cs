@@ -100,9 +100,9 @@ public sealed partial class HistoryViewModel : PageViewModel
             return;
         }
 
-        await RunBusyAsync(
+        await RunChangeAsync(
             _localization["Common_Working"],
-            async token =>
+            async () =>
             {
                 var progress = new Progress<BatchProgress>(p =>
                 {
@@ -110,7 +110,7 @@ public sealed partial class HistoryViewModel : PageViewModel
                     Progress = p.Total == 0 ? -1 : p.Completed * 100.0 / p.Total;
                 });
 
-                ProfileApplyResult result = await _profiles.RestoreEverythingAsync(progress, token).ConfigureAwait(true);
+                ProfileApplyResult result = await _profiles.RestoreEverythingAsync(progress).ConfigureAwait(true);
                 Reload();
 
                 _interaction.ShowSuccess(
@@ -130,7 +130,7 @@ public sealed partial class HistoryViewModel : PageViewModel
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
             $"SysTuneX-changes-{DateTime.Now:yyyyMMdd-HHmmss}.json");
 
-        OperationResult result = await _backup.ExportAsync(path, PageToken).ConfigureAwait(true);
+        OperationResult result = await _backup.ExportAsync(path).ConfigureAwait(true);
 
         if (result.Success)
         {

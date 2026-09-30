@@ -73,7 +73,7 @@ public sealed partial class SnapshotsViewModel : ObservableObject
     [RelayCommand]
     private async Task CaptureSnapshotAsync()
     {
-        await _busy.RunAsync(
+        await _busy.RunBusyAsync(
             _localization["Snapshot_Capturing"],
             async token =>
             {

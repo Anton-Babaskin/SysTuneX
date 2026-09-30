@@ -134,35 +134,36 @@ public abstract partial class TweakPageViewModel : PageViewModel, IFilterablePag
 
         try
         {
-            OperationResult result = applying
-                ? await _tweaks.ApplyAsync(item.Definition, PageToken).ConfigureAwait(true)
-                : await _tweaks.RevertAsync(item.Definition, PageToken).ConfigureAwait(true);
-
-            item.Status = await _tweaks.GetStatusAsync(item.Definition, PageToken).ConfigureAwait(true);
-
-            if (result.Success)
+            await RunItemChangeAsync(async () =>
             {
-                Interaction.ShowSuccess(Localization.Format(applying ? "Msg_Applied" : "Msg_Reverted", item.Name));
+                OperationResult result = applying
+                    ? await _tweaks.ApplyAsync(item.Definition).ConfigureAwait(true)
+                    : await _tweaks.RevertAsync(item.Definition).ConfigureAwait(true);
 
-                if (applying && item.RequiresRestart)
-                {
-                    RestartRequired = true;
-                }
+                // No token here either: a read cut short by leaving the page would leave the row
+                // showing the state from before the change it just made.
+                item.Status = await _tweaks.GetStatusAsync(item.Definition).ConfigureAwait(true);
 
-                if (applying && item.RequiresExplorerRestart)
+                if (result.Success)
                 {
-                    ExplorerRestartSuggested = true;
+                    Interaction.ShowSuccess(Localization.Format(applying ? "Msg_Applied" : "Msg_Reverted", item.Name));
+
+                    if (applying && item.RequiresRestart)
+                    {
+                        RestartRequired = true;
+                    }
+
+                    if (applying && item.RequiresExplorerRestart)
+                    {
+                        ExplorerRestartSuggested = true;
+                    }
                 }
-            }
-            else
-            {
-                item.LastError = result.Detail(Localization);
-                Interaction.ShowError(result.Describe(Localization), item.Name);
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
+                else
+                {
+                    item.LastError = result.Detail(Localization);
+                    Interaction.ShowError(result.Describe(Localization), item.Name);
+                }
+            }).ConfigureAwait(true);
         }
         catch (Exception ex)
         {
@@ -210,11 +211,13 @@ public abstract partial class TweakPageViewModel : PageViewModel, IFilterablePag
     [RelayCommand]
     private async Task RestartExplorerAsync()
     {
-        await RunBusyAsync(
+        // A change, and the most dangerous one to cut short: it ends Explorer, waits, then starts it
+        // again. Cancelled in the middle, as leaving the page used to do, there is no taskbar.
+        await RunChangeAsync(
             Localization["Common_Working"],
-            async token =>
+            async () =>
             {
-                OperationResult result = await _environment.RestartExplorerAsync(token).ConfigureAwait(true);
+                OperationResult result = await _environment.RestartExplorerAsync().ConfigureAwait(true);
 
                 if (result.Success)
                 {
@@ -260,6 +263,10 @@ public abstract partial class TweakPageViewModel : PageViewModel, IFilterablePag
             }).ConfigureAwait(true);
     }
 
+    /// <summary>
+    /// A read, so it stops when the user leaves - quietly. It also runs at the end of a batch, which
+    /// finishes wherever the user has gone; the page reads again when they come back.
+    /// </summary>
     protected async Task RefreshStatusAsync()
     {
         List<TweakItemViewModel> items = AllItems().ToList();
@@ -268,9 +275,18 @@ public abstract partial class TweakPageViewModel : PageViewModel, IFilterablePag
             return;
         }
 
-        IReadOnlyDictionary<string, TweakStatus> statuses = await _tweaks
-            .GetStatusesAsync(items.Select(i => i.Definition), PageToken)
-            .ConfigureAwait(true);
+        IReadOnlyDictionary<string, TweakStatus> statuses;
+
+        try
+        {
+            statuses = await _tweaks
+                .GetStatusesAsync(items.Select(i => i.Definition), PageToken)
+                .ConfigureAwait(true);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
 
         foreach (TweakItemViewModel item in items)
         {
@@ -295,9 +311,9 @@ public abstract partial class TweakPageViewModel : PageViewModel, IFilterablePag
             return;
         }
 
-        await RunBusyAsync(
+        await RunChangeAsync(
             Localization["Common_Working"],
-            async token =>
+            async () =>
             {
                 var progress = new Progress<BatchProgress>(p =>
                 {
@@ -308,8 +324,8 @@ public abstract partial class TweakPageViewModel : PageViewModel, IFilterablePag
                 IReadOnlyList<TweakDefinition> definitions = targets.Select(t => t.Definition).ToList();
 
                 BatchResult result = apply
-                    ? await _tweaks.ApplyManyAsync(definitions, progress, token).ConfigureAwait(true)
-                    : await _tweaks.RevertManyAsync(definitions, progress, token).ConfigureAwait(true);
+                    ? await _tweaks.ApplyManyAsync(definitions, progress).ConfigureAwait(true)
+                    : await _tweaks.RevertManyAsync(definitions, progress).ConfigureAwait(true);
 
                 await RefreshStatusAsync().ConfigureAwait(true);
 

@@ -2,6 +2,7 @@
                     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                    xmlns:controls="clr-namespace:SysTuneX.App.Controls"
                     xmlns:loc="clr-namespace:SysTuneX.App.Localization"
                     xmlns:pages="clr-namespace:SysTuneX.App.Views.Pages"
                     xmlns:vm="clr-namespace:SysTuneX.App.ViewModels"
@@ -81,6 +82,7 @@
                                         <ui:ProgressRing IsIndeterminate="True" Width="22" Height="22"
                                                          Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}" />
                                         <ui:ToggleSwitch IsChecked="{Binding IsBlocked, Mode=OneWay}"
+                                                         controls:SwitchState.FollowsSource="True"
                                                          Visibility="{Binding IsBusy, Converter={StaticResource InverseBoolToVisibility}}"
                                                          Command="{Binding ToggleCommand}" />
                                     </Grid>

@@ -111,6 +111,14 @@ public sealed partial class CleanupViewModel : PageViewModel
         }
         finally
         {
+            // Every one of them, not only the target that was being scanned. Leaving the page
+            // cancels the scan, and returning from the loop left each target after the current one
+            // marked as scanning - a spinner that turned for as long as the app stayed open.
+            foreach (CleanupTargetViewModel target in Targets)
+            {
+                target.IsScanning = false;
+            }
+
             IsScanning = false;
         }
     }
@@ -145,9 +153,9 @@ public sealed partial class CleanupViewModel : PageViewModel
             return;
         }
 
-        await RunBusyAsync(
+        await RunChangeAsync(
             _localization["Common_Working"],
-            async token =>
+            async () =>
             {
                 var progress = new Progress<CleanupProgress>(p =>
                 {
@@ -156,7 +164,7 @@ public sealed partial class CleanupViewModel : PageViewModel
                 });
 
                 CleanupRunResult result = await _cleanup
-                    .CleanAsync(selected.Select(t => t.Target), progress, token)
+                    .CleanAsync(selected.Select(t => t.Target), progress)
                     .ConfigureAwait(true);
 
                 await ScanAsync().ConfigureAwait(true);
@@ -203,19 +211,20 @@ public sealed partial class CleanupViewModel : PageViewModel
 
         try
         {
-            OperationResult result = await _apps
-                .RemoveAppAsync(app.PackageName, PageToken)
-                .ConfigureAwait(true);
+            await RunItemChangeAsync(async () =>
+            {
+                OperationResult result = await _apps.RemoveAppAsync(app.PackageName).ConfigureAwait(true);
 
-            if (result.Success)
-            {
-                Apps.Remove(app);
-                _interaction.ShowSuccess(_localization.Format("Msg_AppRemoved", app.DisplayName));
-            }
-            else
-            {
-                _interaction.ShowError(result.Describe(_localization), app.DisplayName);
-            }
+                if (result.Success)
+                {
+                    Apps.Remove(app);
+                    _interaction.ShowSuccess(_localization.Format("Msg_AppRemoved", app.DisplayName));
+                }
+                else
+                {
+                    _interaction.ShowError(result.Describe(_localization), app.DisplayName);
+                }
+            }).ConfigureAwait(true);
         }
         finally
         {

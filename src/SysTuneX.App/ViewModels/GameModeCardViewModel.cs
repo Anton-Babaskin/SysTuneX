@@ -113,15 +113,15 @@ public sealed partial class GameModeCardViewModel : ObservableObject
     {
         bool turningOn = !_gameMode.IsActive;
 
-        await _busy.RunAsync(
+        await _busy.RunChangeAsync(
             _localization[turningOn ? "GameMode_Starting" : "GameMode_Stopping"],
-            async token =>
+            async () =>
             {
                 var progress = new Progress<string>(step => BusyStep(step));
 
                 GameModeResult result = turningOn
-                    ? await _gameMode.EnableAsync(progress, cancellationToken: token).ConfigureAwait(true)
-                    : await _gameMode.DisableAsync(progress, token).ConfigureAwait(true);
+                    ? await _gameMode.EnableAsync(progress).ConfigureAwait(true)
+                    : await _gameMode.DisableAsync(progress).ConfigureAwait(true);
 
                 Update();
 
