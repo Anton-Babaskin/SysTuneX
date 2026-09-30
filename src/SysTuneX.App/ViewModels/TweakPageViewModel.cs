@@ -138,7 +138,7 @@ public abstract partial class TweakPageViewModel : PageViewModel, IFilterablePag
                 ? await _tweaks.ApplyAsync(item.Definition, PageToken).ConfigureAwait(true)
                 : await _tweaks.RevertAsync(item.Definition, PageToken).ConfigureAwait(true);
 
-            item.Status = await Task.Run(() => _tweaks.GetStatus(item.Definition), PageToken).ConfigureAwait(true);
+            item.Status = await _tweaks.GetStatusAsync(item.Definition, PageToken).ConfigureAwait(true);
 
             if (result.Success)
             {
@@ -236,10 +236,8 @@ public abstract partial class TweakPageViewModel : PageViewModel, IFilterablePag
             {
                 IReadOnlyList<TweakDefinition> definitions = _tweaks.GetSupportedTweaks(Category);
 
-                // Reading status hits the registry once per value, so it happens off the UI thread.
-                Dictionary<string, TweakStatus> statuses = await Task.Run(
-                        () => definitions.ToDictionary(d => d.Id, d => _tweaks.GetStatus(d)),
-                        token)
+                IReadOnlyDictionary<string, TweakStatus> statuses = await _tweaks
+                    .GetStatusesAsync(definitions, token)
                     .ConfigureAwait(true);
 
                 Groups.Clear();
@@ -270,9 +268,8 @@ public abstract partial class TweakPageViewModel : PageViewModel, IFilterablePag
             return;
         }
 
-        Dictionary<string, TweakStatus> statuses = await Task.Run(
-                () => items.ToDictionary(i => i.Id, i => _tweaks.GetStatus(i.Definition)),
-                PageToken)
+        IReadOnlyDictionary<string, TweakStatus> statuses = await _tweaks
+            .GetStatusesAsync(items.Select(i => i.Definition), PageToken)
             .ConfigureAwait(true);
 
         foreach (TweakItemViewModel item in items)

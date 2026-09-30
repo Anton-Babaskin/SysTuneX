@@ -171,12 +171,12 @@ public sealed class TweakEngineTests
     }
 
     [Fact]
-    public void A_tweak_outside_its_build_range_reports_as_unsupported_rather_than_not_applied()
+    public async Task A_tweak_outside_its_build_range_reports_as_unsupported_rather_than_not_applied()
     {
         TweakDefinition win11Only = Tweak("recall", Change(@"HKLM\Test", "Value", 1, 0)) with { MinBuild = 26100 };
 
-        TweakStatus status = Engine(new TracingRegistryService(), new FakeBackupService(), build: 19045)
-            .GetStatus(win11Only);
+        TweakStatus status = await Engine(new TracingRegistryService(), new FakeBackupService(), build: 19045)
+            .GetStatusAsync(win11Only);
 
         Assert.Equal(TweakStatus.Unsupported, status);
     }
@@ -186,7 +186,7 @@ public sealed class TweakEngineTests
     /// that down to "not applied" would tell the user to apply it again, which changes nothing.
     /// </summary>
     [Fact]
-    public void A_half_written_tweak_reports_as_partial()
+    public async Task A_half_written_tweak_reports_as_partial()
     {
         var registry = new TracingRegistryService()
             .Set(@"HKLM\A", "V", 1)
@@ -196,11 +196,11 @@ public sealed class TweakEngineTests
             Change(@"HKLM\A", "V", 1, 0),
             Change(@"HKLM\B", "V", 1, 0));
 
-        Assert.Equal(TweakStatus.Partial, Engine(registry, new FakeBackupService()).GetStatus(tweak));
+        Assert.Equal(TweakStatus.Partial, await Engine(registry, new FakeBackupService()).GetStatusAsync(tweak));
     }
 
     [Fact]
-    public void A_fully_written_tweak_reports_as_applied()
+    public async Task A_fully_written_tweak_reports_as_applied()
     {
         var registry = new TracingRegistryService().Set(@"HKLM\A", "V", 1).Set(@"HKLM\B", "V", 1);
 
@@ -208,15 +208,15 @@ public sealed class TweakEngineTests
             Change(@"HKLM\A", "V", 1, 0),
             Change(@"HKLM\B", "V", 1, 0));
 
-        Assert.Equal(TweakStatus.Applied, Engine(registry, new FakeBackupService()).GetStatus(tweak));
+        Assert.Equal(TweakStatus.Applied, await Engine(registry, new FakeBackupService()).GetStatusAsync(tweak));
     }
 
     [Fact]
-    public void An_untouched_tweak_reports_as_not_applied() =>
+    public async Task An_untouched_tweak_reports_as_not_applied() =>
         Assert.Equal(
             TweakStatus.NotApplied,
-            Engine(new TracingRegistryService(), new FakeBackupService())
-                .GetStatus(Tweak("t", Change(@"HKLM\A", "V", 1, 0))));
+            await Engine(new TracingRegistryService(), new FakeBackupService())
+                .GetStatusAsync(Tweak("t", Change(@"HKLM\A", "V", 1, 0))));
 
     [Fact]
     public async Task A_tweak_whose_writes_all_fail_reports_failure()
@@ -293,7 +293,7 @@ public sealed class TweakEngineTests
     }
 
     [Fact]
-    public void A_handler_reports_the_status_of_a_handler_driven_tweak()
+    public async Task A_handler_reports_the_status_of_a_handler_driven_tweak()
     {
         var handler = new FakeTweakHandler("core_parking") { Status = TweakStatus.Applied };
 
@@ -301,7 +301,7 @@ public sealed class TweakEngineTests
 
         Assert.Equal(
             TweakStatus.Applied,
-            Engine(new TracingRegistryService(), new FakeBackupService(), handlers: [handler]).GetStatus(tweak));
+            await Engine(new TracingRegistryService(), new FakeBackupService(), handlers: [handler]).GetStatusAsync(tweak));
     }
 
     /// <summary>
@@ -316,12 +316,12 @@ public sealed class TweakEngineTests
 
         TweakEngine engine = Engine(new TracingRegistryService(), new FakeBackupService(), handlers: [handler]);
 
-        Assert.Equal(TweakStatus.NotApplied, engine.GetStatus(tweak));
+        Assert.Equal(TweakStatus.NotApplied, await engine.GetStatusAsync(tweak));
 
         handler.Status = TweakStatus.Applied;
         await engine.ApplyAsync(tweak);
 
-        Assert.Equal(TweakStatus.Applied, engine.GetStatus(tweak));
+        Assert.Equal(TweakStatus.Applied, await engine.GetStatusAsync(tweak));
     }
 
     [Fact]

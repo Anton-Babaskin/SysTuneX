@@ -243,19 +243,32 @@ public sealed partial class DashboardViewModel : PageViewModel
                     async () =>
                     {
                         IReadOnlyList<TweakDefinition> tweaks = _tweaks.GetSupportedTweaks();
-                        int appliedCount = tweaks.Count(t => _tweaks.GetStatus(t) == TweakStatus.Applied);
 
-                        IReadOnlyList<(ServiceDefinition Definition, ServiceSnapshot State)> services =
-                            await _services.GetManagedServicesAsync(PageToken).ConfigureAwait(false);
+                        // All four at once. They are independent, each one is a console tool or a
+                        // service-control query, and read one after another the score took as long
+                        // as every one of them put together.
+                        Task<IReadOnlyDictionary<string, TweakStatus>> statusesRead =
+                            _tweaks.GetStatusesAsync(tweaks, PageToken);
 
-                        PowerScheme? scheme = await _power.GetActiveSchemeAsync(PageToken).ConfigureAwait(false);
+                        Task<IReadOnlyList<(ServiceDefinition Definition, ServiceSnapshot State)>> servicesRead =
+                            _services.GetManagedServicesAsync(PageToken);
+
+                        Task<PowerScheme?> schemeRead = _power.GetActiveSchemeAsync(PageToken);
 
                         // Asked of the service rather than of the scheme: a high-performance scheme
                         // SysTuneX duplicated itself carries a fresh GUID and the source scheme's
                         // name, which is not the English string on a Russian or Ukrainian Windows.
-                        bool isHighPerformance = await _power
-                            .IsHighPerformanceActiveAsync(PageToken)
-                            .ConfigureAwait(false);
+                        Task<bool> highPerformanceRead = _power.IsHighPerformanceActiveAsync(PageToken);
+
+                        await Task.WhenAll(statusesRead, servicesRead, schemeRead, highPerformanceRead).ConfigureAwait(false);
+
+                        IReadOnlyDictionary<string, TweakStatus> statuses = await statusesRead.ConfigureAwait(false);
+                        IReadOnlyList<(ServiceDefinition Definition, ServiceSnapshot State)> services =
+                            await servicesRead.ConfigureAwait(false);
+                        PowerScheme? scheme = await schemeRead.ConfigureAwait(false);
+                        bool isHighPerformance = await highPerformanceRead.ConfigureAwait(false);
+
+                        int appliedCount = statuses.Values.Count(status => status == TweakStatus.Applied);
 
                         return (
                             appliedCount,

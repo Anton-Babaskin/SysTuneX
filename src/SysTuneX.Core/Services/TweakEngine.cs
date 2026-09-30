@@ -24,6 +24,9 @@ public sealed class TweakEngine : ITweakEngine
     private readonly Dictionary<string, (TweakStatus Status, DateTime ReadAt)> _handlerStatusCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly TimeSpan HandlerStatusLifetime = TimeSpan.FromSeconds(10);
 
+    /// <summary>A handler that has not answered by now is reported as unknown rather than waited on.</summary>
+    private static readonly TimeSpan HandlerStatusTimeout = TimeSpan.FromSeconds(12);
+
     public TweakEngine(
         ILogger<TweakEngine> logger,
         IRegistryService registry,
@@ -52,50 +55,79 @@ public sealed class TweakEngine : ITweakEngine
 
     public TweakDefinition? Find(string tweakId) => TweakCatalog.Find(tweakId);
 
-    public TweakStatus GetStatus(TweakDefinition tweak)
+    /// <summary>
+    /// Always on the thread pool, whatever the tweak is.
+    ///
+    /// This was a synchronous method that, for a tweak implemented by a handler, blocked on the
+    /// handler's read - powercfg, bcdedit, a PowerShell session - for up to twelve seconds. Its
+    /// signature said "cheap", so it was treated as cheap: Quick Optimize called it on the UI
+    /// thread, once per safe tweak, before its first await. The telemetry-tasks tweak is safe, and
+    /// its status is a PowerShell launch - so the window stopped responding before the busy overlay
+    /// that was meant to cover the wait could even be drawn.
+    ///
+    /// A handler is not trusted to be asynchronous because it returns a task, either. The Nagle
+    /// handler's read is synchronous from end to end - an adapter enumeration and a registry walk -
+    /// and would have run on whatever thread awaited it. For the same reason the caller's token
+    /// ends the caller's wait directly: a handler stuck in synchronous work never looks at it.
+    /// </summary>
+    public Task<TweakStatus> GetStatusAsync(TweakDefinition tweak, CancellationToken cancellationToken = default) =>
+        Task.Run(() => ReadStatusAsync(tweak, cancellationToken), cancellationToken).WaitAsync(cancellationToken);
+
+    private async Task<TweakStatus> ReadStatusAsync(TweakDefinition tweak, CancellationToken cancellationToken)
     {
         if (!tweak.AppliesTo(_environment.Windows))
         {
             return TweakStatus.Unsupported;
         }
 
-        if (tweak.HandlerKey is { } key)
+        return tweak.HandlerKey is { } key
+            ? await ReadHandlerStatusAsync(key, cancellationToken).ConfigureAwait(false)
+            : ReadRegistryStatus(tweak);
+    }
+
+    private async Task<TweakStatus> ReadHandlerStatusAsync(string key, CancellationToken cancellationToken)
+    {
+        if (!_handlers.TryGetValue(key, out ISpecialTweakHandler? handler))
         {
-            if (!_handlers.TryGetValue(key, out ISpecialTweakHandler? handler))
-            {
-                return TweakStatus.Unknown;
-            }
+            return TweakStatus.Unknown;
+        }
 
-            lock (_handlerStatusCache)
+        lock (_handlerStatusCache)
+        {
+            if (_handlerStatusCache.TryGetValue(key, out (TweakStatus Status, DateTime ReadAt) cached) &&
+                DateTime.UtcNow - cached.ReadAt < HandlerStatusLifetime)
             {
-                if (_handlerStatusCache.TryGetValue(key, out (TweakStatus Status, DateTime ReadAt) cached) &&
-                    DateTime.UtcNow - cached.ReadAt < HandlerStatusLifetime)
-                {
-                    return cached.Status;
-                }
-            }
-
-            try
-            {
-                TweakStatus status = handler.GetStatusAsync()
-                    .WaitAsync(TimeSpan.FromSeconds(12))
-                    .GetAwaiter()
-                    .GetResult();
-
-                lock (_handlerStatusCache)
-                {
-                    _handlerStatusCache[key] = (status, DateTime.UtcNow);
-                }
-
-                return status;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogDebug(ex, "Handler {Key} could not report its status", key);
-                return TweakStatus.Unknown;
+                return cached.Status;
             }
         }
 
+        try
+        {
+            TweakStatus status = await handler
+                .GetStatusAsync(cancellationToken)
+                .WaitAsync(HandlerStatusTimeout, cancellationToken)
+                .ConfigureAwait(false);
+
+            lock (_handlerStatusCache)
+            {
+                _handlerStatusCache[key] = (status, DateTime.UtcNow);
+            }
+
+            return status;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Handler {Key} could not report its status", key);
+            return TweakStatus.Unknown;
+        }
+    }
+
+    private TweakStatus ReadRegistryStatus(TweakDefinition tweak)
+    {
         int applied = 0;
 
         foreach (RegistryChange change in tweak.Changes)
@@ -118,7 +150,21 @@ public sealed class TweakEngine : ITweakEngine
         return applied == 0 ? TweakStatus.NotApplied : TweakStatus.Partial;
     }
 
-    public async Task<OperationResult> ApplyAsync(TweakDefinition tweak, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// On the pool for the same reason as the status read, and one more: after the write comes a
+    /// WM_SETTINGCHANGE broadcast, whose timeout is per window. One slow application on the desktop
+    /// costs up to a second, and the toggle on a tweak page called this from the UI thread. Whether
+    /// the broadcast then ran there depended on whether an earlier await happened to go
+    /// asynchronous - a revert with nothing in the journal never awaited at all.
+    /// </summary>
+    public Task<OperationResult> ApplyAsync(TweakDefinition tweak, CancellationToken cancellationToken = default) =>
+        Task.Run(() => ApplyCoreAsync(tweak, cancellationToken), cancellationToken);
+
+    /// <inheritdoc cref="ApplyAsync"/>
+    public Task<OperationResult> RevertAsync(TweakDefinition tweak, CancellationToken cancellationToken = default) =>
+        Task.Run(() => RevertCoreAsync(tweak, cancellationToken), cancellationToken);
+
+    private async Task<OperationResult> ApplyCoreAsync(TweakDefinition tweak, CancellationToken cancellationToken)
     {
         if (!tweak.AppliesTo(_environment.Windows))
         {
@@ -188,7 +234,7 @@ public sealed class TweakEngine : ITweakEngine
         return changedAnything ? OperationResult.Ok() : OperationResult.NoChange();
     }
 
-    public async Task<OperationResult> RevertAsync(TweakDefinition tweak, CancellationToken cancellationToken = default)
+    private async Task<OperationResult> RevertCoreAsync(TweakDefinition tweak, CancellationToken cancellationToken)
     {
         if (tweak.HandlerKey is { } key)
         {

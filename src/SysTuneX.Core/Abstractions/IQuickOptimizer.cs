@@ -22,7 +22,7 @@ public interface IQuickOptimizer
         CancellationToken cancellationToken = default);
 
     /// <summary>What <see cref="RunAsync"/> would apply, without applying it.</summary>
-    IReadOnlyList<TweakDefinition> GetPendingTweaks();
+    Task<IReadOnlyList<TweakDefinition>> GetPendingTweaksAsync(CancellationToken cancellationToken = default);
 }
 
 /// <param name="Tweaks">How the batch of tweaks went.</param>

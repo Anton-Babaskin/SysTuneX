@@ -16,7 +16,7 @@ namespace SysTuneX.Core.Tests;
 public sealed class QuickOptimizerTests
 {
     [Fact]
-    public void Only_safe_tweaks_are_offered()
+    public async Task Only_safe_tweaks_are_offered()
     {
         var engine = new FakeTweakEngine(
             Tweak("safe", RiskLevel.Safe),
@@ -25,16 +25,16 @@ public sealed class QuickOptimizerTests
 
         QuickOptimizer optimizer = Build(engine);
 
-        Assert.Equal("safe", Assert.Single(optimizer.GetPendingTweaks()).Id);
+        Assert.Equal("safe", Assert.Single(await optimizer.GetPendingTweaksAsync()).Id);
     }
 
     [Fact]
-    public void A_safe_tweak_that_is_already_applied_is_left_alone()
+    public async Task A_safe_tweak_that_is_already_applied_is_left_alone()
     {
         var engine = new FakeTweakEngine(Tweak("done", RiskLevel.Safe), Tweak("todo", RiskLevel.Safe));
         engine.Statuses["done"] = TweakStatus.Applied;
 
-        Assert.Equal("todo", Assert.Single(Build(engine).GetPendingTweaks()).Id);
+        Assert.Equal("todo", Assert.Single(await Build(engine).GetPendingTweaksAsync()).Id);
     }
 
     /// <summary>
@@ -123,8 +123,8 @@ public sealed class QuickOptimizerTests
         public TweakDefinition? Find(string tweakId) =>
             _tweaks.FirstOrDefault(t => string.Equals(t.Id, tweakId, StringComparison.Ordinal));
 
-        public TweakStatus GetStatus(TweakDefinition tweak) =>
-            Statuses.TryGetValue(tweak.Id, out TweakStatus status) ? status : TweakStatus.NotApplied;
+        public Task<TweakStatus> GetStatusAsync(TweakDefinition tweak, CancellationToken cancellationToken = default) =>
+            Task.FromResult(Statuses.TryGetValue(tweak.Id, out TweakStatus status) ? status : TweakStatus.NotApplied);
 
         public Task<OperationResult> ApplyAsync(TweakDefinition tweak, CancellationToken cancellationToken = default)
         {

@@ -317,8 +317,8 @@ public sealed class FakeTweakEngine : ITweakEngine
     public TweakDefinition? Find(string tweakId) =>
         Catalog.FirstOrDefault(t => string.Equals(t.Id, tweakId, StringComparison.OrdinalIgnoreCase));
 
-    public TweakStatus GetStatus(TweakDefinition tweak) =>
-        _statuses.TryGetValue(tweak.Id, out TweakStatus status) ? status : TweakStatus.Unknown;
+    public Task<TweakStatus> GetStatusAsync(TweakDefinition tweak, CancellationToken cancellationToken = default) =>
+        Task.FromResult(_statuses.TryGetValue(tweak.Id, out TweakStatus status) ? status : TweakStatus.Unknown);
 
     public Task<OperationResult> ApplyAsync(TweakDefinition tweak, CancellationToken cancellationToken = default) =>
         Task.FromResult(OperationResult.Ok());

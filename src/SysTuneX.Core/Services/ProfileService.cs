@@ -67,21 +67,19 @@ public sealed class ProfileService : IProfileService
             .ToList();
     }
 
-    public Task<double> GetCompletionAsync(GameProfile profile, CancellationToken cancellationToken = default)
+    public async Task<double> GetCompletionAsync(GameProfile profile, CancellationToken cancellationToken = default)
     {
-        return Task.Run(
-            () =>
-            {
-                List<TweakDefinition> tweaks = ResolveTweaks(profile, includeAdvanced: true).ToList();
-                if (tweaks.Count == 0)
-                {
-                    return 0d;
-                }
+        IReadOnlyList<TweakDefinition> tweaks = ResolveTweaks(profile, includeAdvanced: true);
+        if (tweaks.Count == 0)
+        {
+            return 0d;
+        }
 
-                int applied = tweaks.Count(t => _tweaks.GetStatus(t) == TweakStatus.Applied);
-                return (double)applied / tweaks.Count;
-            },
-            cancellationToken);
+        IReadOnlyDictionary<string, TweakStatus> statuses = await _tweaks
+            .GetStatusesAsync(tweaks, cancellationToken)
+            .ConfigureAwait(false);
+
+        return (double)tweaks.Count(tweak => statuses[tweak.Id] == TweakStatus.Applied) / tweaks.Count;
     }
 
     /// <summary>
@@ -89,30 +87,37 @@ public sealed class ProfileService : IProfileService
     /// here rather than making every caller remember to is the difference between an interface
     /// that is easy to use correctly and one that freezes a window when someone forgets.
     /// </summary>
-    public Task<ProfilePreview> PreviewAsync(
+    public async Task<ProfilePreview> PreviewAsync(
         GameProfile profile,
         bool includeAdvanced,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(profile);
 
-        return Task.Run(() => BuildPreview(profile, includeAdvanced, cancellationToken), cancellationToken);
+        IReadOnlyList<TweakDefinition> tweaks = ResolveTweaks(profile, includeAdvanced);
+
+        IReadOnlyDictionary<string, TweakStatus> statuses = await _tweaks
+            .GetStatusesAsync(tweaks, cancellationToken)
+            .ConfigureAwait(false);
+
+        return await Task
+            .Run(() => BuildPreview(profile, tweaks, statuses, cancellationToken), cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private ProfilePreview BuildPreview(
         GameProfile profile,
-        bool includeAdvanced,
+        IReadOnlyList<TweakDefinition> tweaks,
+        IReadOnlyDictionary<string, TweakStatus> statuses,
         CancellationToken cancellationToken)
     {
-
-        IReadOnlyList<TweakDefinition> tweaks = ResolveTweaks(profile, includeAdvanced);
         var previews = new List<TweakPreview>(tweaks.Count);
 
         foreach (TweakDefinition tweak in tweaks)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            bool applied = _tweaks.GetStatus(tweak) == TweakStatus.Applied;
+            bool applied = statuses[tweak.Id] == TweakStatus.Applied;
 
             var values = new List<ValueChangePreview>(tweak.Changes.Count);
             foreach (RegistryChange change in tweak.Changes)

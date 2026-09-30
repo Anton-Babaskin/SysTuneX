@@ -229,7 +229,8 @@ public sealed class GlobalSearchTests
         public TweakDefinition? Find(string tweakId) =>
             TweakCatalog.All.FirstOrDefault(t => t.Id == tweakId);
 
-        public TweakStatus GetStatus(TweakDefinition tweak) => TweakStatus.Unknown;
+        public Task<TweakStatus> GetStatusAsync(TweakDefinition tweak, CancellationToken cancellationToken = default) =>
+            Task.FromResult(TweakStatus.Unknown);
 
         public Task<OperationResult> ApplyAsync(TweakDefinition tweak, CancellationToken cancellationToken = default) =>
             Task.FromResult(OperationResult.Ok());
