@@ -354,40 +354,29 @@ public abstract partial class TweakPageViewModel : PageViewModel, IFilterablePag
 
     protected IEnumerable<TweakItemViewModel> AllItems() => Groups.SelectMany(g => g.Items);
 
+    /// <summary>
+    /// Changes only the rows whose match changed, rather than rebuilding every card on every
+    /// keystroke; see <see cref="FilteredView"/>.
+    /// </summary>
     protected void ApplyFilters()
     {
         int visible = 0;
 
         foreach (TweakGroupViewModel group in Groups)
         {
-            group.VisibleItems.Clear();
-
-            foreach (TweakItemViewModel item in group.Items)
-            {
-                if (!item.Matches(SearchText))
-                {
-                    continue;
-                }
-
-                if (RiskFilter is { } risk && item.Risk != risk)
-                {
-                    continue;
-                }
-
-                if (AppliedFilter is { } applied && item.IsApplied != applied)
-                {
-                    continue;
-                }
-
-                group.VisibleItems.Add(item);
-                visible++;
-            }
+            FilteredView.ShowOnly(group.VisibleItems, [.. group.Items.Where(Passes)]);
 
             group.IsVisible = group.VisibleItems.Count > 0;
+            visible += group.VisibleItems.Count;
         }
 
         VisibleCount = visible;
     }
+
+    private bool Passes(TweakItemViewModel item) =>
+        item.Matches(SearchText) &&
+        (RiskFilter is not { } risk || item.Risk == risk) &&
+        (AppliedFilter is not { } applied || item.IsApplied == applied);
 
     protected void UpdateCounts()
     {

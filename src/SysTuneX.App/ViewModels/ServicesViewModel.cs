@@ -241,25 +241,11 @@ public sealed partial class ServicesViewModel : PageViewModel, IFilterablePage
             }).ConfigureAwait(true);
     }
 
-    private void ApplyFilters()
-    {
-        VisibleItems.Clear();
-
-        foreach (ServiceItemViewModel item in Items)
-        {
-            if (!item.Matches(SearchText))
-            {
-                continue;
-            }
-
-            if (RiskFilter is { } risk && item.Risk != risk)
-            {
-                continue;
-            }
-
-            VisibleItems.Add(item);
-        }
-    }
+    /// <summary>Changes only the rows whose match changed; see <see cref="FilteredView"/>.</summary>
+    private void ApplyFilters() =>
+        FilteredView.ShowOnly(
+            VisibleItems,
+            [.. Items.Where(item => item.Matches(SearchText) && (RiskFilter is not { } risk || item.Risk == risk))]);
 
     private void UpdateCounts()
     {
