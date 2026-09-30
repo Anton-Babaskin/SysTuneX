@@ -3,6 +3,71 @@
 Every released version, newest first. The release workflow publishes only the section
 for the version being released, so a release page shows that version and nothing else.
 
+## v2.12.2
+
+The complaint was that the application felt clumsy, and it was right. Nearly all of it came down to
+one thing: work that waits on Windows - WMI, powercfg, PowerShell, a settings broadcast - running on
+the thread that draws the window. This release takes it off, and fixes the three other things that
+made the interface lie or stall.
+
+### The window no longer stops on a fixed beat
+
+Temperatures come from WMI and from the graphics driver's library, and both were read on the thread
+that draws the window: every five seconds on the dashboard, every two on the Monitor page, and every
+four in the compact readout that sits over a game. On a laptop, where the thermal zone exists and
+WMI answers slowly, the whole window stopped to wait for firmware on a fixed beat. Readings are taken
+in the background now, and a reading slower than the timer is shared rather than queued behind.
+
+### Quick Optimize no longer freezes before it starts
+
+Checking which safe tweaks were already applied meant, for one of them, starting PowerShell - and it
+happened on the window's thread, before the progress overlay could even be drawn. The window went
+"Not Responding" for a second or two on every click. Every status check now runs in the background,
+and a tweak's apply and revert do too: after the write comes a settings broadcast that waits on every
+window on the desktop.
+
+### Pages open faster
+
+A page's tweaks were checked one after another, so it took as long as all of its console tools put
+together; they are checked together now. The dashboard loaded its cards in series as well, so the
+tuning score waited for a description of the motherboard before it looked at a single tweak. Each
+card now fills in as its own answer arrives.
+
+### Leaving a page no longer stops what it was doing
+
+Every change the application makes used to be cancelled when you navigated away from the page that
+started it - silently. Press Apply All and click over to the dashboard to watch the score, and the
+batch stopped after whichever tweak it had reached. Restore All stopped the same way, and so did
+turning game mode on. Restarting Explorer ends it, waits, then starts it again: cut in between, there
+was no taskbar.
+
+Changes now run to the end wherever you go; come back and the page shows them still working, or the
+result. Scans and status checks still stop when you leave. And since a change now outlives its page,
+one runs at a time across the whole application: a Restore All pressed while an Apply All is still
+working through another page waits for it instead of interleaving with it.
+
+### Switches show what is true
+
+A switch flips the moment it is clicked, before anything has happened. When nothing then did happen -
+you declined the confirmation, Windows refused the write, a service would not stop - the switch stayed
+where the click put it: on for a tweak that was off, off for a service still disabled. Every switch
+that changes something now settles on the machine's actual state once the change has finished.
+
+### Typing in a search box no longer rebuilds the page
+
+The tweak, service and history lists threw every row away and built them again on each keystroke,
+on every return to the page and after every batch. They now add and remove only the rows whose match
+changed, so the rest keep their place, their focus and the scroll position.
+
+### Smaller things
+
+* Leaving a page while it was loading could raise an error dialog naming
+  `OperationCanceledException`, and write it to the error log. It does neither now.
+* Leaving the Cleanup page mid-scan left every target after the current one showing a spinner for as
+  long as the application stayed open.
+* A merge that did not change the version number used to replace the published executable and its
+  checksum under the existing release. A published release is now never changed; see RELEASING.md.
+
 ## v2.12.1
 
 ### Restore All no longer ends early when one step throws
