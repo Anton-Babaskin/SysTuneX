@@ -142,7 +142,22 @@ jobs:
           fi
 
           if gh release view "$tag" >/dev/null 2>&1; then
-            echo "Release $tag already exists; refreshing its assets."
+            # A published release is never changed underneath the people who downloaded it and
+            # checked its hash; RELEASING.md promises as much. This used to upload with --clobber,
+            # so every merge that did not bump release.version silently replaced the binary and
+            # its checksum, under release notes that described neither. Now such a merge simply
+            # does not release.
+            #
+            # The one exception is a release a failed run left without its files. Nobody can have
+            # verified a download that is not there, so both go up again together - the
+            # executable and its checksum must always come from the same build.
+            assets="$(gh release view "$tag" --json assets --jq '.assets[].name')"
+            if grep -qx 'SysTuneX.exe' <<< "$assets" && grep -qx 'SHA256SUMS.txt' <<< "$assets"; then
+              echo "::notice::$tag is already published and its files are left as they are. Bump release.version to release this build."
+              exit 0
+            fi
+
+            echo "$tag exists but is missing its files; uploading the executable and its checksum together."
             gh release upload "$tag" publish/SysTuneX.exe publish/SHA256SUMS.txt --clobber
             exit 0
           fi
