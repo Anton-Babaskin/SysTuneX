@@ -39,7 +39,7 @@ public sealed class ProcessRunner : IProcessRunner
     {
         var startInfo = new ProcessStartInfo
         {
-            FileName = fileName,
+            FileName = ResolveSystemTool(fileName),
             Arguments = arguments,
             UseShellExecute = false,
             CreateNoWindow = true,
@@ -98,11 +98,23 @@ public sealed class ProcessRunner : IProcessRunner
     {
         string encoded = Convert.ToBase64String(Encoding.Unicode.GetBytes(command));
         return RunAsync(
-            "powershell.exe",
+            Path.Combine(Environment.SystemDirectory, "WindowsPowerShell", "v1.0", "powershell.exe"),
             $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand {encoded}",
             timeout ?? TimeSpan.FromSeconds(60),
             cancellationToken);
     }
+
+    /// <summary>
+    /// The System32 copy of a tool named without a path.
+    ///
+    /// Windows looks for a bare "powercfg.exe" in the folder SysTuneX.exe was started from before
+    /// it looks in System32. That folder is usually Downloads, which anything the user ran today
+    /// can write to, and SysTuneX always runs as administrator - so a powercfg.exe sitting next to
+    /// it would run as administrator too. Every tool called here ships in System32; one that does
+    /// not has to be passed with its full path, and fails to start rather than being searched for.
+    /// </summary>
+    internal static string ResolveSystemTool(string fileName) =>
+        Path.IsPathFullyQualified(fileName) ? fileName : Path.Combine(Environment.SystemDirectory, fileName);
 
     private static void TryKill(Process process)
     {

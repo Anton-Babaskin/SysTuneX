@@ -3,6 +3,49 @@
 Every released version, newest first. The release workflow publishes only the section
 for the version being released, so a release page shows that version and nothing else.
 
+## v2.12.3
+
+A security release. SysTuneX always runs as administrator, and three places let someone without
+those rights decide what it did with them. Update if anyone else signs in to the PC, or if you keep
+SysTuneX in Downloads.
+
+### Cleanup no longer follows junctions
+
+Any user can create folders in Windows' own temporary folder, and cleanup walks it as administrator.
+It followed junctions there - links to other folders, which need no special rights to make - so a
+junction left there by a standard user turned the default cleanup into deleting files wherever the
+link pointed.
+
+Cleanup no longer walks into junctions or symbolic links. Every file and folder is checked at the
+moment it is deleted, through the same handle that deletes it, so a folder swapped for a link between
+the scan and the delete is left alone. A cleanup target whose own path leads through a junction is not
+offered at all.
+
+### The data folder is for administrators only
+
+`%ProgramData%\SysTuneX` kept the permissions it inherited from ProgramData, which let any user create
+files in it, or create the folder itself before SysTuneX first ran. The change journal and the
+game-mode session live there, and restoring from them writes the registry, starts services and runs
+PowerShell as administrator. So a standard user could write the instructions that an administrator's
+Restore All then carried out.
+
+SysTuneX now makes the folder administrators-only at startup, before it reads anything in it. On an
+ordinary install nothing else changes: the journal SysTuneX wrote itself is kept. If anything in the
+folder belongs to someone other than SYSTEM, the Administrators group or you, the whole folder is set
+aside as `SysTuneX.untrusted-<date and time>`, SysTuneX starts with an empty journal, and the log says
+so. That loses the record of earlier changes on such a machine; the alternative was restoring from a
+journal anyone could have written. If the folder cannot be secured at all, SysTuneX says why and does
+not start.
+
+### Windows tools come from System32
+
+SysTuneX starts powercfg, netsh, bcdedit, ipconfig, shutdown and PowerShell by name, and Windows looks
+for a program in the application's own folder before System32. The NVIDIA and AMD sensor libraries
+were found the same way. Since SysTuneX is usually run from Downloads, anything that could save a file
+there could have it run as administrator by calling it `powercfg.exe`. Each tool is now started from
+System32 by its full path, the sensor libraries are loaded from System32 only, and Explorer is started
+from the Windows folder.
+
 ## v2.12.2
 
 The complaint was that the application felt clumsy, and it was right. Nearly all of it came down to

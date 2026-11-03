@@ -306,8 +306,11 @@ public sealed class BackupService : IBackupService
             }
 
             // Write to a temp file and swap, so a crash mid-write cannot leave a truncated journal.
+            // A leftover temp file is deleted rather than reused: File.Create keeps an existing
+            // file's owner and permissions, and the move below would hand them to the journal.
             string tempPath = JournalPath + ".tmp";
-            await using (FileStream stream = File.Create(tempPath))
+            File.Delete(tempPath);
+            await using (FileStream stream = new(tempPath, FileMode.CreateNew, FileAccess.Write))
             {
                 await JsonSerializer.SerializeAsync(stream, snapshot, JsonOptions, cancellationToken).ConfigureAwait(false);
             }
