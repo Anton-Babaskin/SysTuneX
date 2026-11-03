@@ -36,6 +36,7 @@ public sealed partial class ArchitectureTests
             "AppPaths.cs",              // defines them
             "FileLoggerProvider.cs",    // starts before there is anything to inject
             "FileLogger.cs",
+            "DataDirectorySecurity.cs", // locks the folder down before the logger writes to it
         ];
 
         List<string> offenders =
