@@ -51,9 +51,10 @@ public sealed class ShellLauncher : IShellLauncher
         {
             // The path is quoted because it comes from a directory the user can rename, and
             // explorer takes everything after the comma as one argument only if it is quoted.
+            // Explorer itself by full path: a bare name is looked for in the working directory first.
             return Start(new ProcessStartInfo
             {
-                FileName = "explorer.exe",
+                FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe"),
                 Arguments = $"/select,\"{filePath}\"",
                 UseShellExecute = true,
             });

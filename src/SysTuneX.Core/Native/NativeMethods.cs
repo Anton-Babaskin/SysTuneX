@@ -1,6 +1,12 @@
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
+// Every DllImport in this assembly loads from System32 and nowhere else. Without this the folder
+// SysTuneX.exe was started from is searched first, and for nvml.dll and atiadlxx.dll - not on the
+// list of DLLs Windows always takes from System32 - a copy left in Downloads would be loaded into
+// an administrator process. On a machine without that vendor's driver it is the only copy there is.
+[assembly: DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+
 namespace SysTuneX.Core.Native;
 
 /// <summary>
