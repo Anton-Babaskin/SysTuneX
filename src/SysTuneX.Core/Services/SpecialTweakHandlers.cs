@@ -178,8 +178,11 @@ public sealed class HypervisorLaunchTweakHandler : ISpecialTweakHandler
 [SupportedOSPlatform("windows")]
 public sealed class NagleTweakHandler : ISpecialTweakHandler
 {
-    private const string InterfacesKey = @"HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces";
+    internal const string InterfacesKey = @"HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces";
     private const string OwnerId = "tweak:nagle_disable";
+
+    /// <summary>The two values written under each adapter's key.</summary>
+    internal static IReadOnlyList<string> ValueNames { get; } = ["TcpAckFrequency", "TCPNoDelay"];
 
     private readonly IRegistryService _registry;
     private readonly IChangeJournalWriter _backup;
@@ -227,7 +230,7 @@ public sealed class NagleTweakHandler : ISpecialTweakHandler
 
         foreach (string key in adapters)
         {
-            foreach (string valueName in new[] { "TcpAckFrequency", "TCPNoDelay" })
+            foreach (string valueName in ValueNames)
             {
                 (object? current, RegistryValueKind kind) = _registry.GetValueWithKind(key, valueName);
                 await _backup.RecordRegistryAsync(OwnerId, key, valueName, current, kind, cancellationToken).ConfigureAwait(false);
@@ -250,7 +253,7 @@ public sealed class NagleTweakHandler : ISpecialTweakHandler
 
         foreach (string key in GetAdapterKeys())
         {
-            foreach (string valueName in new[] { "TcpAckFrequency", "TCPNoDelay" })
+            foreach (string valueName in ValueNames)
             {
                 BackupEntry? entry = _backup.FindActive(BackupKind.RegistryValue, key, valueName);
 

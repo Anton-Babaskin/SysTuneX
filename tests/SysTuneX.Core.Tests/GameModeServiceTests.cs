@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.Extensions.Logging.Abstractions;
 using SysTuneX.Core.Abstractions;
 using SysTuneX.Core.Models;
@@ -227,6 +228,32 @@ public sealed class GameModeServiceTests : IDisposable
 
         Assert.Equal(["DiagTrack", "SysMain"], services.Started);
         Assert.Equal(PowerScheme.Balanced, power.ActiveScheme);
+    }
+
+    /// <summary>
+    /// The session file names what to start again, and starting a service can mean enabling it
+    /// first - as administrator. Game mode only stops services from the catalogue, so any other
+    /// name in the file was not written by it: that one is named and left alone, and the rest of
+    /// the session is still put back.
+    /// </summary>
+    [Fact]
+    public async Task A_service_game_mode_never_stops_is_not_started_from_the_session_file()
+    {
+        Directory.CreateDirectory(_directory);
+        await File.WriteAllTextAsync(
+            Path.Combine(_directory, "gamemode.json"),
+            JsonSerializer.Serialize(new GameModeSession { StoppedServices = ["TermService", "DiagTrack"] }));
+
+        var services = new FakeServiceManager();
+        GameModeService gameMode = Service(services);
+        await gameMode.LoadAsync();
+
+        GameModeResult off = await gameMode.DisableAsync();
+
+        Assert.Equal(["DiagTrack"], services.Started);
+        Assert.Equal(1, off.ServicesAffected);
+        Assert.Contains(off.Notes, note => note.Contains("TermService", StringComparison.Ordinal));
+        Assert.False(gameMode.IsActive);
     }
 
     [Fact]
