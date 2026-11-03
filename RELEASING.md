@@ -48,7 +48,10 @@ marked as the latest release.
 - **It will not release from a branch.** The job is gated on the default branch, which is why a
   version bumped on a feature branch stays unpublished until it merges.
 - **It will not re-release a tag that exists.** Bump the number instead of retagging; a published
-  release that changes underneath people is worse than a version gap.
+  release that changes underneath people is worse than a version gap. A merge that leaves
+  `release.version` alone therefore publishes nothing. The only files it will upload to an
+  existing release are ones a failed run left missing - and then the executable and its checksum
+  together, so the pair always comes from one build.
 
 ## Testing a build before it is released
 

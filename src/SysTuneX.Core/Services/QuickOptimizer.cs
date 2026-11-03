@@ -24,19 +24,28 @@ public sealed class QuickOptimizer : IQuickOptimizer
     /// click can never disable virtualisation-based security or break printing. That rule is the
     /// entire reason this button is allowed to exist without a confirmation dialog.
     /// </summary>
-    public IReadOnlyList<TweakDefinition> GetPendingTweaks() =>
-    [
-        .. _tweaks.GetSupportedTweaks()
-            .Where(tweak => tweak.Risk == RiskLevel.Safe)
-            .Where(tweak => _tweaks.GetStatus(tweak) != TweakStatus.Applied),
-    ];
+    public async Task<IReadOnlyList<TweakDefinition>> GetPendingTweaksAsync(CancellationToken cancellationToken = default)
+    {
+        List<TweakDefinition> safe = [.. _tweaks.GetSupportedTweaks().Where(tweak => tweak.Risk == RiskLevel.Safe)];
+
+        IReadOnlyDictionary<string, TweakStatus> statuses = await _tweaks
+            .GetStatusesAsync(safe, cancellationToken)
+            .ConfigureAwait(false);
+
+        return [.. safe.Where(tweak => statuses[tweak.Id] != TweakStatus.Applied)];
+    }
 
     public async Task<QuickOptimizeResult> RunAsync(
         IProgress<BatchProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
+        // Awaited before the batch rather than passed in as an argument expression. The argument
+        // used to be a synchronous status read, which ran on the dashboard's thread before this
+        // method had awaited anything - a PowerShell launch, with the window frozen around it.
+        IReadOnlyList<TweakDefinition> pending = await GetPendingTweaksAsync(cancellationToken).ConfigureAwait(false);
+
         BatchResult tweaks = await _tweaks
-            .ApplyManyAsync(GetPendingTweaks(), progress, cancellationToken)
+            .ApplyManyAsync(pending, progress, cancellationToken)
             .ConfigureAwait(false);
 
         OperationResult power = await _power

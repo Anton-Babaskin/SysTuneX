@@ -84,7 +84,12 @@ public sealed class WpfApplicationFixture : IDisposable
     public Exception? StartupFailure { get; private set; }
 
     /// <summary>Runs <paramref name="action"/> on the UI thread and rethrows what it throws.</summary>
-    public void OnUiThread(Action action)
+    /// <param name="priority">
+    /// Send by default, which runs ahead of anything already queued. A lower priority - ContextIdle -
+    /// runs after the work the UI has queued for itself, which is how a test sees the far side of a
+    /// BeginInvoke or of an await that resumed on the dispatcher.
+    /// </param>
+    public void OnUiThread(Action action, DispatcherPriority priority = DispatcherPriority.Send)
     {
         // Without this, every later test reports a confusing NullReferenceException from
         // Application.Current instead of the startup failure that actually caused it.
@@ -99,17 +104,19 @@ public sealed class WpfApplicationFixture : IDisposable
         }
 
         Exception? failure = null;
-        _dispatcher.Invoke(() =>
-        {
-            try
+        _dispatcher.Invoke(
+            () =>
             {
-                action();
-            }
-            catch (Exception exception)
-            {
-                failure = exception;
-            }
-        });
+                try
+                {
+                    action();
+                }
+                catch (Exception exception)
+                {
+                    failure = exception;
+                }
+            },
+            priority);
 
         if (failure is not null)
         {

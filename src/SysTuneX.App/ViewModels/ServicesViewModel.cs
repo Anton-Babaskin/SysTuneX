@@ -89,24 +89,23 @@ public sealed partial class ServicesViewModel : PageViewModel, IFilterablePage
 
         try
         {
-            OperationResult result = disabling
-                ? await _services.DisableAsync(item.Definition, PageToken).ConfigureAwait(true)
-                : await _services.RestoreAsync(item.Definition.ServiceName, PageToken).ConfigureAwait(true);
-
-            item.Update(_services.GetState(item.Definition.ServiceName));
-
-            if (result.Success)
+            await RunItemChangeAsync(async () =>
             {
-                Interaction(result, item, disabling);
-            }
-            else
-            {
-                _interaction.ShowError(result.Describe(_localization), item.Name);
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
+                OperationResult result = disabling
+                    ? await _services.DisableAsync(item.Definition).ConfigureAwait(true)
+                    : await _services.RestoreAsync(item.Definition.ServiceName).ConfigureAwait(true);
+
+                item.Update(_services.GetState(item.Definition.ServiceName));
+
+                if (result.Success)
+                {
+                    Interaction(result, item, disabling);
+                }
+                else
+                {
+                    _interaction.ShowError(result.Describe(_localization), item.Name);
+                }
+            }).ConfigureAwait(true);
         }
         catch (Exception ex)
         {
@@ -132,9 +131,9 @@ public sealed partial class ServicesViewModel : PageViewModel, IFilterablePage
             return;
         }
 
-        await RunBusyAsync(
+        await RunChangeAsync(
             _localization["Common_Working"],
-            async token =>
+            async () =>
             {
                 int changed = 0;
                 int failed = 0;
@@ -145,7 +144,7 @@ public sealed partial class ServicesViewModel : PageViewModel, IFilterablePage
                     BusyMessage = item.Name;
                     Progress = i * 100.0 / targets.Count;
 
-                    OperationResult result = await _services.DisableAsync(item.Definition, token).ConfigureAwait(true);
+                    OperationResult result = await _services.DisableAsync(item.Definition).ConfigureAwait(true);
                     item.Update(_services.GetState(item.Definition.ServiceName));
 
                     if (result.Success)
@@ -174,9 +173,9 @@ public sealed partial class ServicesViewModel : PageViewModel, IFilterablePage
             return;
         }
 
-        await RunBusyAsync(
+        await RunChangeAsync(
             _localization["Common_Working"],
-            async token =>
+            async () =>
             {
                 int changed = 0;
                 int failed = 0;
@@ -188,7 +187,7 @@ public sealed partial class ServicesViewModel : PageViewModel, IFilterablePage
                     Progress = i * 100.0 / targets.Count;
 
                     OperationResult result = await _services
-                        .RestoreAsync(item.Definition.ServiceName, token)
+                        .RestoreAsync(item.Definition.ServiceName)
                         .ConfigureAwait(true);
 
                     item.Update(_services.GetState(item.Definition.ServiceName));
@@ -242,25 +241,11 @@ public sealed partial class ServicesViewModel : PageViewModel, IFilterablePage
             }).ConfigureAwait(true);
     }
 
-    private void ApplyFilters()
-    {
-        VisibleItems.Clear();
-
-        foreach (ServiceItemViewModel item in Items)
-        {
-            if (!item.Matches(SearchText))
-            {
-                continue;
-            }
-
-            if (RiskFilter is { } risk && item.Risk != risk)
-            {
-                continue;
-            }
-
-            VisibleItems.Add(item);
-        }
-    }
+    /// <summary>Changes only the rows whose match changed; see <see cref="FilteredView"/>.</summary>
+    private void ApplyFilters() =>
+        FilteredView.ShowOnly(
+            VisibleItems,
+            [.. Items.Where(item => item.Matches(SearchText) && (RiskFilter is not { } risk || item.Risk == risk))]);
 
     private void UpdateCounts()
     {

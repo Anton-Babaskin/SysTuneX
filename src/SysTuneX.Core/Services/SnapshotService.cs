@@ -82,16 +82,11 @@ public sealed class SnapshotService : ISnapshotService
     {
         IReadOnlyList<TweakDefinition> supported = _tweaks.GetSupportedTweaks();
 
-        var applied = new List<string>();
-        foreach (TweakDefinition tweak in supported)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
+        IReadOnlyDictionary<string, TweakStatus> statuses = await _tweaks
+            .GetStatusesAsync(supported, cancellationToken)
+            .ConfigureAwait(false);
 
-            if (_tweaks.GetStatus(tweak) == TweakStatus.Applied)
-            {
-                applied.Add(tweak.Id);
-            }
-        }
+        List<string> applied = [.. supported.Where(t => statuses[t.Id] == TweakStatus.Applied).Select(t => t.Id)];
 
         IReadOnlyList<(ServiceDefinition Definition, ServiceSnapshot State)> services =
             await _services.GetManagedServicesAsync(cancellationToken).ConfigureAwait(false);

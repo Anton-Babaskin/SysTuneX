@@ -237,6 +237,7 @@
                             <ui:ToggleSwitch Grid.Column="2"
                                              VerticalAlignment="Center"
                                              IsChecked="{Binding GameMode.IsOn, Mode=OneWay}"
+                                             controls:SwitchState.FollowsSource="True"
                                              IsEnabled="{Binding IsElevated}"
                                              Command="{Binding GameMode.ToggleCommand}" />
                         </Grid>

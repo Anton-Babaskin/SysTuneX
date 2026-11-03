@@ -93,22 +93,30 @@ public sealed partial class NetworkViewModel : TweakPageViewModel
 
         IsDnsBusy = true;
 
+        NetworkAdapterInfo adapter = SelectedAdapter;
+        DnsPresetViewModel preset = SelectedPreset;
+
         try
         {
-            OperationResult result = await _network
-                .SetDnsAsync(SelectedAdapter.Id, SelectedPreset.Primary, SelectedPreset.Secondary, PageToken)
-                .ConfigureAwait(true);
-
-            if (result.Success)
+            // Two netsh calls, primary then secondary. Cut between them - which leaving the page
+            // used to do - and the adapter keeps a resolver pair nobody chose.
+            await RunItemChangeAsync(async () =>
             {
-                Interaction.ShowSuccess(Localization.Format("Msg_DnsApplied", SelectedPreset.Name));
-            }
-            else
-            {
-                Interaction.ShowError(result.Describe(Localization));
-            }
+                OperationResult result = await _network
+                    .SetDnsAsync(adapter.Id, preset.Primary, preset.Secondary)
+                    .ConfigureAwait(true);
 
-            LoadAdapters();
+                if (result.Success)
+                {
+                    Interaction.ShowSuccess(Localization.Format("Msg_DnsApplied", preset.Name));
+                }
+                else
+                {
+                    Interaction.ShowError(result.Describe(Localization));
+                }
+
+                LoadAdapters();
+            }).ConfigureAwait(true);
         }
         finally
         {
@@ -126,24 +134,27 @@ public sealed partial class NetworkViewModel : TweakPageViewModel
 
         IsDnsBusy = true;
 
+        string adapterId = SelectedAdapter.Id;
+
         try
         {
             // Restore, not "set to DHCP": if the machine had static resolvers before SysTuneX
             // touched it, those are what should come back.
-            OperationResult result = await _network
-                .RestoreDnsAsync(SelectedAdapter.Id, PageToken)
-                .ConfigureAwait(true);
-
-            if (result.Success)
+            await RunItemChangeAsync(async () =>
             {
-                Interaction.ShowSuccess(Localization["Msg_DnsReset"]);
-            }
-            else
-            {
-                Interaction.ShowError(result.Describe(Localization));
-            }
+                OperationResult result = await _network.RestoreDnsAsync(adapterId).ConfigureAwait(true);
 
-            LoadAdapters();
+                if (result.Success)
+                {
+                    Interaction.ShowSuccess(Localization["Msg_DnsReset"]);
+                }
+                else
+                {
+                    Interaction.ShowError(result.Describe(Localization));
+                }
+
+                LoadAdapters();
+            }).ConfigureAwait(true);
         }
         finally
         {
@@ -154,7 +165,7 @@ public sealed partial class NetworkViewModel : TweakPageViewModel
     [RelayCommand]
     private async Task FlushDnsAsync()
     {
-        OperationResult result = await _network.FlushDnsCacheAsync(PageToken).ConfigureAwait(true);
+        OperationResult result = await _network.FlushDnsCacheAsync().ConfigureAwait(true);
 
         if (result.Success)
         {

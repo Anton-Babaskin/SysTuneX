@@ -247,10 +247,20 @@ public partial class App : Application
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
-        Log(e.Exception, "dispatcher");
-
         // A failed page action should leave the user in the app, not drop them at the desktop.
         e.Handled = true;
+
+        // Someone left a page while it was reading. That is what cancellation is for, and the
+        // commands let it escape - an async command rethrows whatever its task ended with on this
+        // dispatcher - so it arrived here and was shown as "OperationCanceledException: The
+        // operation was canceled", with a path to a log file, as though something had broken. Not
+        // logged either: errors.log is what a bug report is written from.
+        if (ExceptionReport.RootCause(e.Exception) is OperationCanceledException)
+        {
+            return;
+        }
+
+        Log(e.Exception, "dispatcher");
 
         try
         {

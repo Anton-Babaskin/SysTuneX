@@ -19,4 +19,10 @@
     <ProjectReference Include="..\..\src\SysTuneX.Core\SysTuneX.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Plain collection logic from the app, compiled in here rather than referenced: the app's
+         own tests need Windows and WPF, and this has neither, so it is checked on every machine. -->
+    <Compile Include="..\..\src\SysTuneX.App\ViewModels\FilteredView.cs" Link="Linked\FilteredView.cs" />
+  </ItemGroup>
+
 </Project>

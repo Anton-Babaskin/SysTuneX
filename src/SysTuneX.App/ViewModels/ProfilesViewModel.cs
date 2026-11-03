@@ -101,9 +101,9 @@ public sealed partial class ProfilesViewModel : PageViewModel
             return;
         }
 
-        await RunBusyAsync(
+        await RunChangeAsync(
             card.Name,
-            async token =>
+            async () =>
             {
                 var progress = new Progress<BatchProgress>(p =>
                 {
@@ -116,7 +116,7 @@ public sealed partial class ProfilesViewModel : PageViewModel
                     CreateRestorePoint: CreateRestorePoint && RestorePointAvailable);
 
                 ProfileApplyResult result = await _profiles
-                    .ApplyAsync(card.Profile, options, progress, token)
+                    .ApplyAsync(card.Profile, options, progress)
                     .ConfigureAwait(true);
 
                 if (result.RequiresRestart)
