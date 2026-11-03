@@ -316,6 +316,8 @@ Failed registry writes, service operations and system commands surface their rea
 
 SysTuneX calculates the target paths, file count and total size before cleanup.
 
+Cleanup does not follow junctions or symbolic links, and each file is checked to be inside its target folder at the moment it is deleted.
+
 ---
 
 ## Change journal
@@ -337,6 +339,8 @@ It records the state required to restore supported changes, including:
 The Change Log page can restore individual entries or roll back the recorded configuration.
 
 The journal can also be exported as JSON.
+
+Only administrators can write to `%ProgramData%\SysTuneX`. SysTuneX sets those permissions at startup, before it reads anything there. If the folder holds anything that does not belong to SYSTEM, the Administrators group or the user running SysTuneX, it is set aside as `SysTuneX.untrusted-<date and time>` and SysTuneX starts with an empty journal. If the folder cannot be secured, SysTuneX does not start.
 
 ---
 
