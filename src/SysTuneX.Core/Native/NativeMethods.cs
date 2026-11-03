@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using Microsoft.Win32.SafeHandles;
 
 // Every DllImport in this assembly loads from System32 and nowhere else. Without this the folder
 // SysTuneX.exe was started from is searched first, and for nvml.dll and atiadlxx.dll - not on the
@@ -39,6 +40,46 @@ internal static class NativeMethods
 
     internal const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
     internal const uint PROCESS_SET_QUOTA = 0x0100;
+
+    // ── kernel32: files ─────────────────────────────────────────────────────────
+
+    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "CreateFileW")]
+    internal static extern SafeFileHandle CreateFile(
+        string fileName,
+        uint desiredAccess,
+        uint shareMode,
+        IntPtr securityAttributes,
+        uint creationDisposition,
+        uint flagsAndAttributes,
+        IntPtr templateFile);
+
+    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "GetFinalPathNameByHandleW")]
+    internal static extern uint GetFinalPathNameByHandle(SafeFileHandle file, [Out] char[] path, uint length, uint flags);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool SetFileInformationByHandle(SafeFileHandle file, int informationClass, ref FILE_DISPOSITION_INFO_EX information, int size);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool SetFileInformationByHandle(SafeFileHandle file, int informationClass, ref FILE_DISPOSITION_INFO information, int size);
+
+    internal const uint DELETE = 0x00010000;
+    internal const uint FILE_READ_ATTRIBUTES = 0x0080;
+    internal const uint FILE_SHARE_READ = 0x1;
+    internal const uint FILE_SHARE_WRITE = 0x2;
+    internal const uint FILE_SHARE_DELETE = 0x4;
+    internal const uint OPEN_EXISTING = 3;
+    internal const uint FILE_FLAG_BACKUP_SEMANTICS = 0x02000000;
+    internal const uint FILE_FLAG_OPEN_REPARSE_POINT = 0x00200000;
+
+    /// <summary>\Device\HarddiskVolume3\... - needs no drive letter, so it works on every volume.</summary>
+    internal const uint VOLUME_NAME_NT = 0x2;
+
+    internal const int FileDispositionInfo = 4;
+    internal const int FileDispositionInfoEx = 21;
+    internal const uint FILE_DISPOSITION_FLAG_DELETE = 0x01;
+    internal const uint FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE = 0x10;
 
     // ── psapi ───────────────────────────────────────────────────────────────────
 
@@ -233,5 +274,18 @@ internal static class NativeMethods
         public uint PrivilegeCount;
         public LUID Luid;
         public uint Attributes;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct FILE_DISPOSITION_INFO_EX
+    {
+        public uint Flags;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct FILE_DISPOSITION_INFO
+    {
+        /// <summary>A Win32 BOOLEAN, one byte wide.</summary>
+        public byte DeleteFile;
     }
 }
