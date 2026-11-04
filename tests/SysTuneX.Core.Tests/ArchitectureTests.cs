@@ -63,6 +63,51 @@ public sealed partial class ArchitectureTests
             pair => Path.GetFileName(pair.File) == "FileLoggerProvider.cs" && StaticPath.IsMatch(pair.Text));
     }
 
+    /// <summary>The file methods that open the real file and write into it where it stands.</summary>
+    [GeneratedRegex(@"File\.(Create|OpenWrite|WriteAllText|WriteAllTextAsync|WriteAllBytes|WriteAllBytesAsync)\(")]
+    private static partial Regex InPlaceWrite { get; }
+
+    /// <summary>
+    /// State is saved through <c>JsonFile</c>, not serialised straight into its file.
+    ///
+    /// Five stores did exactly that, through <c>File.Create</c>, which truncates first: a crash or a
+    /// power cut during the write left a file that no longer parsed. For gamemode.json that was
+    /// the list of services still to be started again. The two exceptions are <c>JsonFile</c>
+    /// itself and the journal, which has its own atomic write and exports to a file the user chose.
+    /// </summary>
+    [Fact]
+    public void State_is_only_saved_through_JsonFile()
+    {
+        string[] allowed =
+        [
+            "JsonFile.cs",
+            "BackupService.cs",
+        ];
+
+        List<string> offenders =
+        [
+            .. Sources()
+                .Where(pair => !allowed.Contains(Path.GetFileName(pair.File), StringComparer.Ordinal))
+                .Where(pair => pair.Text.Contains("JsonSerializer.Serialize", StringComparison.Ordinal) &&
+                               InPlaceWrite.IsMatch(pair.Text))
+                .Select(pair => Path.GetFileName(pair.File))
+                .Order(StringComparer.Ordinal),
+        ];
+
+        Assert.Empty(offenders);
+    }
+
+    /// <summary>Guards the scan above the same way: the journal's export still matches it.</summary>
+    [Fact]
+    public void The_in_place_write_scan_still_finds_the_journal_export()
+    {
+        Assert.Contains(
+            Sources(),
+            pair => Path.GetFileName(pair.File) == "BackupService.cs" &&
+                    pair.Text.Contains("JsonSerializer.Serialize", StringComparison.Ordinal) &&
+                    InPlaceWrite.IsMatch(pair.Text));
+    }
+
     /// <summary>
     /// Running an external tool has to go through the injected runner.
     ///

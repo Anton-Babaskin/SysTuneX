@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using SysTuneX.Core.Abstractions;
 using SysTuneX.Core.Models;
+using SysTuneX.Core.Services;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 
@@ -147,27 +148,16 @@ public sealed class AppSettingsService : IAppSettingsService
 
     public async Task LoadAsync(CancellationToken cancellationToken = default)
     {
-        try
-        {
-            if (!File.Exists(SettingsPath))
-            {
-                return;
-            }
+        // Bad settings must never stop the app; the defaults are perfectly usable. The file is meant
+        // to be editable by hand, though, so one that does not parse is moved aside rather than
+        // overwritten by the next save - the person who made the typo still has their edit.
+        JsonFileRead<AppSettings> saved = await JsonFile
+            .ReadAsync<AppSettings>(SettingsPath, JsonOptions, _logger, cancellationToken)
+            .ConfigureAwait(false);
 
-            await using FileStream stream = File.OpenRead(SettingsPath);
-            AppSettings? loaded = await JsonSerializer
-                .DeserializeAsync<AppSettings>(stream, JsonOptions, cancellationToken)
-                .ConfigureAwait(false);
-
-            if (loaded is not null)
-            {
-                Current = loaded;
-            }
-        }
-        catch (Exception ex)
+        if (saved.Value is { } loaded)
         {
-            // Bad settings must never stop the app; the defaults are perfectly usable.
-            _logger.LogWarning(ex, "Could not read settings, using defaults");
+            Current = loaded;
         }
     }
 
@@ -176,10 +166,7 @@ public sealed class AppSettingsService : IAppSettingsService
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            Directory.CreateDirectory(_environment.DataDirectory);
-
-            await using FileStream stream = File.Create(SettingsPath);
-            await JsonSerializer.SerializeAsync(stream, Current, JsonOptions, cancellationToken).ConfigureAwait(false);
+            await JsonFile.WriteAsync(SettingsPath, Current, JsonOptions, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

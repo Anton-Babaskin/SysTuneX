@@ -64,22 +64,13 @@ public sealed class GameWatcher : IGameWatcher
 
     public async Task LoadAsync(CancellationToken cancellationToken = default)
     {
-        List<WatchedGame> saved = [];
+        // An unreadable list is logged and moved aside by JsonFile, so the user's own entries are
+        // still on disk for them even though this session starts from the built-in list alone.
+        JsonFileRead<List<WatchedGame>> read = await JsonFile
+            .ReadAsync<List<WatchedGame>>(_listFile, Json, _logger, cancellationToken)
+            .ConfigureAwait(false);
 
-        try
-        {
-            if (File.Exists(_listFile))
-            {
-                await using FileStream stream = File.OpenRead(_listFile);
-                saved = await JsonSerializer
-                    .DeserializeAsync<List<WatchedGame>>(stream, Json, cancellationToken)
-                    .ConfigureAwait(false) ?? [];
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "The watched game list could not be read: {Path}", _listFile);
-        }
+        List<WatchedGame> saved = read.Value ?? [];
 
         lock (_games)
         {
@@ -255,8 +246,6 @@ public sealed class GameWatcher : IGameWatcher
     {
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(_listFile)!);
-
             // Only what the user decided: their own entries, and any built-in they switched off.
             List<WatchedGame> persist;
             lock (_games)
@@ -264,8 +253,7 @@ public sealed class GameWatcher : IGameWatcher
                 persist = [.. _games.Where(g => g.IsCustom || !g.Enabled)];
             }
 
-            await using FileStream stream = File.Create(_listFile);
-            await JsonSerializer.SerializeAsync(stream, persist, Json, cancellationToken).ConfigureAwait(false);
+            await JsonFile.WriteAsync(_listFile, persist, Json, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
