@@ -53,11 +53,11 @@ public sealed class ScheduledTaskService : IScheduledTaskService
         // perfectly ordinary answer - Windows editions differ - and should leave the other tasks
         // readable rather than turning the whole query into an error.
         string script =
-            List(paths) + " | ForEach-Object { " + SplitPath +
+            "$args | ForEach-Object { " + SplitPath +
             "$t = Get-ScheduledTask -TaskPath $p -TaskName $n -ErrorAction SilentlyContinue; " +
             $"if ($t) {{ Write-Output ($_ + '{ScheduledTaskQuery.Separator}' + $t.State) }} }}";
 
-        ProcessRunResult result = await RunAsync(script, cancellationToken).ConfigureAwait(false);
+        ProcessRunResult result = await RunAsync(script, paths, cancellationToken).ConfigureAwait(false);
 
         if (!result.Success)
         {
@@ -88,12 +88,12 @@ public sealed class ScheduledTaskService : IScheduledTaskService
         // Errors are collected and printed rather than thrown, so one task missing on this edition
         // of Windows does not stop the other five from being changed.
         string script =
-            List(paths) + " | ForEach-Object { " + SplitPath +
+            "$args | ForEach-Object { " + SplitPath +
             "try { " +
             $"{verb} -TaskPath $p -TaskName $n -ErrorAction Stop | Out-Null }} " +
             "catch { Write-Output ('FAILED ' + $_.Exception.Message) } }";
 
-        ProcessRunResult result = await RunAsync(script, cancellationToken).ConfigureAwait(false);
+        ProcessRunResult result = await RunAsync(script, paths, cancellationToken).ConfigureAwait(false);
 
         if (!result.Success)
         {
@@ -117,24 +117,20 @@ public sealed class ScheduledTaskService : IScheduledTaskService
         return OperationResult.Ok();
     }
 
-    private static string List(IReadOnlyList<string> paths) =>
-        "@(" + string.Join(',', paths.Select(Quote)) + ")";
-
     /// <summary>
-    /// Runs the script through the base64 path rather than building a command line.
+    /// Runs the script through the base64 path rather than building a command line, with the task
+    /// paths passed to it as arguments.
     ///
     /// The first version of this quoted the script onto <c>powershell -Command "..."</c> by hand,
     /// which means surviving both the Windows command line parser and PowerShell's own. Every
     /// scheme anyone writes for that is a bug waiting for a path with a quote in it - and there was
     /// already a method here that encodes the command instead, so there is nothing to get right.
+    ///
+    /// The paths used to be quoted into the script themselves, with the ASCII apostrophe doubled.
+    /// PowerShell also ends a single-quoted string at U+2018 to U+201B, and a path can come back
+    /// from the change journal, so a path with a typographic apostrophe ran whatever followed it as
+    /// administrator. As arguments they are never parsed at all.
     /// </summary>
-    private Task<ProcessRunResult> RunAsync(string script, CancellationToken cancellationToken) =>
-        _processes.RunPowerShellAsync(script, Timeout, cancellationToken);
-
-    /// <summary>
-    /// A single-quoted PowerShell string, with any single quote in the path doubled. The paths are
-    /// ours rather than the user's, but building a script by concatenation is how a quoting bug
-    /// becomes a command nobody asked for.
-    /// </summary>
-    private static string Quote(string path) => "'" + path.Replace("'", "''", StringComparison.Ordinal) + "'";
+    private Task<ProcessRunResult> RunAsync(string script, IReadOnlyList<string> paths, CancellationToken cancellationToken) =>
+        _processes.RunPowerShellAsync(PowerShellScript.WithArguments(script, paths), Timeout, cancellationToken);
 }

@@ -247,14 +247,14 @@ public sealed class ChangeRollbackTests
         IChangeRestorer[] restorers =
         [
             new TweakChangeRestorer(null!),
-            new ServiceChangeRestorer(null!),
+            new ServiceChangeRestorer(null!, null!),
             new PowerSchemeChangeRestorer(null!),
             new PowerSettingChangeRestorer(null!, null!),
             new DnsChangeRestorer(null!),
             new HostsChangeRestorer(null!),
             new BootChangeRestorer([]),
-            new ScheduledTaskChangeRestorer(null!, null!),
-            new RegistryChangeRestorer(null!, null!),
+            new ScheduledTaskChangeRestorer(null!, null!, null!),
+            new RegistryChangeRestorer(null!, null!, null!),
         ];
 
         List<BackupKind> unhandled =

@@ -160,6 +160,16 @@ public sealed class GameModeService : IGameModeService
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                // The list comes from the session file, and starting a service can mean enabling it
+                // first, as administrator. Game mode only ever stops services from the catalogue, so
+                // a name that is not one of them was not written by SysTuneX.
+                if (!JournalTargets.IsKnownService(serviceName))
+                {
+                    notes.Add($"{serviceName}: not a service game mode stops, so it was left alone.");
+                    _logger.LogWarning("Skipped {Service} from the game mode session: not a service game mode stops", serviceName);
+                    continue;
+                }
+
                 OperationResult result = await _services.StartAsync(serviceName, cancellationToken).ConfigureAwait(false);
                 if (result.Success)
                 {

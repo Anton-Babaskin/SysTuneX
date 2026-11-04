@@ -3,6 +3,30 @@
 Every released version, newest first. The release workflow publishes only the section
 for the version being released, so a release page shows that version and nothing else.
 
+## v2.12.4
+
+The second half of the security fixes in v2.12.3. That release made SysTuneX's data folder
+administrators-only; this one stops SysTuneX from doing whatever the files in it say, in case
+something with administrator rights, or a mistake in that lock, ever lets a changed file through.
+
+### Restore checks what it is about to restore
+
+Restore All, and turning game mode off, replay the change journal and the game-mode session as
+administrator. They used to act on any entry: write any registry value in any hive, enable any
+scheduled task, start any service. Each entry is now held to what SysTuneX itself could have
+recorded - a registry value one of its tweaks writes, a well-formed scheduled task path, a service
+from its own catalogue. An entry that fails is skipped, shown as failed in the restore report with
+the reason, and left in the journal, so the history does not call it restored. Everything else is
+restored as before.
+
+### Text passed to PowerShell can no longer become a command
+
+Scheduled task paths, restore point descriptions and app package names were put inside PowerShell
+scripts in quotes, and only the plain apostrophe was escaped. PowerShell also treats the curly
+quotes as quotes, so a task path containing `’` could end the string and run the rest as a command,
+as administrator. Values are no longer written into the script text at all; they are passed
+alongside it, where nothing in them can be read as code.
+
 ## v2.12.3
 
 A security release. SysTuneX always runs as administrator, and three places let someone without

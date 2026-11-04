@@ -71,21 +71,23 @@ public sealed class AppPackageService : IAppPackageService
 
     public async Task<OperationResult> RemoveAppAsync(string packageName, CancellationToken cancellationToken = default)
     {
-        // The name goes into a script, so anything that could end the string or start a second
-        // statement is refused outright rather than escaped. Every name we pass comes from our own
-        // catalogue; this is for the day one does not.
+        // No real package name contains any of these, so one that does is refused rather than
+        // passed on. Every name we pass comes from our own catalogue; this is for the day one does
+        // not. The name reaches the script as an argument, not as text: this list missed U+2018 to
+        // U+201B, which PowerShell also reads as quotes, back when the name was quoted into it.
         if (string.IsNullOrWhiteSpace(packageName) || packageName.Any(c => c is '\'' or '"' or ';' or '|' or '&'))
         {
             return OperationResult.Fail(CoreMessages.CleanupUnsafePackageName);
         }
 
-        string script = $$"""
+        const string script = """
+            param($Name)
             $ErrorActionPreference = 'Stop'
-            Get-AppxPackage -Name '{{packageName}}' | Remove-AppxPackage
+            Get-AppxPackage -Name $Name | Remove-AppxPackage
             """;
 
         ProcessRunResult result = await _processes
-            .RunPowerShellAsync(script, TimeSpan.FromSeconds(120), cancellationToken)
+            .RunPowerShellAsync(PowerShellScript.WithArguments(script, packageName), TimeSpan.FromSeconds(120), cancellationToken)
             .ConfigureAwait(false);
 
         if (!result.Success)

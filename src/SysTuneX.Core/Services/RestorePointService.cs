@@ -84,11 +84,14 @@ public sealed class RestorePointService : IRestorePointService
 
         try
         {
-            string safeDescription = description.Replace("'", "''");
-
+            // The description goes in as an argument rather than quoted into the script: doubling
+            // the ASCII apostrophe left U+2018 to U+201B, which PowerShell also reads as quotes.
+            // Stop, because the exit code is how this tells a refusal from a restore point.
             ProcessRunResult result = await _processes
                 .RunPowerShellAsync(
-                    $"Checkpoint-Computer -Description '{safeDescription}' -RestorePointType 'MODIFY_SETTINGS'",
+                    PowerShellScript.WithArguments(
+                        "param($Description) Checkpoint-Computer -Description $Description -RestorePointType 'MODIFY_SETTINGS' -ErrorAction Stop",
+                        description),
                     TimeSpan.FromMinutes(4),
                     cancellationToken)
                 .ConfigureAwait(false);

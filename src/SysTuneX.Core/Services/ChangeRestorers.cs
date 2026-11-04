@@ -1,4 +1,5 @@
 using System.Runtime.Versioning;
+using Microsoft.Extensions.Logging;
 using SysTuneX.Core.Abstractions;
 using SysTuneX.Core.Models;
 
@@ -60,13 +61,24 @@ public sealed class TweakChangeRestorer : IChangeRestorer
         string.Join(", ", entries.Select(e => e.OwnerId).Distinct(StringComparer.Ordinal));
 }
 
-/// <summary>Puts every service back to the start type and running state it was found in.</summary>
+/// <summary>
+/// Puts every service back to the start type and running state it was found in.
+///
+/// Only services SysTuneX manages. The journal can name any service, and putting one back can mean
+/// enabling it and starting it as administrator - so a name the catalogue does not know is reported
+/// and left alone rather than acted on.
+/// </summary>
 [SupportedOSPlatform("windows")]
 public sealed class ServiceChangeRestorer : IChangeRestorer
 {
     private readonly IServiceManager _services;
+    private readonly ILogger<ServiceChangeRestorer> _logger;
 
-    public ServiceChangeRestorer(IServiceManager services) => _services = services;
+    public ServiceChangeRestorer(IServiceManager services, ILogger<ServiceChangeRestorer> logger)
+    {
+        _services = services;
+        _logger = logger;
+    }
 
     public string Id => "services";
 
@@ -88,6 +100,15 @@ public sealed class ServiceChangeRestorer : IChangeRestorer
         for (int i = 0; i < names.Length; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
+
+            if (!JournalTargets.IsKnownService(names[i]))
+            {
+                _logger.LogWarning("Skipped a journal entry for {Service}: not a service SysTuneX manages", names[i]);
+                failed++;
+                errors.Add($"{names[i]}: not a service SysTuneX manages, so it was left alone.");
+                continue;
+            }
+
             progress?.Report(new BatchProgress(names[i], i, names.Length));
 
             OperationResult result = await _services.RestoreAsync(names[i], cancellationToken).ConfigureAwait(false);
@@ -207,17 +228,26 @@ public sealed class HostsChangeRestorer : IChangeRestorer
 /// Last on purpose. Most registry entries belong to a tweak and are reverted through it; this
 /// catches the ones written by something that is not a tweak, and would otherwise be the kind of
 /// entry that sat in the journal looking restorable and never was.
+///
+/// Only values SysTuneX itself writes. Everything else here comes straight from the journal - key,
+/// value name, data and type - and is written as administrator, so an entry naming any other value
+/// would be a way to write anywhere in the registry. Those are reported and left alone.
 /// </summary>
 [SupportedOSPlatform("windows")]
 public sealed class RegistryChangeRestorer : IChangeRestorer
 {
     private readonly IRegistryService _registry;
     private readonly IChangeJournalWriter _backup;
+    private readonly ILogger<RegistryChangeRestorer> _logger;
 
-    public RegistryChangeRestorer(IRegistryService registry, IChangeJournalWriter backup)
+    public RegistryChangeRestorer(
+        IRegistryService registry,
+        IChangeJournalWriter backup,
+        ILogger<RegistryChangeRestorer> logger)
     {
         _registry = registry;
         _backup = backup;
+        _logger = logger;
     }
 
     /// <summary>
@@ -252,6 +282,17 @@ public sealed class RegistryChangeRestorer : IChangeRestorer
         foreach (BackupEntry entry in entries)
         {
             cancellationToken.ThrowIfCancellationRequested();
+
+            if (!JournalTargets.IsKnownRegistryValue(entry.Target, entry.ValueName))
+            {
+                _logger.LogWarning(
+                    "Skipped a journal entry for {Path}\\{Name}: not a value SysTuneX writes",
+                    entry.Target,
+                    entry.ValueName);
+                failed++;
+                errors.Add($"{entry.Target}\\{entry.ValueName}: not a value SysTuneX writes, so it was left alone.");
+                continue;
+            }
 
             // No recorded value means the value did not exist before, so deleting is the restore.
             // Writing a zero instead would leave the machine in a state Windows never shipped.
@@ -354,17 +395,29 @@ public sealed class PowerSettingChangeRestorer : IChangeRestorer
     }
 }
 
-/// <summary>Scheduled tasks, for entries not owned by a tweak.</summary>
+/// <summary>
+/// Scheduled tasks, for entries not owned by a tweak.
+///
+/// Each path has to be one Task Scheduler could hold before it goes anywhere near PowerShell. The
+/// service passes paths as arguments rather than script text, so this is not what stops a path
+/// from running as a command - it is what keeps a journal entry that was never a task path from
+/// being treated as one.
+/// </summary>
 [SupportedOSPlatform("windows")]
 public sealed class ScheduledTaskChangeRestorer : IChangeRestorer
 {
     private readonly IScheduledTaskService _tasks;
     private readonly IChangeJournalWriter _backup;
+    private readonly ILogger<ScheduledTaskChangeRestorer> _logger;
 
-    public ScheduledTaskChangeRestorer(IScheduledTaskService tasks, IChangeJournalWriter backup)
+    public ScheduledTaskChangeRestorer(
+        IScheduledTaskService tasks,
+        IChangeJournalWriter backup,
+        ILogger<ScheduledTaskChangeRestorer> logger)
     {
         _tasks = tasks;
         _backup = backup;
+        _logger = logger;
     }
 
     public string Id => "scheduled-tasks";
@@ -378,8 +431,29 @@ public sealed class ScheduledTaskChangeRestorer : IChangeRestorer
         IProgress<BatchProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
+        List<BackupEntry> valid = [.. entries.Where(e => JournalTargets.IsScheduledTaskPath(e.Target))];
+        string[] refused =
+        [
+            .. entries
+                .Where(e => !JournalTargets.IsScheduledTaskPath(e.Target))
+                .Select(e => e.Target)
+                .Distinct(StringComparer.OrdinalIgnoreCase),
+        ];
+
+        var errors = new List<string>();
+        foreach (string path in refused)
+        {
+            _logger.LogWarning("Skipped a journal entry for {Task}: not a scheduled task path", path);
+            errors.Add($"{path}: not a scheduled task path, so it was left alone.");
+        }
+
         // Only what was recorded as on. A task the user disabled themselves has no entry here.
-        string[] paths = [.. entries.Select(e => e.Target).Distinct(StringComparer.OrdinalIgnoreCase)];
+        string[] paths = [.. valid.Select(e => e.Target).Distinct(StringComparer.OrdinalIgnoreCase)];
+
+        if (paths.Length == 0)
+        {
+            return new RestoreOutcome(0, refused.Length, errors);
+        }
 
         OperationResult result = await _tasks
             .SetEnabledAsync(paths, enabled: true, cancellationToken)
@@ -387,10 +461,11 @@ public sealed class ScheduledTaskChangeRestorer : IChangeRestorer
 
         if (!result.Success)
         {
-            return new RestoreOutcome(0, paths.Length, [result.Message ?? "The scheduled tasks could not be restored."]);
+            errors.Add(result.Message ?? "The scheduled tasks could not be restored.");
+            return new RestoreOutcome(0, paths.Length + refused.Length, errors);
         }
 
-        await _backup.MarkRevertedAsync([.. entries.Select(e => e.Id)], cancellationToken).ConfigureAwait(false);
-        return new RestoreOutcome(paths.Length, 0, []);
+        await _backup.MarkRevertedAsync([.. valid.Select(e => e.Id)], cancellationToken).ConfigureAwait(false);
+        return new RestoreOutcome(paths.Length, refused.Length, errors);
     }
 }

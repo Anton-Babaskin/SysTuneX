@@ -50,6 +50,9 @@ public sealed class FakeServiceManager : IServiceManager
 
     public List<string> Stopped { get; } = [];
 
+    /// <summary>Services put back from the change journal, in the order they were asked for.</summary>
+    public List<string> Restored { get; } = [];
+
     /// <summary>Services that refuse to stop, to prove a refusal is reported rather than swallowed.</summary>
     public HashSet<string> RefusesToStop { get; } = new(StringComparer.OrdinalIgnoreCase);
 
@@ -91,8 +94,11 @@ public sealed class FakeServiceManager : IServiceManager
     public Task<OperationResult> DisableAsync(ServiceDefinition definition, CancellationToken cancellationToken = default) =>
         Task.FromResult(OperationResult.Ok());
 
-    public Task<OperationResult> RestoreAsync(string serviceName, CancellationToken cancellationToken = default) =>
-        Task.FromResult(OperationResult.Ok());
+    public Task<OperationResult> RestoreAsync(string serviceName, CancellationToken cancellationToken = default)
+    {
+        Restored.Add(serviceName);
+        return Task.FromResult(OperationResult.Ok());
+    }
 
     public Task<OperationResult> StartAsync(string serviceName, CancellationToken cancellationToken = default)
     {
