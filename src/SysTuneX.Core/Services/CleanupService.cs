@@ -2,6 +2,7 @@ using System.Runtime.Versioning;
 using Microsoft.Extensions.Logging;
 using SysTuneX.Core.Abstractions;
 using SysTuneX.Core.Models;
+using SysTuneX.Core.Native;
 using SysTuneX.Core.Tweaks;
 
 namespace SysTuneX.Core.Services;
@@ -82,6 +83,13 @@ public sealed class CleanupService : ICleanupService
 
                     foreach (string path in ResolvePaths(target))
                     {
+                        // Taken once, before the walk. Every delete below is checked against where
+                        // this folder really was now, not against wherever its name leads by then.
+                        if (ContainedDelete.ResolveRoot(path) is not { } root)
+                        {
+                            continue;
+                        }
+
                         foreach (FileInfo file in EnumerateFiles(path, target.SearchPattern, cancellationToken))
                         {
                             if (target.MinimumAge > TimeSpan.Zero && file.LastWriteTimeUtc > cutoff)
@@ -94,20 +102,23 @@ public sealed class CleanupService : ICleanupService
                             {
                                 long size = file.Length;
 
-                                // Read-only leftovers are common in shader caches.
-                                if (file.IsReadOnly)
+                                switch (ContainedDelete.Delete(file.FullName, root, directory: false))
                                 {
-                                    file.IsReadOnly = false;
-                                }
+                                    case ContainedDelete.Outcome.Deleted:
+                                        freed += size;
+                                        deleted++;
+                                        break;
 
-                                file.Delete();
-                                freed += size;
-                                deleted++;
-                            }
-                            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-                            {
-                                // Locked by a running process: expected, not an error worth reporting.
-                                skipped++;
+                                    case ContainedDelete.Outcome.OutsideRoot:
+                                        _logger.LogWarning("Did not delete {File}: it leads outside {Root}", file.FullName, path);
+                                        skipped++;
+                                        break;
+
+                                    default:
+                                        // Locked by a running process: expected, not an error worth reporting.
+                                        skipped++;
+                                        break;
+                                }
                             }
                             catch (Exception ex)
                             {
@@ -117,7 +128,7 @@ public sealed class CleanupService : ICleanupService
 
                         if (target.RemoveEmptyDirectories)
                         {
-                            RemoveEmptyDirectories(path, cancellationToken);
+                            RemoveEmptyDirectories(path, root, cancellationToken);
                         }
                     }
                 }
@@ -144,8 +155,10 @@ public sealed class CleanupService : ICleanupService
         {
             try
             {
+                // Not just "exists": a root reached through a junction is skipped outright, so the
+                // page never offers to sweep a folder the cleaner would then refuse to touch.
                 string expanded = Environment.ExpandEnvironmentVariables(raw);
-                if (Directory.Exists(expanded))
+                if (ContainedDelete.ResolveRoot(expanded) is not null)
                 {
                     resolved.Add(expanded);
                 }
@@ -162,83 +175,81 @@ public sealed class CleanupService : ICleanupService
     /// <summary>
     /// Walks a directory tree without letting one unreadable sub-directory abort the whole scan,
     /// which is what <c>SearchOption.AllDirectories</c> does.
+    ///
+    /// Junctions and symbolic links are not followed: they lead somewhere this target never named,
+    /// and %SystemRoot%\Temp lets any user make one. That keeps the scan honest, but it is not what
+    /// keeps the delete safe - a folder can become a link after this has listed it, which is why
+    /// <see cref="ContainedDelete"/> checks every file again at the moment it deletes it.
     /// </summary>
     private static IEnumerable<FileInfo> EnumerateFiles(string root, string pattern, CancellationToken cancellationToken)
     {
-        var stack = new Stack<string>();
-        stack.Push(root);
+        var stack = new Stack<DirectoryInfo>();
+        stack.Push(new DirectoryInfo(root));
 
         while (stack.Count > 0)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            string current = stack.Pop();
+            DirectoryInfo current = stack.Pop();
 
-            string[] subdirectories;
+            DirectoryInfo[] subdirectories;
             try
             {
-                subdirectories = Directory.GetDirectories(current);
+                subdirectories = current.GetDirectories();
             }
             catch
             {
                 continue;
             }
 
-            foreach (string subdirectory in subdirectories)
+            foreach (DirectoryInfo subdirectory in subdirectories)
             {
-                stack.Push(subdirectory);
+                if (!IsLink(subdirectory))
+                {
+                    stack.Push(subdirectory);
+                }
             }
 
-            string[] files;
+            FileInfo[] files;
             try
             {
-                files = Directory.GetFiles(current, pattern);
+                // Listed with their size and attributes, so nothing below goes back to the disk
+                // for them - or fails because one vanished in between.
+                files = current.GetFiles(pattern);
             }
             catch
             {
                 continue;
             }
 
-            foreach (string file in files)
+            foreach (FileInfo file in files)
             {
-                FileInfo? info = null;
-                try
+                if (!IsLink(file))
                 {
-                    info = new FileInfo(file);
-                    _ = info.Length;
-                }
-                catch
-                {
-                    info = null;
-                }
-
-                if (info is not null)
-                {
-                    yield return info;
+                    yield return file;
                 }
             }
         }
     }
 
-    private static void RemoveEmptyDirectories(string root, CancellationToken cancellationToken)
+    private static void RemoveEmptyDirectories(string directory, string resolvedRoot, CancellationToken cancellationToken)
     {
         try
         {
-            foreach (string directory in Directory.GetDirectories(root))
+            foreach (DirectoryInfo child in new DirectoryInfo(directory).GetDirectories())
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                RemoveEmptyDirectories(directory, cancellationToken);
 
-                try
+                // Neither into a link nor the link itself: what it points at was never ours to prune.
+                if (IsLink(child))
                 {
-                    if (Directory.GetFileSystemEntries(directory).Length == 0)
-                    {
-                        Directory.Delete(directory);
-                    }
+                    continue;
                 }
-                catch
-                {
-                    // In use or protected; leave it.
-                }
+
+                RemoveEmptyDirectories(child.FullName, resolvedRoot, cancellationToken);
+
+                // Windows refuses to delete a folder that is not empty, which makes that the check.
+                // In use or protected comes back the same way; either way it stays.
+                ContainedDelete.Delete(child.FullName, resolvedRoot, directory: true);
             }
         }
         catch (OperationCanceledException)
@@ -251,4 +262,5 @@ public sealed class CleanupService : ICleanupService
         }
     }
 
+    private static bool IsLink(FileSystemInfo entry) => entry.Attributes.HasFlag(FileAttributes.ReparsePoint);
 }

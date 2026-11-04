@@ -29,6 +29,9 @@ public partial class App : Application
     // Shared with the container so the settings page can turn verbose logging on without a restart.
     private readonly LogLevelSwitch _logLevel = new();
 
+    // Where an untrusted data folder was moved at startup, for the first lines of the log.
+    private string? _dataDirectorySetAside;
+
     public App()
     {
         _host = Host.CreateDefaultBuilder()
@@ -109,6 +112,13 @@ public partial class App : Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        // Before the journal is read or a single log line is written into the folder it lives in.
+        if (!SecureDataDirectory())
+        {
+            // Not Shutdown(): OnExit saves the settings into that very folder.
+            Environment.Exit(1);
+        }
 
         try
         {
@@ -202,10 +212,45 @@ public partial class App : Application
                 environment.Windows,
                 environment.IsElevated,
                 environment.Windows.IsSupported);
+
+            if (_dataDirectorySetAside is { } setAside)
+            {
+                logger.LogWarning(
+                    "The data folder held files an administrator did not create. It was moved to {Path} and SysTuneX started with an empty journal",
+                    setAside);
+            }
         }
         catch (Exception ex)
         {
             Log(ex, "startup-banner");
+        }
+    }
+
+    /// <summary>
+    /// Makes the data folder writable by administrators only, or refuses to start.
+    ///
+    /// Refusing is the point. Everything SysTuneX restores is read back from that folder, so a
+    /// folder any user could have written to is one the restore could have been written into.
+    /// </summary>
+    private bool SecureDataDirectory()
+    {
+        try
+        {
+            _dataDirectorySetAside = DataDirectorySecurity.Secure();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            // Not Log(): that appends to errors.log inside the very folder that could not be trusted.
+            MessageBox.Show(
+                "SysTuneX could not start.\n\n" +
+                "Its folder in ProgramData could not be made writable by administrators only, so nothing in it can be trusted.\n\n" +
+                ex.Message + "\n\n" +
+                "Rename or delete that folder as an administrator, then start SysTuneX again.",
+                "SysTuneX",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            return false;
         }
     }
 

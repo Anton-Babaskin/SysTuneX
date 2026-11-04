@@ -125,7 +125,9 @@ public sealed class EnvironmentService : IEnvironmentService
             await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken).ConfigureAwait(false);
             if (Process.GetProcessesByName("explorer").Length == 0)
             {
-                Process.Start(new ProcessStartInfo("explorer.exe") { UseShellExecute = true });
+                // By full path: a bare name is looked for in the working directory first.
+                string shell = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe");
+                Process.Start(new ProcessStartInfo(shell) { UseShellExecute = true });
             }
 
             return OperationResult.Ok();
