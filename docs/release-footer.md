@@ -32,9 +32,10 @@ in one step, without you having to find the run:
 gh attestation verify SysTuneX.exe --repo Anton-Babaskin/SysTuneX
 ```
 
-It hashes the file itself and prints the workflow and commit that built it. A file that was changed,
-or built anywhere else, has no matching attestation and fails. `gh` has to be signed in to a GitHub
-account — any account — to run it.
+It hashes the file itself, checks the signature, and ends with **Verification succeeded!** and the
+workflow that built the file — for a release, `.github/workflows/build.yml@refs/heads/main`. A file
+that was changed, or built anywhere else, has no matching attestation and fails. `gh` has to be
+signed in to a GitHub account — any account — to run it.
 
 **SmartScreen will warn**, because the executable is not code-signed — a certificate that avoids
 that costs several hundred dollars a year and requires a registered company. The warning is about
