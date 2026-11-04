@@ -69,6 +69,15 @@ jobs:
     runs-on: windows-latest
     needs: test
 
+    # Naming one permission drops every one not named, so contents: read is here for the
+    # checkout. The other two exist for the provenance step and nothing else: id-token lets the
+    # job prove to Sigstore which workflow and commit it is, attestations lets it store the
+    # signed result. Neither can change the repository.
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -97,6 +106,21 @@ jobs:
           "$hash  SysTuneX.exe" | Out-File -FilePath publish/SHA256SUMS.txt -Encoding ascii
           "SysTuneX.exe: {0:N1} MB" -f ($exe.Length / 1MB) | Write-Host
           "SHA256: $hash" | Write-Host
+
+      # A signed statement, kept by GitHub, that this exact file came out of this workflow at this
+      # commit. The checksum above proves the same thing only to someone who finds this run and
+      # reads its log; `gh attestation verify` checks this in one command. The release job uploads
+      # the artifact below unchanged, so the attestation covers the released file too.
+      #
+      # Skipped on pull_request runs: a pull request from a fork gets no OIDC token, so the step
+      # would fail every outside contribution, and a branch in this repository is already
+      # attested by its own push run. Skipped for Dependabot's branches too, whose runs GitHub
+      # treats like a fork's - and which are never released anyway.
+      - name: Attest build provenance
+        if: github.event_name != 'pull_request' && github.actor != 'dependabot[bot]'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: publish/SysTuneX.exe
 
       - name: Upload artifact
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
