@@ -54,27 +54,21 @@ public sealed class SnapshotService : ISnapshotService
 
     public async Task LoadAsync(CancellationToken cancellationToken = default)
     {
-        try
+        JsonFileRead<List<SystemStateSnapshot>> saved = await JsonFile
+            .ReadAsync<List<SystemStateSnapshot>>(_file, Json, _logger, cancellationToken)
+            .ConfigureAwait(false);
+
+        // Missing or unreadable leaves what is already in memory alone: the page reloads this on
+        // every visit, and a file that went bad mid-session should not wipe the list on screen.
+        if (saved.Status != JsonFileStatus.Read)
         {
-            if (!File.Exists(_file))
-            {
-                return;
-            }
-
-            await using FileStream stream = File.OpenRead(_file);
-            List<SystemStateSnapshot> loaded = await JsonSerializer
-                .DeserializeAsync<List<SystemStateSnapshot>>(stream, Json, cancellationToken)
-                .ConfigureAwait(false) ?? [];
-
-            lock (_snapshots)
-            {
-                _snapshots.Clear();
-                _snapshots.AddRange(loaded);
-            }
+            return;
         }
-        catch (Exception ex)
+
+        lock (_snapshots)
         {
-            _logger.LogError(ex, "Saved snapshots could not be read: {Path}", _file);
+            _snapshots.Clear();
+            _snapshots.AddRange(saved.Value ?? []);
         }
     }
 
@@ -164,16 +158,13 @@ public sealed class SnapshotService : ISnapshotService
     {
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(_file)!);
-
             List<SystemStateSnapshot> copy;
             lock (_snapshots)
             {
                 copy = [.. _snapshots];
             }
 
-            await using FileStream stream = File.Create(_file);
-            await JsonSerializer.SerializeAsync(stream, copy, Json, cancellationToken).ConfigureAwait(false);
+            await JsonFile.WriteAsync(_file, copy, Json, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
