@@ -20,10 +20,17 @@ env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
-# Actions are pinned to a major tag so they pick up their own patches. They were all on v4,
-# which targets Node.js 20 - deprecated by GitHub, already force-run on Node 24, and warned
-# about on every single run. A warning today is a failed build the day the runners stop
-# carrying the shim, and this repository publishes its releases from that build.
+# Every action is pinned to a full commit SHA, with the release it came from as a comment.
+#
+# A tag is a pointer its owner can move, and this workflow builds an executable people run as
+# administrator, then publishes it with write access to the repository. A major tag such as
+# @v7 would run whatever it pointed at on the day - including code pushed by someone who had
+# taken over that action's repository. A SHA can only ever mean one commit.
+#
+# Pinning trades automatic patches for deliberate ones, so Dependabot (.github/dependabot.yml)
+# proposes new releases weekly and updates the SHA and the comment together. Stay on current
+# majors all the same: the v4 actions targeted Node.js 20, were force-run on Node 24 and warned
+# on every run, and a warning today is a failed build the day the runners drop the shim.
 jobs:
   test:
     name: Build and test
@@ -31,10 +38,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup .NET 10
-        uses: actions/setup-dotnet@v6
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           dotnet-version: '10.0.x'
 
@@ -62,12 +69,21 @@ jobs:
     runs-on: windows-latest
     needs: test
 
+    # Naming one permission drops every one not named, so contents: read is here for the
+    # checkout. The other two exist for the provenance step and nothing else: id-token lets the
+    # job prove to Sigstore which workflow and commit it is, attestations lets it store the
+    # signed result. Neither can change the repository.
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup .NET 10
-        uses: actions/setup-dotnet@v6
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           dotnet-version: '10.0.x'
 
@@ -91,8 +107,23 @@ jobs:
           "SysTuneX.exe: {0:N1} MB" -f ($exe.Length / 1MB) | Write-Host
           "SHA256: $hash" | Write-Host
 
+      # A signed statement, kept by GitHub, that this exact file came out of this workflow at this
+      # commit. The checksum above proves the same thing only to someone who finds this run and
+      # reads its log; `gh attestation verify` checks this in one command. The release job uploads
+      # the artifact below unchanged, so the attestation covers the released file too.
+      #
+      # Skipped on pull_request runs: a pull request from a fork gets no OIDC token, so the step
+      # would fail every outside contribution, and a branch in this repository is already
+      # attested by its own push run. Skipped for Dependabot's branches too, whose runs GitHub
+      # treats like a fork's - and which are never released anyway.
+      - name: Attest build provenance
+        if: github.event_name != 'pull_request' && github.actor != 'dependabot[bot]'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: publish/SysTuneX.exe
+
       - name: Upload artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: SysTuneX-win-x64
           path: |
@@ -116,10 +147,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Download the built executable
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: SysTuneX-win-x64
           path: publish

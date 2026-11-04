@@ -23,6 +23,20 @@ including whoever controls this release page, can swap the binary without the nu
 That is a stronger guarantee than a code signature, which proves only who shipped a file and
 nothing about what it does.
 
+The same build also signs a provenance attestation for `SysTuneX.exe`: a statement, kept by GitHub
+and recorded in Sigstore's public transparency log, that a file with exactly this hash came out of
+this repository's workflow at a specific commit. The [GitHub CLI](https://cli.github.com/) checks it
+in one step, without you having to find the run:
+
+```powershell
+gh attestation verify SysTuneX.exe --repo Anton-Babaskin/SysTuneX
+```
+
+It hashes the file itself, checks the signature, and ends with **Verification succeeded!** and the
+workflow that built the file — for a release, `.github/workflows/build.yml@refs/heads/main`. A file
+that was changed, or built anywhere else, has no matching attestation and fails. `gh` has to be
+signed in to a GitHub account — any account — to run it.
+
 **SmartScreen will warn**, because the executable is not code-signed — a certificate that avoids
 that costs several hundred dollars a year and requires a registered company. The warning is about
 how many people have run this file, not about what it does. Choose **More info → Run anyway**, or
