@@ -56,5 +56,6 @@ SysTuneX guarda el estado original de cada ajuste compatible antes de modificarl
 4. Revisa las descripciones y niveles de riesgo antes de aplicar cambios.
 
 > El ejecutable todavía no está firmado digitalmente, por lo que Windows SmartScreen puede mostrar una advertencia.
+> Si Smart App Control está activado, SysTuneX no se abrirá: en Windows 11 actualizado desde abril de 2026 puede desactivarse, y volver a activarse más tarde, en «Seguridad de Windows → Control de aplicaciones y navegador».
 
 La documentación técnica completa, la arquitectura y las instrucciones de compilación están disponibles en el [README en inglés](README.md). El proyecto se distribuye bajo la licencia [MIT](LICENSE).

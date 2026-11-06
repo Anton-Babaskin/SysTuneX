@@ -146,6 +146,18 @@ people have run this file, not about what the file does.
 **More info → Run anyway.** If you would rather not, verify the checksum first, or upload the file
 to [VirusTotal](https://www.virustotal.com/) and see what seventy engines make of it.
 
+### Smart App Control
+
+Smart App Control is stricter than SmartScreen and has no "Run anyway". On a fresh installation of
+Windows 11 it starts in evaluation mode; if Windows then switches it on, it blocks every app that
+is neither signed nor widely used, and this one is unsigned. There is nothing to click through:
+**while Smart App Control is on, SysTuneX does not start.**
+
+On Windows 11 updated since April 2026 — 24H2, 25H2 and 26H2 — it can be switched off in **Windows
+Security → App & browser control → Smart App Control settings**, and back on later without
+reinstalling Windows. Before that update, switching it off was permanent. Check the hash first, and
+decide knowing that SysTuneX will not run while it is on.
+
 ### What it actually does to your machine
 
 Every change SysTuneX makes is **recorded before it is made** and can be undone from the change

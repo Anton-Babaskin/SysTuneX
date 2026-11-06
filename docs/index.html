@@ -103,6 +103,14 @@
     },
     {
       "@type": "Question",
+      "name": "Why does SysTuneX not start at all?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Smart App Control is on. Unlike SmartScreen it has no Run anyway, and it blocks unsigned apps that are not widely used. On Windows 11 updated since April 2026 it can be switched off, and back on later, in Windows Security under App & browser control, without reinstalling Windows. SysTuneX will not run while it is on."
+      }
+    },
+    {
+      "@type": "Question",
       "name": "Does SysTuneX need .NET installed?",
       "acceptedAnswer": {
         "@type": "Answer",
@@ -390,6 +398,10 @@ Get-FileHash .\SysTuneX.exe -Algorithm SHA256
       <details>
         <summary>Why does SmartScreen warn about it?</summary>
         <p>The executable is not code-signed, because a certificate costs several hundred dollars a year and requires a registered company. Instead every release publishes a SHA-256 checksum you can match against the public build log, which proves the file came from the tagged source. Choose <em>More info → Run anyway</em>, or check the hash first, or put the file through VirusTotal.</p>
+      </details>
+      <details>
+        <summary>Why does it not start at all?</summary>
+        <p>Smart App Control is on. Unlike SmartScreen it has no <em>Run anyway</em>: it blocks unsigned apps that are not widely used, and SysTuneX is unsigned. On Windows 11 updated since April 2026 you can switch it off, and back on later, in <em>Windows Security → App &amp; browser control → Smart App Control settings</em>, without reinstalling Windows. SysTuneX will not run while it is on.</p>
       </details>
       <details>
         <summary>Does it need .NET installed?</summary>

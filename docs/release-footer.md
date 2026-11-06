@@ -28,6 +28,10 @@ that costs several hundred dollars a year and requires a registered company. The
 how many people have run this file, not about what it does. Choose **More info → Run anyway**, or
 check the hash first, or put the file through [VirusTotal](https://www.virustotal.com/).
 
+**Smart App Control has no "Run anyway".** If it is on, SysTuneX will not start at all. On Windows 11
+updated since April 2026 it can be switched off, and back on later, in **Windows Security → App &
+browser control → Smart App Control settings**, without reinstalling Windows.
+
 Full detail, including everything the app writes and how each change is undone, is in the
 repository's **Trust and safety** section.
 
@@ -35,7 +39,7 @@ repository's **Trust and safety** section.
 
 ## Known limitations
 
-* Not code-signed, so SmartScreen will warn.
+* Not code-signed, so SmartScreen will warn, and Smart App Control, when it is on, will not let it start.
 * The hosts-file block can be refused by Microsoft Defender tamper protection. The app reports that
   rather than failing silently.
 * Restore points need System Protection switched on for the system drive; if it is off, the app says
