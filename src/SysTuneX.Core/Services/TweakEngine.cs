@@ -47,9 +47,11 @@ public sealed class TweakEngine : ITweakEngine
     {
         WindowsVersionInfo windows = _environment.Windows;
 
+        // Retired tweaks are left out along with ones for other builds. They stay findable, so
+        // Restore All can still undo them on a machine that applied them.
         return TweakCatalog.All
             .Where(t => category is null || t.Category == category)
-            .Where(t => t.AppliesTo(windows))
+            .Where(t => t.IsOfferedOn(windows))
             .ToList();
     }
 
@@ -171,6 +173,11 @@ public sealed class TweakEngine : ITweakEngine
             return OperationResult.NoChange(CoreMessages.TweakBuildGated, tweak.Name, _environment.Windows.Build);
         }
 
+        if (tweak.Retired)
+        {
+            return OperationResult.NoChange(CoreMessages.TweakRetired, tweak.Name);
+        }
+
         if (tweak.HandlerKey is { } key)
         {
             if (!_handlers.TryGetValue(key, out ISpecialTweakHandler? handler))
@@ -260,13 +267,28 @@ public sealed class TweakEngine : ITweakEngine
         var errors = new List<string>();
         var revertedEntries = new List<string>();
         bool changedAnything = false;
+        int attempted = 0;
 
-        foreach (RegistryChange change in tweak.Changes)
+        // The values this tweak writes now, then the ones an earlier version wrote. A former value is
+        // only touched when the journal says SysTuneX set it here: there is no default to fall back
+        // on for a value this version never writes.
+        IEnumerable<(RegistryChange Change, bool Former)> owned =
+            tweak.Changes.Select(change => (change, false))
+                .Concat(tweak.FormerChanges.Select(change => (change, true)));
+
+        foreach ((RegistryChange change, bool former) in owned)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             BackupEntry? entry = _backup.FindActive(BackupKind.RegistryValue, change.KeyPath, change.ValueName);
             OperationResult result;
+
+            if (former && entry is null)
+            {
+                continue;
+            }
+
+            attempted++;
 
             if (entry is not null)
             {
@@ -325,7 +347,7 @@ public sealed class TweakEngine : ITweakEngine
             await _backup.MarkRevertedAsync(revertedEntries, cancellationToken).ConfigureAwait(false);
         }
 
-        if (errors.Count == tweak.Changes.Count && errors.Count > 0)
+        if (errors.Count == attempted && errors.Count > 0)
         {
             return OperationResult.Fail(string.Join(" ", errors));
         }
@@ -340,17 +362,24 @@ public sealed class TweakEngine : ITweakEngine
         IEnumerable<TweakDefinition> tweaks,
         IProgress<BatchProgress>? progress = null,
         CancellationToken cancellationToken = default) =>
-        RunBatchAsync(tweaks, ApplyAsync, progress, cancellationToken);
+        RunBatchAsync(tweaks, ApplyAsync, applying: true, progress, cancellationToken);
 
     public Task<BatchResult> RevertManyAsync(
         IEnumerable<TweakDefinition> tweaks,
         IProgress<BatchProgress>? progress = null,
         CancellationToken cancellationToken = default) =>
-        RunBatchAsync(tweaks, RevertAsync, progress, cancellationToken);
+        RunBatchAsync(tweaks, RevertAsync, applying: false, progress, cancellationToken);
 
+    /// <param name="applying">
+    /// Only an apply is skipped for a tweak not offered here. A revert never is: this used to skip
+    /// any tweak whose build range the machine was outside, so a tweak applied on 23H2 and gated out
+    /// at 24H2 could not be undone after the upgrade - Restore All counted it as skipped and left
+    /// its values where SysTuneX had put them.
+    /// </param>
     private async Task<BatchResult> RunBatchAsync(
         IEnumerable<TweakDefinition> tweaks,
         Func<TweakDefinition, CancellationToken, Task<OperationResult>> operation,
+        bool applying,
         IProgress<BatchProgress>? progress,
         CancellationToken cancellationToken)
     {
@@ -367,7 +396,7 @@ public sealed class TweakEngine : ITweakEngine
             TweakDefinition tweak = list[i];
             progress?.Report(new BatchProgress(tweak.Name, i, list.Count));
 
-            if (!tweak.AppliesTo(_environment.Windows))
+            if (applying && !tweak.IsOfferedOn(_environment.Windows))
             {
                 skipped++;
                 continue;

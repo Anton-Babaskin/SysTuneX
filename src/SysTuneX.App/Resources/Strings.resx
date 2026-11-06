@@ -946,6 +946,9 @@
   <data name="Core_Tweak_ApplyFailed" xml:space="preserve">
     <value>{0}: {1}</value>
   </data>
+  <data name="Core_Tweak_Retired" xml:space="preserve">
+    <value>{0} is no longer offered: it does nothing on current Windows. It can still be turned off.</value>
+  </data>
   <data name="Core_Cleanup_UnsafePackageName" xml:space="preserve">
     <value>Refusing to run with a package name that contains shell metacharacters.</value>
   </data>

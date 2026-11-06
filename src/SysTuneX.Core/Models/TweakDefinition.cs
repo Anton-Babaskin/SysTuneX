@@ -61,6 +61,25 @@ public sealed record TweakDefinition
     public IReadOnlyList<RegistryChange> Changes { get; init; } = [];
 
     /// <summary>
+    /// Values an earlier version of this tweak wrote and this one no longer does.
+    ///
+    /// A value leaves <see cref="Changes"/> when Windows stops honouring it, or starts guarding it.
+    /// But a machine that applied the older tweak still carries it, and its journal entry names
+    /// this tweak - and reverting works through the tweak's definition. Without this list, taking a
+    /// value out of a tweak meant Restore All reported success while leaving that value exactly as
+    /// SysTuneX had set it. These are never written again; they are only put back.
+    /// </summary>
+    public IReadOnlyList<RegistryChange> FormerChanges { get; init; } = [];
+
+    /// <summary>
+    /// The tweak is no longer offered: it does nothing on the Windows builds people run, or never
+    /// did what it said. It stays in the catalogue so a machine that applied it can still be put
+    /// back - the journal names it, and Restore All has to find it - but it is not listed, no profile
+    /// may include it, and it cannot be applied.
+    /// </summary>
+    public bool Retired { get; init; }
+
+    /// <summary>
     /// Set for tweaks that are not a plain registry write (core parking, hypervisor launch type).
     /// The engine routes these to a registered <see cref="Abstractions.ISpecialTweakHandler"/>.
     /// </summary>
@@ -89,6 +108,13 @@ public sealed record TweakDefinition
     /// <summary>Extra caution shown in the confirmation dialog (anti-cheat, BitLocker, …).</summary>
     public string? WarningKey { get; init; }
 
+    /// <summary>
+    /// The build is one this tweak means something on. Gates applying and listing - never reverting:
+    /// a machine upgraded past <see cref="MaxBuild"/> still has to be able to undo what was done to it.
+    /// </summary>
     public bool AppliesTo(WindowsVersionInfo windows) =>
         windows.Build >= MinBuild && windows.Build <= MaxBuild;
+
+    /// <summary>Listed and applicable here: the build matches and the tweak is not retired.</summary>
+    public bool IsOfferedOn(WindowsVersionInfo windows) => !Retired && AppliesTo(windows);
 }

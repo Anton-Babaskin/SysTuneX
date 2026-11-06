@@ -18,10 +18,14 @@ namespace SysTuneX.Core.Services;
 /// </summary>
 internal static class JournalTargets
 {
-    /// <summary>Every value the tweak catalogue writes, by key path.</summary>
+    /// <summary>
+    /// Every value the tweak catalogue writes, by key path - and every value it used to write. A
+    /// machine that applied an older version of a tweak still has that value in its journal, and it
+    /// is exactly as much SysTuneX's own record as one this version would make.
+    /// </summary>
     private static readonly Lazy<ILookup<string, string>> CatalogueValues = new(
         () => TweakCatalog.All
-            .SelectMany(tweak => tweak.Changes)
+            .SelectMany(tweak => tweak.Changes.Concat(tweak.FormerChanges))
             .ToLookup(change => change.KeyPath, change => change.ValueName, StringComparer.OrdinalIgnoreCase));
 
     /// <summary>

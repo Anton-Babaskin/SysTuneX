@@ -1534,6 +1534,9 @@
   <data name="Core_Tweak_ApplyFailed" xml:space="preserve">
     <value>{0}: {1}</value>
   </data>
+  <data name="Core_Tweak_Retired" xml:space="preserve">
+    <value>«{0}» больше не предлагается: на современной Windows этот твик ничего не делает. Выключить его по-прежнему можно.</value>
+  </data>
   <data name="Core_Cleanup_UnsafePackageName" xml:space="preserve">
     <value>Отказ: имя пакета содержит служебные символы командной оболочки.</value>
   </data>

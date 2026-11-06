@@ -182,6 +182,9 @@ public static class CoreMessages
     public static readonly MessageTemplate TweakApplyFailed =
         new("Tweak_ApplyFailed", "{0}: {1}");
 
+    public static readonly MessageTemplate TweakRetired =
+        new("Tweak_Retired", "{0} is no longer offered: it does nothing on current Windows. It can still be turned off.");
+
     // ── Cleanup ─────────────────────────────────────────────────────────────────
 
     public static readonly MessageTemplate CleanupUnsafePackageName =
@@ -265,7 +268,7 @@ public static class CoreMessages
         RestorePointNeedsAdministrator, RestorePointProtectionOff, RestorePointRefused, RestorePointFailed,
         ProcessNotRunning, ProcessSetPriorityFailed, ProcessZeroAffinity, ProcessSetAffinityFailed,
         BootNeedsAdministrator, BootBcdeditRefused,
-        TweakBuildGated, TweakNoHandler, TweakApplyFailed,
+        TweakBuildGated, TweakNoHandler, TweakApplyFailed, TweakRetired,
         CleanupUnsafePackageName, CleanupPackageRemoveFailed,
         EnvironmentExecutableUnknown, EnvironmentElevationRefused, EnvironmentExplorerRestartFailed,
         RestartRefused, ShellOpenFailed, ShellRefusedAddress,

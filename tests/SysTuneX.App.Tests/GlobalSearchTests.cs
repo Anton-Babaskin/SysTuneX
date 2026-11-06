@@ -223,7 +223,7 @@ public sealed class GlobalSearchTests
     {
         public IReadOnlyList<TweakDefinition> GetSupportedTweaks(TweakCategory? category = null) =>
             [.. TweakCatalog.All
-                .Where(t => t.AppliesTo(environment.Windows))
+                .Where(t => t.IsOfferedOn(environment.Windows))
                 .Where(t => category is null || t.Category == category)];
 
         public TweakDefinition? Find(string tweakId) =>

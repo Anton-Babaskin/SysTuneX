@@ -62,8 +62,9 @@ public sealed class ProfileService : IProfileService
             .Select(t => t!)
             .Where(t => t.Risk <= ceiling)
             // Gate on the build number rather than reading live status: resolving a handler
-            // tweak's status shells out to powercfg, and this runs while building the UI.
-            .Where(t => t.AppliesTo(_environment.Windows))
+            // tweak's status shells out to powercfg, and this runs while building the UI. A
+            // retired tweak is never part of a profile, even one that still names it.
+            .Where(t => t.IsOfferedOn(_environment.Windows))
             .ToList();
     }
 

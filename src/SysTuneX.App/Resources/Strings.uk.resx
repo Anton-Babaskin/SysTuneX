@@ -1534,6 +1534,9 @@
   <data name="Core_Tweak_ApplyFailed" xml:space="preserve">
     <value>{0}: {1}</value>
   </data>
+  <data name="Core_Tweak_Retired" xml:space="preserve">
+    <value>«{0}» більше не пропонується: на сучасній Windows цей твік нічого не робить. Вимкнути його, як і раніше, можна.</value>
+  </data>
   <data name="Core_Cleanup_UnsafePackageName" xml:space="preserve">
     <value>Відмова: ім'я пакета містить службові символи командної оболонки.</value>
   </data>
