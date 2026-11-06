@@ -178,6 +178,8 @@ public sealed class BackupServiceTests : IDisposable
             ProductName = "Windows 11 Pro",
         };
 
+        public SeparateElevation? SeparateElevation => null;
+
         public string DataDirectory { get; }
 
         public OperationResult RestartElevated() => OperationResult.Ok();

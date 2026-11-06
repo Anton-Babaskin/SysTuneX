@@ -15,20 +15,28 @@ public sealed class EnvironmentService : IEnvironmentService
 {
     private const string CurrentVersionKey = @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion";
 
+    /// <summary>How long Windows gets to bring an ended shell back before anything else is tried.</summary>
+    private static readonly TimeSpan ShellReturnTimeout = TimeSpan.FromSeconds(10);
+
+    private static readonly TimeSpan ShellPollInterval = TimeSpan.FromMilliseconds(250);
+
     private readonly ILogger<EnvironmentService> _logger;
     private readonly IRegistryService _registry;
     private readonly IProcessRunner _processes;
+    private readonly IDesktopSession _desktop;
     private readonly Lazy<bool> _isElevated;
     private readonly Lazy<WindowsVersionInfo> _windows;
 
     public EnvironmentService(
         ILogger<EnvironmentService> logger,
         IRegistryService registry,
-        IProcessRunner processes)
+        IProcessRunner processes,
+        IDesktopSession desktop)
     {
         _logger = logger;
         _registry = registry;
         _processes = processes;
+        _desktop = desktop;
         _isElevated = new Lazy<bool>(DetectElevation);
         _windows = new Lazy<WindowsVersionInfo>(DetectWindowsVersion);
 
@@ -40,6 +48,8 @@ public sealed class EnvironmentService : IEnvironmentService
     public bool IsElevated => _isElevated.Value;
 
     public WindowsVersionInfo Windows => _windows.Value;
+
+    public SeparateElevation? SeparateElevation => _desktop.SeparateElevation;
 
     public string DataDirectory { get; }
 
@@ -99,37 +109,76 @@ public sealed class EnvironmentService : IEnvironmentService
         return OperationResult.Ok();
     }
 
+    /// <summary>
+    /// Ends this desktop's shell and lets Windows bring it back.
+    ///
+    /// Three things this used to get wrong. It ended every explorer.exe on the machine - an
+    /// administrator may - so a second user signed in through fast user switching lost their shell
+    /// as well. It reported success whatever happened: when Windows refused to end the shell, as it
+    /// does when the shell belongs to another account, the page said Explorer had restarted and
+    /// nothing had. And it gave Windows two seconds to relaunch the shell before starting one itself
+    /// - from an elevated process, so on a slow machine the taskbar came back running as
+    /// administrator, and under Administrator protection as another account altogether.
+    /// </summary>
     public async Task<OperationResult> RestartExplorerAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            Process[] explorers = Process.GetProcessesByName("explorer");
-            foreach (Process explorer in explorers)
+            int session = CurrentSessionId();
+            int stopped = 0;
+            Exception? refusal = null;
+
+            foreach (Process explorer in Process.GetProcessesByName("explorer"))
             {
-                try
+                using (explorer)
                 {
-                    explorer.Kill();
-                    await explorer.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogDebug(ex, "Could not stop explorer PID {Pid}", explorer.Id);
-                }
-                finally
-                {
-                    explorer.Dispose();
+                    if (!IsInSession(explorer, session))
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        explorer.Kill();
+                        await explorer.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+                        stopped++;
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException)
+                    {
+                        refusal ??= ex;
+                        _logger.LogDebug(ex, "Could not stop explorer PID {Pid}", explorer.Id);
+                    }
                 }
             }
 
-            // Windows normally relaunches the shell on its own; start it if it did not.
-            await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken).ConfigureAwait(false);
-            if (Process.GetProcessesByName("explorer").Length == 0)
+            if (stopped == 0 && refusal is not null)
             {
-                // By full path: a bare name is looked for in the working directory first.
-                string shell = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe");
-                Process.Start(new ProcessStartInfo(shell) { UseShellExecute = true });
+                return SeparateElevation is { } separate
+                    ? OperationResult.Fail(
+                        CoreMessages.EnvironmentExplorerOtherAccount,
+                        refusal,
+                        separate.DesktopAccount,
+                        separate.ElevatedAccount)
+                    : OperationResult.Fail(CoreMessages.EnvironmentExplorerRestartFailed, refusal, refusal.Message);
             }
 
+            // An ended shell is relaunched by Windows itself, as the account signed in to the
+            // session - the only launch that is right in every case. Nothing to wait for when there
+            // was no shell to end.
+            if (stopped > 0 && await WaitForShellAsync(session, cancellationToken).ConfigureAwait(false))
+            {
+                return OperationResult.Ok();
+            }
+
+            if (SeparateElevation is { } elevated)
+            {
+                // Started from here it would run as the elevated account: somebody else's taskbar.
+                return OperationResult.Fail(CoreMessages.EnvironmentExplorerNotBack, elevated.ElevatedAccount);
+            }
+
+            // By full path: a bare name is looked for in the working directory first.
+            string shell = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe");
+            Process.Start(new ProcessStartInfo(shell) { UseShellExecute = true })?.Dispose();
             return OperationResult.Ok();
         }
         catch (OperationCanceledException)
@@ -140,6 +189,54 @@ public sealed class EnvironmentService : IEnvironmentService
         {
             return OperationResult.Fail(CoreMessages.EnvironmentExplorerRestartFailed, ex, ex.Message);
         }
+    }
+
+    private static async Task<bool> WaitForShellAsync(int session, CancellationToken cancellationToken)
+    {
+        DateTime deadline = DateTime.UtcNow + ShellReturnTimeout;
+
+        do
+        {
+            await Task.Delay(ShellPollInterval, cancellationToken).ConfigureAwait(false);
+
+            Process[] explorers = Process.GetProcessesByName("explorer");
+            try
+            {
+                if (explorers.Any(explorer => IsInSession(explorer, session)))
+                {
+                    return true;
+                }
+            }
+            finally
+            {
+                foreach (Process explorer in explorers)
+                {
+                    explorer.Dispose();
+                }
+            }
+        }
+        while (DateTime.UtcNow < deadline);
+
+        return false;
+    }
+
+    private static bool IsInSession(Process process, int session)
+    {
+        try
+        {
+            return process.SessionId == session;
+        }
+        catch (InvalidOperationException)
+        {
+            // Exited between the listing and the question.
+            return false;
+        }
+    }
+
+    private static int CurrentSessionId()
+    {
+        using Process current = Process.GetCurrentProcess();
+        return current.SessionId;
     }
 
     private bool DetectElevation()

@@ -36,13 +36,30 @@ public sealed partial class MainWindowViewModel : ObservableObject
         IsElevated = environment.IsElevated;
         IsOsSupported = windows.IsSupported;
         WindowsDescription = windows.ToString();
+        SeparateElevation = environment.SeparateElevation;
 
-        _localization.LanguageChanged += (_, _) => OnPropertyChanged(nameof(ApplicationTitle));
+        _localization.LanguageChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(ApplicationTitle));
+            OnPropertyChanged(nameof(SeparateElevationMessage));
+        };
     }
 
     public bool IsElevated { get; }
 
     public bool IsOsSupported { get; }
+
+    /// <summary>
+    /// Set when Windows elevated SysTuneX into another account than the desktop's. Per-user
+    /// settings still reach the desktop account; the banner says so, and says what cannot.
+    /// </summary>
+    public SeparateElevation? SeparateElevation { get; }
+
+    public bool HasSeparateElevation => SeparateElevation is not null;
+
+    public string SeparateElevationMessage => SeparateElevation is { } separate
+        ? _localization.Format("Banner_SeparateElevation_Message", separate.ElevatedAccount, separate.DesktopAccount)
+        : string.Empty;
 
     public string ApplicationTitle => $"SysTuneX — {_localization["App_Tagline"]}";
 

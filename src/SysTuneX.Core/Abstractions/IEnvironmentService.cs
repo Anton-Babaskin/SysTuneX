@@ -11,10 +11,16 @@ public interface IEnvironmentService
     /// <summary>Real OS version, read through RtlGetVersion so compatibility shims cannot lie about it.</summary>
     WindowsVersionInfo Windows { get; }
 
+    /// <inheritdoc cref="IDesktopSession.SeparateElevation"/>
+    SeparateElevation? SeparateElevation { get; }
+
     /// <summary>Relaunches the app through the UAC prompt and asks the current instance to exit.</summary>
     OperationResult RestartElevated();
 
-    /// <summary>Restarts explorer.exe so shell-level tweaks become visible without a reboot.</summary>
+    /// <summary>
+    /// Restarts this desktop's explorer.exe so shell-level tweaks become visible without a reboot.
+    /// Fails, rather than reporting success, when the shell could not be stopped or did not come back.
+    /// </summary>
     Task<OperationResult> RestartExplorerAsync(CancellationToken cancellationToken = default);
 
     /// <summary>

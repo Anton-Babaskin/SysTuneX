@@ -217,6 +217,20 @@ public static class CoreMessages
     public static readonly MessageTemplate EnvironmentExplorerRestartFailed =
         new("Environment_ExplorerRestartFailed", "Could not restart Explorer: {0}");
 
+    /// <summary>
+    /// Administrator protection, or an administrator's password typed into a standard user's
+    /// prompt: the shell is the desktop account's, and the elevated account may not end it.
+    /// </summary>
+    public static readonly MessageTemplate EnvironmentExplorerOtherAccount =
+        new(
+            "Environment_ExplorerOtherAccount",
+            "Explorer belongs to {0} and SysTuneX runs as {1}, so Windows does not let SysTuneX restart it. Sign out and back in to see the change.");
+
+    public static readonly MessageTemplate EnvironmentExplorerNotBack =
+        new(
+            "Environment_ExplorerNotBack",
+            "Explorer did not start again on its own, and starting it from here would run it as {0}. Open Task Manager, choose Run new task and enter explorer.");
+
     // ── Game mode ───────────────────────────────────────────────────────────────
 
     public static readonly MessageTemplate GameModeNeedsAdministrator =
@@ -271,6 +285,7 @@ public static class CoreMessages
         TweakBuildGated, TweakNoHandler, TweakApplyFailed, TweakRetired,
         CleanupUnsafePackageName, CleanupPackageRemoveFailed,
         EnvironmentExecutableUnknown, EnvironmentElevationRefused, EnvironmentExplorerRestartFailed,
+        EnvironmentExplorerOtherAccount, EnvironmentExplorerNotBack,
         RestartRefused, ShellOpenFailed, ShellRefusedAddress,
         GameModeNeedsAdministrator, GameModeAlreadyOn, GameModeNotOn, GameNameEmpty, GameAlreadyWatched,
         BackupExportFailed, DiagnosticsReportFailed, RollbackRestorerFailed,

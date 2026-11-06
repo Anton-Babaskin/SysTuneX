@@ -185,6 +185,47 @@ internal static class NativeHelpers
         }
     }
 
+    /// <summary>
+    /// The account signed in to this process's desktop session, as DOMAIN\name, or null.
+    ///
+    /// Asked of the session rather than of the process token: under over-the-shoulder elevation or
+    /// Administrator protection the token belongs to another account, and the session still names
+    /// the person who signed in.
+    /// </summary>
+    internal static string? GetSessionAccountName()
+    {
+        string? user = QuerySessionString(WTSUserName);
+        if (string.IsNullOrEmpty(user))
+        {
+            return null;
+        }
+
+        string? domain = QuerySessionString(WTSDomainName);
+        return string.IsNullOrEmpty(domain) ? user : $"{domain}\\{user}";
+    }
+
+    private static string? QuerySessionString(int infoClass)
+    {
+        IntPtr buffer = IntPtr.Zero;
+        try
+        {
+            return WTSQuerySessionInformation(WTS_CURRENT_SERVER_HANDLE, WTS_CURRENT_SESSION, infoClass, out buffer, out _)
+                ? Marshal.PtrToStringUni(buffer)
+                : null;
+        }
+        catch
+        {
+            return null;
+        }
+        finally
+        {
+            if (buffer != IntPtr.Zero)
+            {
+                WTSFreeMemory(buffer);
+            }
+        }
+    }
+
     /// <summary>Trims one process's working set without taking a full-rights handle on it.</summary>
     internal static bool TrimProcessWorkingSet(int processId)
     {

@@ -158,6 +158,17 @@ Security → App & browser control → Smart App Control settings**, and back on
 reinstalling Windows. Before that update, switching it off was permanent. Check the hash first, and
 decide knowing that SysTuneX will not run while it is on.
 
+### Administrator protection
+
+Windows 11 24H2 to 26H2 can run every elevated app as a hidden administrator account with a
+profile of its own. It is off by default. It can be switched on through local security policy, or in
+**Windows Security → Account protection** where that switch has rolled out, and the 26H2 security
+baseline turns it on in organisations. The same split happens
+when a standard user types an administrator's password into the prompt. SysTuneX notices, says so
+in a banner, and still writes per-user settings — privacy, Start, taskbar, Explorer, mouse — and
+removes Store apps for **your** account rather than the hidden one. What it cannot do in that mode is
+restart Explorer: sign out and back in to see taskbar and Start changes.
+
 ### What it actually does to your machine
 
 Every change SysTuneX makes is **recorded before it is made** and can be undone from the change

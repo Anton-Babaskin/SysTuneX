@@ -109,6 +109,12 @@ public sealed class DiagnosticsService : IDiagnosticsService
     {
         Section(report, "Environment");
         Field(report, "Elevated", _environment.IsElevated ? "yes" : "NO - every system change will fail");
+        Field(
+            report,
+            "Desktop account",
+            _environment.SeparateElevation is { } separate
+                ? $"{separate.DesktopAccount} - SysTuneX runs as {separate.ElevatedAccount} (Administrator protection, or another account's password); per-user settings go to HKEY_USERS\\{separate.DesktopSid}"
+                : "the account SysTuneX runs as");
 
         WindowsVersionInfo windows = _environment.Windows;
         Field(report, "Windows", windows.ToString());

@@ -27,7 +27,7 @@ public sealed partial class PowerShellArgumentTests
     private static string Breakout(char quote) => $@"\Microsoft\Windows\Test{quote}; Remove-Item C:\Windows -Recurse; {quote}";
 
     /// <summary>The values a command hands its script, decoded the way PowerShell decodes them.</summary>
-    private static List<string> ArgumentsOf(string command) =>
+    internal static List<string> ArgumentsOf(string command) =>
     [
         .. EncodedArgument
             .Matches(command)
@@ -105,7 +105,7 @@ public sealed partial class PowerShellArgumentTests
     public async Task A_package_name_with_a_typographic_quote_reaches_PowerShell_as_an_argument(char quote)
     {
         var runner = new FakeProcessRunner();
-        var packages = new AppPackageService(NullLogger<AppPackageService>.Instance, runner);
+        var packages = new AppPackageService(NullLogger<AppPackageService>.Instance, runner, new FakeDesktopSession());
 
         string name = $"Microsoft.BingNews{quote}) Remove-Item C:\\Windows -Recurse #";
 

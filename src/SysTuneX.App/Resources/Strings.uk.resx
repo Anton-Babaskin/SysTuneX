@@ -190,6 +190,12 @@
   <data name="Banner_UnsupportedOs_Message" xml:space="preserve">
     <value>SysTuneX розрахований на Windows 10 1809 і новіші. Частину твіків буде приховано або вони не спрацюють.</value>
   </data>
+  <data name="Banner_SeparateElevation_Title" xml:space="preserve">
+    <value>SysTuneX працює від іншого облікового запису</value>
+  </data>
+  <data name="Banner_SeparateElevation_Message" xml:space="preserve">
+    <value>Windows запустила SysTuneX з правами адміністратора від імені {0}. Так робить «Захист адміністратора», і так само буває, якщо ввести в запит пароль іншого облікового запису. Налаштування все одно змінюються для {1} — облікового запису за цим екраном. Перезапустити провідник звідси не можна: вийдіть із системи й увійдіть знову, щоб побачити зміни панелі завдань і меню «Пуск».</value>
+  </data>
   <data name="Banner_RestartRequired_Title" xml:space="preserve">
     <value>Потрібне перезавантаження</value>
   </data>
@@ -1551,6 +1557,12 @@
   </data>
   <data name="Core_Environment_ExplorerRestartFailed" xml:space="preserve">
     <value>Не вдалося перезапустити провідник: {0}</value>
+  </data>
+  <data name="Core_Environment_ExplorerOtherAccount" xml:space="preserve">
+    <value>Провідник належить {0}, а SysTuneX працює від імені {1}, тож Windows не дає SysTuneX його перезапустити. Вийдіть із системи й увійдіть знову, щоб побачити зміни.</value>
+  </data>
+  <data name="Core_Environment_ExplorerNotBack" xml:space="preserve">
+    <value>Провідник не запустився сам, а запуск звідси відкрив би його від імені {0}. Відкрийте диспетчер завдань, виберіть «Запустити нове завдання» і введіть explorer.</value>
   </data>
   <data name="Core_GameMode_NeedsAdministrator" xml:space="preserve">
     <value>Ігровому режиму потрібні права адміністратора, щоб зупиняти служби та перемикати схему живлення.</value>

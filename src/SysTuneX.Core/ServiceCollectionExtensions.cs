@@ -20,6 +20,7 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<LogLevelSwitch>();
 
         services.AddSingleton<IProcessRunner, ProcessRunner>();
+        services.AddSingleton<IDesktopSession, DesktopSession>();
         services.AddSingleton<IRegistryService, RegistryService>();
         services.AddSingleton<IEnvironmentService, EnvironmentService>();
         // One journal behind three interfaces: services that change the machine take the writer,

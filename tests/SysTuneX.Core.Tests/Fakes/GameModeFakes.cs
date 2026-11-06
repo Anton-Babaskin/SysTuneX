@@ -18,6 +18,9 @@ public sealed class FakeEnvironment : IEnvironmentService
         DisplayVersion = "24H2",
     };
 
+    /// <summary>The same account as the desktop's by default, as on most machines.</summary>
+    public SeparateElevation? SeparateElevation { get; set; }
+
     /// <summary>
     /// A fresh directory per instance, not the shared temp root.
     ///

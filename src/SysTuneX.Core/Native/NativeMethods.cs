@@ -137,6 +137,20 @@ internal static class NativeMethods
     internal const uint SPIF_UPDATEINIFILE = 0x01;
     internal const uint SPIF_SENDCHANGE = 0x02;
 
+    // ── wtsapi32 ────────────────────────────────────────────────────────────────
+
+    [DllImport("wtsapi32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "WTSQuerySessionInformationW")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool WTSQuerySessionInformation(IntPtr server, int sessionId, int infoClass, out IntPtr buffer, out int bytesReturned);
+
+    [DllImport("wtsapi32.dll")]
+    internal static extern void WTSFreeMemory(IntPtr memory);
+
+    internal static readonly IntPtr WTS_CURRENT_SERVER_HANDLE = IntPtr.Zero;
+    internal const int WTS_CURRENT_SESSION = -1;
+    internal const int WTSUserName = 5;
+    internal const int WTSDomainName = 7;
+
     // ── advapi32: service control ───────────────────────────────────────────────
 
     [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "OpenSCManagerW")]

@@ -64,6 +64,12 @@
 
             <ui:InfoBar Severity="Informational"
                         Margin="0,0,0,8"
+                        Title="{loc:Loc Banner_SeparateElevation_Title}"
+                        Message="{Binding SeparateElevationMessage, Mode=OneWay}"
+                        IsOpen="{Binding HasSeparateElevation, Mode=OneWay}" />
+
+            <ui:InfoBar Severity="Informational"
+                        Margin="0,0,0,8"
                         Title="{loc:Loc Banner_RestartRequired_Title}"
                         Message="{loc:Loc Banner_RestartRequired_Message}"
                         IsOpen="{Binding IsRestartPending, Mode=TwoWay}">

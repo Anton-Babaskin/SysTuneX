@@ -207,6 +207,8 @@ public sealed class GlobalSearchTests
             ProductName = "Windows 11 Pro",
         };
 
+        public SeparateElevation? SeparateElevation => null;
+
         public string DataDirectory => Path.GetTempPath();
 
         public OperationResult RestartElevated() => OperationResult.Ok();

@@ -13,27 +13,46 @@ public sealed class AppPackageService : IAppPackageService
     /// <summary>
     /// Asks for JSON rather than loose text, and deliberately omits -AllUsers so the list matches
     /// what removing packages for the current user will actually affect.
+    ///
+    /// The current user is the desktop's. When Windows elevated SysTuneX into another account, a
+    /// bare Get-AppxPackage lists that account's packages and Remove-AppxPackage removes them from
+    /// that account, so the person at the screen kept every app the page said was gone. With a SID
+    /// both act on the desktop account instead, which an administrator is allowed to do.
     /// </summary>
     private const string ListScript = """
-        Get-AppxPackage |
+        param($Sid)
+        $(if ($Sid) { Get-AppxPackage -User $Sid } else { Get-AppxPackage }) |
             Where-Object { $_.NonRemovable -ne $true } |
             Select-Object Name, PackageFamilyName, Publisher |
             ConvertTo-Json -Compress
         """;
 
+    private const string RemoveScript = """
+        param($Name, $Sid)
+        $ErrorActionPreference = 'Stop'
+        if ($Sid) { Get-AppxPackage -Name $Name -User $Sid | Remove-AppxPackage -User $Sid }
+        else { Get-AppxPackage -Name $Name | Remove-AppxPackage }
+        """;
+
     private readonly ILogger<AppPackageService> _logger;
     private readonly IProcessRunner _processes;
+    private readonly IDesktopSession _desktop;
 
-    public AppPackageService(ILogger<AppPackageService> logger, IProcessRunner processes)
+    public AppPackageService(ILogger<AppPackageService> logger, IProcessRunner processes, IDesktopSession desktop)
     {
         _logger = logger;
         _processes = processes;
+        _desktop = desktop;
     }
+
+    /// <summary>The desktop account's SID when SysTuneX runs as another account; otherwise nothing is passed.</summary>
+    private IReadOnlyList<string> DesktopUser =>
+        _desktop.SeparateElevation is { } separate ? [separate.DesktopSid] : [];
 
     public async Task<IReadOnlyList<AppPackage>> GetRemovableAppsAsync(CancellationToken cancellationToken = default)
     {
         ProcessRunResult result = await _processes
-            .RunPowerShellAsync(ListScript, TimeSpan.FromSeconds(90), cancellationToken)
+            .RunPowerShellAsync(PowerShellScript.WithArguments(ListScript, DesktopUser), TimeSpan.FromSeconds(90), cancellationToken)
             .ConfigureAwait(false);
 
         if (!result.Success)
@@ -80,14 +99,11 @@ public sealed class AppPackageService : IAppPackageService
             return OperationResult.Fail(CoreMessages.CleanupUnsafePackageName);
         }
 
-        const string script = """
-            param($Name)
-            $ErrorActionPreference = 'Stop'
-            Get-AppxPackage -Name $Name | Remove-AppxPackage
-            """;
-
         ProcessRunResult result = await _processes
-            .RunPowerShellAsync(PowerShellScript.WithArguments(script, packageName), TimeSpan.FromSeconds(120), cancellationToken)
+            .RunPowerShellAsync(
+                PowerShellScript.WithArguments(RemoveScript, [packageName, .. DesktopUser]),
+                TimeSpan.FromSeconds(120),
+                cancellationToken)
             .ConfigureAwait(false);
 
         if (!result.Success)

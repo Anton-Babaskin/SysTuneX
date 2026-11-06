@@ -190,6 +190,12 @@
   <data name="Banner_UnsupportedOs_Message" xml:space="preserve">
     <value>SysTuneX targets Windows 10 1809 and newer. Some tweaks will be hidden or will not apply.</value>
   </data>
+  <data name="Banner_SeparateElevation_Title" xml:space="preserve">
+    <value>SysTuneX runs as another account</value>
+  </data>
+  <data name="Banner_SeparateElevation_Message" xml:space="preserve">
+    <value>Windows elevated SysTuneX as {0}. Administrator protection does this, and so does typing another account's password into the prompt. Settings are still changed for {1}, the account at this desktop. Explorer cannot be restarted from here: sign out and back in to see taskbar and Start changes.</value>
+  </data>
   <data name="Banner_RestartRequired_Title" xml:space="preserve">
     <value>Restart to finish</value>
   </data>
@@ -963,6 +969,12 @@
   </data>
   <data name="Core_Environment_ExplorerRestartFailed" xml:space="preserve">
     <value>Could not restart Explorer: {0}</value>
+  </data>
+  <data name="Core_Environment_ExplorerOtherAccount" xml:space="preserve">
+    <value>Explorer belongs to {0} and SysTuneX runs as {1}, so Windows does not let SysTuneX restart it. Sign out and back in to see the change.</value>
+  </data>
+  <data name="Core_Environment_ExplorerNotBack" xml:space="preserve">
+    <value>Explorer did not start again on its own, and starting it from here would run it as {0}. Open Task Manager, choose Run new task and enter explorer.</value>
   </data>
   <data name="Core_GameMode_NeedsAdministrator" xml:space="preserve">
     <value>Game mode needs administrator rights to stop services and switch the power scheme.</value>

@@ -40,6 +40,9 @@ repository's **Trust and safety** section.
 ## Known limitations
 
 * Not code-signed, so SmartScreen will warn, and Smart App Control, when it is on, will not let it start.
+* Under Administrator protection, or with an administrator's password typed into a standard user's
+  prompt, SysTuneX runs as another account. It still applies per-user settings and removes Store apps
+  for the account at the desktop, but cannot restart Explorer: sign out and back in instead.
 * The hosts-file block can be refused by Microsoft Defender tamper protection. The app reports that
   rather than failing silently.
 * Restore points need System Protection switched on for the system drive; if it is off, the app says

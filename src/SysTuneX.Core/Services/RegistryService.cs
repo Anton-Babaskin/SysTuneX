@@ -12,8 +12,13 @@ namespace SysTuneX.Core.Services;
 public sealed class RegistryService : IRegistryService
 {
     private readonly ILogger<RegistryService> _logger;
+    private readonly IDesktopSession _desktop;
 
-    public RegistryService(ILogger<RegistryService> logger) => _logger = logger;
+    public RegistryService(ILogger<RegistryService> logger, IDesktopSession desktop)
+    {
+        _logger = logger;
+        _desktop = desktop;
+    }
 
     public object? GetValue(string keyPath, string valueName) => GetValueWithKind(keyPath, valueName).Value;
 
@@ -141,20 +146,42 @@ public sealed class RegistryService : IRegistryService
         }
     }
 
-    private static RegistryKey? OpenKey(string keyPath, bool writable)
+    private RegistryKey? OpenKey(string keyPath, bool writable)
     {
-        (RegistryHive hive, string subKey) = ParsePath(keyPath);
+        (RegistryHive hive, string subKey) = ResolvePath(keyPath, _desktop.SeparateElevation?.DesktopSid);
 
         // Registry64 keeps a 32-bit host process out of Wow6432Node.
         using RegistryKey root = RegistryKey.OpenBaseKey(hive, RegistryView.Registry64);
         return root.OpenSubKey(subKey, writable);
     }
 
-    private static RegistryKey? CreateKey(string keyPath)
+    private RegistryKey? CreateKey(string keyPath)
     {
-        (RegistryHive hive, string subKey) = ParsePath(keyPath);
+        (RegistryHive hive, string subKey) = ResolvePath(keyPath, _desktop.SeparateElevation?.DesktopSid);
         using RegistryKey root = RegistryKey.OpenBaseKey(hive, RegistryView.Registry64);
         return root.CreateSubKey(subKey, writable: true);
+    }
+
+    /// <summary>
+    /// Where a path really lives. HKCU means the person at the desktop: when SysTuneX was elevated
+    /// into another account - Administrator protection, or an administrator's password typed into
+    /// a standard user's prompt - this process's own HKCU is that other account's hive, and every
+    /// per-user tweak used to land there, read back as applied, and change nothing the user could
+    /// see. Their own hive is loaded under HKEY_USERS by SID while they are signed in.
+    ///
+    /// The journal keeps recording HKCU, so an entry means the same hive whichever way SysTuneX was
+    /// elevated when it was written and when it is put back.
+    /// </summary>
+    internal static (RegistryHive Hive, string SubKey) ResolvePath(string keyPath, string? desktopUserSid)
+    {
+        (RegistryHive hive, string subKey) = ParsePath(keyPath);
+
+        if (hive != RegistryHive.CurrentUser || string.IsNullOrEmpty(desktopUserSid))
+        {
+            return (hive, subKey);
+        }
+
+        return (RegistryHive.Users, subKey.Length == 0 ? desktopUserSid : $"{desktopUserSid}\\{subKey}");
     }
 
     internal static (RegistryHive Hive, string SubKey) ParsePath(string keyPath)
