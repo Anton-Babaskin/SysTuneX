@@ -49,6 +49,12 @@ public sealed class ContainedDeleteTests : IDisposable
     [Fact]
     public void A_file_inside_the_root_is_deleted()
     {
+        // Junctions, read-only attributes and the delete under test are all Windows'.
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
         string file = Touch(Path.Combine(_root, "setup.tmp"));
 
         Assert.Equal(ContainedDelete.Outcome.Deleted, ContainedDelete.Delete(file, ResolvedRoot(), directory: false));
@@ -58,6 +64,12 @@ public sealed class ContainedDeleteTests : IDisposable
     [Fact]
     public void A_read_only_file_is_deleted_too()
     {
+        // Junctions, read-only attributes and the delete under test are all Windows'.
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
         string file = Touch(Path.Combine(_root, "shader.bin"));
         File.SetAttributes(file, FileAttributes.ReadOnly);
 
@@ -68,6 +80,12 @@ public sealed class ContainedDeleteTests : IDisposable
     [Fact]
     public void A_file_reached_through_a_junction_is_left_alone()
     {
+        // Junctions, read-only attributes and the delete under test are all Windows'.
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
         string victim = Touch(Path.Combine(_outside, "victim.dll"));
         string root = ResolvedRoot();
 
@@ -84,6 +102,12 @@ public sealed class ContainedDeleteTests : IDisposable
     [Fact]
     public void A_root_that_is_itself_a_junction_is_refused()
     {
+        // Junctions, read-only attributes and the delete under test are all Windows'.
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
         string link = Path.Combine(_directory, "linked-root");
         CreateJunction(link, _outside);
 
@@ -93,6 +117,12 @@ public sealed class ContainedDeleteTests : IDisposable
     [Fact]
     public void A_folder_with_something_in_it_is_kept()
     {
+        // Junctions, read-only attributes and the delete under test are all Windows'.
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
         string folder = Path.Combine(_root, "sub");
         Touch(Path.Combine(folder, "keep.txt"));
 
