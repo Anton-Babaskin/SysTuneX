@@ -911,7 +911,7 @@
     <value>Прибрати рекомендації та автовстановлення застосунків</value>
   </data>
   <data name="Tweak_start_suggestions_disable_Desc" xml:space="preserve">
-    <value>Припиняє тихе встановлення просуваних застосунків зі Store і показ рекламних плиток у меню «Пуск».</value>
+    <value>Припиняє тихе встановлення просуваних застосунків зі Store, показ рекламних плиток у меню «Пуск» і рекомендації порад, ярликів і нових застосунків у ньому.</value>
   </data>
   <data name="Tweak_location_disable_Name" xml:space="preserve">
     <value>Заборонити доступ до місцеположення</value>
@@ -947,7 +947,7 @@
     <value>Збільшити мережевий пул пам'яті</value>
   </data>
   <data name="Tweak_network_memory_reserve_Desc" xml:space="preserve">
-    <value>Дозволяє стеку TCP/IP виділяти більше невивантажуваної пам'яті під буфери — допомагає на швидких з'єднаннях, де інакше губляться пакети під навантаженням.</value>
+    <value>Виведено з обігу. Змінював MaxUserPort і TcpTimedWaitDelay — кількість вихідних портів і час життя закритих з'єднань, а не пам'ять. Діапазон портів Windows бере з netsh починаючи з Vista, і для ігор жодне зі значень нічого не дає.</value>
   </data>
   <data name="Profile_esports_Name" xml:space="preserve">
     <value>Змагальні шутери</value>

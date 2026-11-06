@@ -181,7 +181,13 @@ public static class BloatwareCatalog
         new("Microsoft.BingSearch", "Bing Search in Start", IsSystemRelevant: true),
         new("Microsoft.GetHelp", "Get Help"),
         new("Microsoft.Getstarted", "Tips"),
-        new("Microsoft.MicrosoftOfficeHub", "Office Hub"),
+        new("Microsoft.MicrosoftOfficeHub", "Microsoft 365 Copilot"),
+
+        // The Copilot app of 24H2 and later. The policy that turned Copilot off covered only the
+        // older Copilot pane, and the one that removes the app is for Enterprise and Education, so on
+        // Home and Pro removing the package is the switch that actually works. It can be reinstalled
+        // from the Store.
+        new("Microsoft.Copilot", "Copilot"),
         new("Microsoft.MicrosoftSolitaireCollection", "Solitaire Collection"),
         new("Microsoft.MicrosoftStickyNotes", "Sticky Notes"),
         new("Microsoft.People", "People"),

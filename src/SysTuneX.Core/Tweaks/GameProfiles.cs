@@ -67,7 +67,6 @@ public static class GameProfiles
                 "background_apps_disable",
                 "nagle_disable",
                 "network_throttling_disable",
-                "network_memory_reserve",
             ],
             ServiceNames = ["DiagTrack", "SysMain", "DoSvc", "dmwappushservice", "WerSvc", "PushToInstall"],
         },

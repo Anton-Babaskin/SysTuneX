@@ -119,10 +119,18 @@ public static class PrivacyTweaks
             GroupKey = "Group_Suggestions",
             Name = "Remove Start menu suggestions and auto-installed apps",
             Description =
-                "Stops Windows silently installing promoted Store apps and showing sponsored tiles in Start.",
+                "Stops Windows silently installing promoted Store apps, showing sponsored tiles in Start " +
+                "and recommending tips, shortcuts and new apps there.",
             Risk = RiskLevel.Safe,
+
+            // Start reads its recommendations switch when Explorer starts.
+            RequiresExplorerRestart = true,
             Changes =
             [
+                // The "Show recommendations for tips, shortcuts, new apps and more" switch in Start
+                // settings, on 22H2 and later. Without it, everything above was off and Start still
+                // advertised apps in its recommended list.
+                new(@"HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "Start_IrisRecommendations", 0, 1, RegistryValueKind.DWord),
                 new(ContentDelivery, "SystemPaneSuggestionsEnabled", 0, 1, RegistryValueKind.DWord),
                 new(ContentDelivery, "SilentInstalledAppsEnabled", 0, 1, RegistryValueKind.DWord),
                 new(ContentDelivery, "PreInstalledAppsEnabled", 0, 1, RegistryValueKind.DWord),

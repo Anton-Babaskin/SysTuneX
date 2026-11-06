@@ -911,7 +911,7 @@
     <value>Убрать рекомендации и автоустановку приложений</value>
   </data>
   <data name="Tweak_start_suggestions_disable_Desc" xml:space="preserve">
-    <value>Прекращает тихую установку продвигаемых приложений из Store и показ рекламных плиток в меню «Пуск».</value>
+    <value>Прекращает тихую установку продвигаемых приложений из Store, показ рекламных плиток в меню «Пуск» и рекомендации советов, ярлыков и новых приложений в нём.</value>
   </data>
   <data name="Tweak_location_disable_Name" xml:space="preserve">
     <value>Запретить доступ к местоположению</value>
@@ -947,7 +947,7 @@
     <value>Увеличить сетевой пул памяти</value>
   </data>
   <data name="Tweak_network_memory_reserve_Desc" xml:space="preserve">
-    <value>Позволяет стеку TCP/IP выделять больше невыгружаемой памяти под буферы — помогает на быстрых соединениях, где иначе теряются пакеты под нагрузкой.</value>
+    <value>Выведен из оборота. Менял MaxUserPort и TcpTimedWaitDelay — число исходящих портов и время жизни закрытых соединений, а не память. Диапазон портов Windows берёт из netsh начиная с Vista, и для игр ни одно из значений ничего не даёт.</value>
   </data>
   <data name="Profile_esports_Name" xml:space="preserve">
     <value>Соревновательные шутеры</value>

@@ -21,6 +21,12 @@ public static class Windows11Tweaks
     /// <summary>Windows 11 22H2, where the Copilot and search policies landed.</summary>
     private const int Windows11_22H2 = 22621;
 
+    /// <summary>
+    /// Windows 11 23H2, the last release with the Copilot pane and the Chat button. 24H2 replaced the
+    /// pane with a separate Copilot app and has no Chat button at all.
+    /// </summary>
+    private const int Windows11_23H2 = 22631;
+
     /// <summary>Windows 11 24H2, where Recall and Click To Do were introduced.</summary>
     private const int Windows11_24H2 = 26100;
 
@@ -97,6 +103,10 @@ public static class Windows11Tweaks
                 "them through a local model. Both the machine-wide and per-user policies are written.",
             Risk = RiskLevel.Safe,
             MinBuild = Windows11_24H2,
+
+            // With AllowRecallEnablement at 0 Windows removes the Recall component, and Microsoft
+            // documents that removing it needs a restart. Without this flag the page never said so.
+            RequiresRestart = true,
             Changes =
             [
                 new(WindowsAi, "AllowRecallEnablement", 0, null, RegistryValueKind.DWord),
@@ -131,6 +141,13 @@ public static class Windows11Tweaks
                 "the background.",
             Risk = RiskLevel.Safe,
             MinBuild = Windows11_22H2,
+
+            // Microsoft documents TurnOffWindowsCopilot as deprecated and as covering only the
+            // Copilot pane of 22H2 and 23H2. From 24H2 Copilot is an ordinary app the policy does not
+            // touch, so offering this switch there was a switch that changed nothing. Removing the
+            // app, on the Cleanup page, is what works on 24H2 and later; the policy that does it for
+            // managed devices is Enterprise and Education only.
+            MaxBuild = Windows11_23H2,
             RequiresExplorerRestart = true,
             Changes =
             [
@@ -173,6 +190,11 @@ public static class Windows11Tweaks
             [
                 new(WindowsSearchPolicy, "DisableWebSearch", 1, null, RegistryValueKind.DWord),
                 new(WindowsSearchPolicy, "ConnectedSearchUseWeb", 0, null, RegistryValueKind.DWord),
+            ],
+
+            // Cortana has been removed from Windows; a policy for it switches nothing off.
+            FormerChanges =
+            [
                 new(WindowsSearchPolicy, "AllowCortana", 0, null, RegistryValueKind.DWord),
             ],
         },
@@ -211,6 +233,14 @@ public static class Windows11Tweaks
             Changes =
             [
                 new(@"HKLM\SOFTWARE\Policies\Microsoft\Dsh", "AllowNewsAndInterests", 0, null, RegistryValueKind.DWord),
+            ],
+
+            // The policy turns Widgets off and takes the button with it. TaskbarDa only hid the
+            // button, and Windows now guards it with the UserChoice protection driver, which refuses
+            // the write from a list of programs Microsoft keeps extending. When it does, the tweak
+            // reports half-applied for a value that was never needed.
+            FormerChanges =
+            [
                 new(ExplorerAdvanced, "TaskbarDa", 0, 1, RegistryValueKind.DWord),
             ],
         },
@@ -224,6 +254,10 @@ public static class Windows11Tweaks
             Description = "Hides the Teams personal button, which preloads its host process at sign-in.",
             Risk = RiskLevel.Safe,
             MinBuild = Windows11,
+
+            // 23H2 replaced Chat with a separate Teams app and 24H2 has no Chat button, so this
+            // switch had nothing to hide there.
+            MaxBuild = Windows11_23H2,
             RequiresExplorerRestart = true,
             Changes =
             [

@@ -134,6 +134,8 @@ public sealed class CatalogueEvolutionTests
     {
         List<RegistryChange> former = [.. TweakCatalog.All.SelectMany(tweak => tweak.FormerChanges)];
 
+        // Not vacuous: the catalogue does carry former values.
+        Assert.NotEmpty(former);
         Assert.All(former, change => Assert.True(
             JournalTargets.IsKnownRegistryValue(change.KeyPath, change.ValueName),
             $@"{change.KeyPath}\{change.ValueName} is a former value but journal replay would refuse it"));
@@ -143,8 +145,11 @@ public sealed class CatalogueEvolutionTests
     public void Retired_tweaks_are_not_listed_but_can_still_be_found()
     {
         var engine = Engine(new TracingRegistryService(), new FakeBackupService(), Windows11_26H2);
+        TweakDefinition[] retiredTweaks = [.. TweakCatalog.All.Where(tweak => tweak.Retired)];
 
-        foreach (TweakDefinition retired in TweakCatalog.All.Where(tweak => tweak.Retired))
+        Assert.NotEmpty(retiredTweaks);
+
+        foreach (TweakDefinition retired in retiredTweaks)
         {
             Assert.DoesNotContain(engine.GetSupportedTweaks(), tweak => tweak.Id == retired.Id);
             Assert.Same(retired, engine.Find(retired.Id));

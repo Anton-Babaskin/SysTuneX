@@ -48,10 +48,16 @@ public static class NetworkTweaks
             GroupKey = "Group_Throughput",
             Name = "Raise the network memory pool",
             Description =
-                "Lets the TCP/IP stack allocate more non-paged pool for buffers, which helps on " +
-                "high-bandwidth connections that would otherwise drop packets under load.",
+                "Retired. Set MaxUserPort and TcpTimedWaitDelay, which govern outgoing port numbers and " +
+                "how long closed connections linger - not memory. Windows has taken the port range from " +
+                "netsh since Vista, and neither value does anything for a game.",
             Risk = RiskLevel.Moderate,
             RequiresRestart = true,
+
+            // It said it gave the TCP/IP stack more memory for buffers. It never did: the two values
+            // are the ephemeral port count and the TIME_WAIT delay, the first not read the old way
+            // since Vista. Kept only so a machine that applied it can be put back.
+            Retired = true,
             Changes =
             [
                 new(@"HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters", "MaxUserPort", 65534, null, RegistryValueKind.DWord),

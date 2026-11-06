@@ -109,6 +109,37 @@ public sealed class TweakCatalogTests
         Assert.Empty(ungated);
     }
 
+    /// <summary>
+    /// A retired tweak does nothing on current Windows. A profile naming one would advertise it in
+    /// its preview, and ResolveTweaks would drop it - the preview and the run would disagree.
+    /// </summary>
+    [Fact]
+    public void No_profile_names_a_retired_tweak()
+    {
+        string[] named = GameProfiles.BuiltIn
+            .SelectMany(profile => profile.TweakIds.Select(id => (profile.Id, Tweak: TweakCatalog.Find(id))))
+            .Where(pair => pair.Tweak is { Retired: true })
+            .Select(pair => $"{pair.Id} -> {pair.Tweak!.Id}")
+            .ToArray();
+
+        Assert.Empty(named);
+    }
+
+    /// <summary>A value is either written by a tweak or one it used to write - never both.</summary>
+    [Fact]
+    public void A_value_is_never_both_current_and_former_in_one_tweak()
+    {
+        foreach (TweakDefinition tweak in TweakCatalog.All)
+        {
+            foreach (RegistryChange former in tweak.FormerChanges)
+            {
+                Assert.DoesNotContain(tweak.Changes, change =>
+                    string.Equals(change.KeyPath, former.KeyPath, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(change.ValueName, former.ValueName, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+    }
+
     [Fact]
     public void Every_tweak_has_a_group_and_description()
     {
