@@ -1,0 +1,40 @@
+name: Authorship
+
+# This project has one author. A co-author trailer that a tool writes into a commit on its own puts
+# a second name on the repository's contributor list that nobody chose to put there, and once the
+# commit is on main it cannot come off again without rewriting published history. So a pull
+# request carrying one stops here, while dropping it is still a matter of amending a commit.
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  trailers:
+    name: Commit authorship
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: No co-author trailers
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+
+          # The pull request's own commits, read from the API: no checkout and no third-party action.
+          # Anchored to the start of a line, so a message that merely mentions the trailer passes.
+          found="$(gh api --paginate "repos/$REPO/pulls/$PR/commits" \
+            --jq '.[] | select(.commit.message | test("(^|\n)co-authored-by:"; "i")) | "\(.sha[0:7]) \(.commit.message | split("\n")[0])"')"
+
+          if [ -n "$found" ]; then
+            echo "::error::These commits carry a Co-authored-by trailer. Remove it - git commit --amend, or an interactive rebase - and push again."
+            echo "$found"
+            exit 1
+          fi
+
+          echo "No co-author trailers."
