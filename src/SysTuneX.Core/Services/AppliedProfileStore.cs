@@ -59,8 +59,7 @@ public sealed class AppliedProfileStore : IAppliedProfileStore
                 return;
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(_file)!);
-            File.WriteAllText(_file, JsonSerializer.Serialize(applied, JsonOptions));
+            JsonFile.Write(_file, applied, JsonOptions);
         }
         catch (Exception ex)
         {
@@ -72,19 +71,7 @@ public sealed class AppliedProfileStore : IAppliedProfileStore
     /// <summary>
     /// Read once at construction: every caller wants it immediately, and a missing or unreadable
     /// file means "nothing applied", which is the honest answer when we genuinely do not know.
+    /// An unreadable one is moved aside and logged by <see cref="JsonFile"/>.
     /// </summary>
-    private AppliedProfile? Read()
-    {
-        try
-        {
-            return File.Exists(_file)
-                ? JsonSerializer.Deserialize<AppliedProfile>(File.ReadAllText(_file))
-                : null;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "The applied profile record could not be read: {Path}", _file);
-            return null;
-        }
-    }
+    private AppliedProfile? Read() => JsonFile.Read<AppliedProfile>(_file, JsonOptions, _logger).Value;
 }

@@ -45,17 +45,22 @@ public sealed class GameModeService : IGameModeService
 
     public async Task LoadAsync(CancellationToken cancellationToken = default)
     {
-        try
-        {
-            if (!File.Exists(_sessionFile))
-            {
-                return;
-            }
+        JsonFileRead<GameModeSession> saved = await JsonFile
+            .ReadAsync<GameModeSession>(_sessionFile, Json, _logger, cancellationToken)
+            .ConfigureAwait(false);
 
-            await using FileStream stream = File.OpenRead(_sessionFile);
-            Session = await JsonSerializer
-                .DeserializeAsync<GameModeSession>(stream, Json, cancellationToken)
-                .ConfigureAwait(false);
+        if (saved.Status == JsonFileStatus.Missing)
+        {
+            return;
+        }
+
+        // A session file we cannot read must not block the app, but it must not vanish either: it
+        // is the only record of which services are still stopped. Saving goes through a temp file
+        // and a rename, so a crash mid-save cannot produce one; one that is unreadable anyway has
+        // been moved aside and logged, rather than left for the next session to overwrite.
+        if (saved.Status == JsonFileStatus.Read)
+        {
+            Session = saved.Value;
 
             if (Session is not null)
             {
@@ -64,12 +69,6 @@ public sealed class GameModeService : IGameModeService
                     Session.StartedAt,
                     Session.StoppedServices.Count);
             }
-        }
-        catch (Exception ex)
-        {
-            // A session file we cannot read must not block the app, but it must not be silently
-            // treated as "game mode is off" either - that would strand stopped services.
-            _logger.LogError(ex, "The game mode session file could not be read: {Path}", _sessionFile);
         }
 
         Changed?.Invoke(this, EventArgs.Empty);
@@ -305,9 +304,7 @@ public sealed class GameModeService : IGameModeService
     {
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(_sessionFile)!);
-            await using FileStream stream = File.Create(_sessionFile);
-            await JsonSerializer.SerializeAsync(stream, Session, Json, cancellationToken).ConfigureAwait(false);
+            await JsonFile.WriteAsync(_sessionFile, Session, Json, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
