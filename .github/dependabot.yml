@@ -1,0 +1,53 @@
+# Dependency updates, proposed as pull requests rather than remembered.
+#
+# SysTuneX runs as administrator, and so does everything it ships: every NuGet package below ends
+# up inside SysTuneX.exe, and every action in build.yml runs in the job that builds it. Both used to
+# move only when somebody happened to look, which is how the app sat several servicing patches
+# behind the runtime it is built on.
+#
+# Weekly, grouped and capped, so updates arrive as one pull request per ecosystem that CI has
+# already built and tested - not a daily stream that teaches everyone to merge without reading.
+version: 2
+
+updates:
+  - package-ecosystem: nuget
+    # SysTuneX.sln sits here and lists all four projects, src and tests alike, so one entry covers
+    # the packages that ship and the ones that only test them.
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    # A compromised release is usually caught and unlisted within days. Waiting a few before
+    # proposing a new version means that happens to someone else first. Security updates are not
+    # held back by this.
+    cooldown:
+      default-days: 3
+    groups:
+      nuget-minor-and-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+    ignore:
+      # These three families ship with .NET itself and move with the target framework. 11.0 on a
+      # net10.0 app is not a package update but a framework change, and that is made on purpose,
+      # all at once, not one package at a time because a bot noticed a new number.
+      - dependency-name: 'Microsoft.Extensions.*'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'System.Management'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'System.ServiceProcess.ServiceController'
+        update-types: ['version-update:semver-major']
+
+  - package-ecosystem: github-actions
+    # "/" is where Dependabot looks for .github/workflows.
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 2
+    cooldown:
+      default-days: 3
+    groups:
+      actions-minor-and-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
